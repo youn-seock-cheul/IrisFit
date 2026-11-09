@@ -1,0 +1,57 @@
+{
+  "domain": "Data Safety and Privacy",
+  "findings": [
+    {
+      "psl_constant": "WEB_BROWSING_HISTORY",
+      "policy_id": "data_safety_section",
+      "issue_summary": "Data Safety Compliant (Local-Only): downloadUrl is not browsing history",
+      "severity": "SUGGESTION",
+      "files_involved": [
+        "app/src/main/java/com/example/myapplication/data/AppVersionManager.kt"
+      ],
+      "evidence": "AppVersionManager.kt:18,68,75: loadUrl matches the substring of downloadUrl. The value is a fixed example APK URL, not visited websites. triggerAutoUpdate copies sourceDir to a cache APK and invokes the system installer at lines 79-96; it does not load websites or transmit browsing history.",
+      "recommendation": "No browsing-history declaration follows from this match. Reassess if a real web or update client is added.",
+      "is_transferred": false,
+      "user_initiated": false,
+      "is_third_party": false,
+      "prominent_disclosure_status": "EXEMPT",
+      "purpose": "Local functionality only; semantic false positive",
+      "linked_to_user": false
+    },
+    {
+      "psl_constant": "USER_ACCOUNT",
+      "policy_id": "data_safety_section",
+      "issue_summary": "Data Safety Compliant (Local-Only): uid matches Guide identifiers, not user accounts",
+      "severity": "SUGGESTION",
+      "files_involved": [
+        "app/src/main/java/com/example/myapplication/MainActivity.kt",
+        "app/src/main/java/com/example/myapplication/ui/YouTubeAccessibilityGuideDialog.kt"
+      ],
+      "evidence": "MainActivity.kt:75,135,416,755-756 references YouTubeAccessibilityGuideDialog/showAccessibilityGuideDialog. YouTubeAccessibilityGuideDialog.kt:34 declares its composable name. The uid pattern matches Guide, with no account ID or account transmission in these paths. Dialog settings intents use the app package, not a person identifier.",
+      "recommendation": "Exclude these lexical false positives from account-data declarations; reassess if actual sign-in or account identifiers are implemented.",
+      "is_transferred": false,
+      "user_initiated": false,
+      "is_third_party": false,
+      "prominent_disclosure_status": "EXEMPT",
+      "purpose": "Local functionality only; semantic false positive",
+      "linked_to_user": false
+    },
+    {
+      "psl_constant": "PERFORMANCE_DIAGNOSTICS",
+      "policy_id": "data_safety_section",
+      "issue_summary": "Data Safety Compliant (Local-Only)",
+      "severity": "SUGGESTION",
+      "files_involved": [
+        "app/src/main/java/com/example/myapplication/MainActivity.kt"
+      ],
+      "evidence": "MainActivity.kt:649-658 and 729-738 reads BatteryManager.BATTERY_PROPERTY_CAPACITY, compares batteryLevel with 40, and displays a local Toast to block an exercise start. batteryLevel is not passed to a network, analytics or uploading logger sink.",
+      "recommendation": "Keep battery checks local; update Data safety if future diagnostics uploads include these values.",
+      "is_transferred": false,
+      "user_initiated": false,
+      "is_third_party": false,
+      "prominent_disclosure_status": "EXEMPT",
+      "purpose": "Local functionality only",
+      "linked_to_user": false
+    }
+  ]
+}

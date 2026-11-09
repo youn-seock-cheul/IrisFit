@@ -1,0 +1,497 @@
+{
+    "codebase_map": {
+        "all_files": [
+            [
+                ".gitignore",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\.gitignore",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication"
+            ],
+            [
+                "build.gradle.kts",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\build.gradle.kts",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication"
+            ],
+            [
+                "gradle.properties",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradle.properties",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication"
+            ],
+            [
+                "gradlew",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradlew",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication"
+            ],
+            [
+                "gradlew.bat",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradlew.bat",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication"
+            ],
+            [
+                "local.properties",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\local.properties",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication"
+            ],
+            [
+                "settings.gradle.kts",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\settings.gradle.kts",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication"
+            ],
+            [
+                ".gitignore",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\.gitignore",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app"
+            ],
+            [
+                "build.gradle.kts",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\build.gradle.kts",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app"
+            ],
+            [
+                "AndroidManifest.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\AndroidManifest.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main"
+            ],
+            [
+                "face_landmarker.task",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\assets\\face_landmarker.task",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\assets"
+            ],
+            [
+                "MainActivity.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication"
+            ],
+            [
+                "GeminiNanoCoachManager.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ai\\GeminiNanoCoachManager.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ai"
+            ],
+            [
+                "AppVersionManager.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data\\AppVersionManager.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data"
+            ],
+            [
+                "DynamicIconManager.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data\\DynamicIconManager.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data"
+            ],
+            [
+                "GazeEvaluator.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data\\GazeEvaluator.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data"
+            ],
+            [
+                "PreferencesManager.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data\\PreferencesManager.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data"
+            ],
+            [
+                "ScoreManager.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data\\ScoreManager.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data"
+            ],
+            [
+                "EyeExerciseOverlayService.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\service\\EyeExerciseOverlayService.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\service"
+            ],
+            [
+                "YouTubeDetectionAccessibilityService.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\service\\YouTubeDetectionAccessibilityService.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\service"
+            ],
+            [
+                "AiCoachChatDialog.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\AiCoachChatDialog.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui"
+            ],
+            [
+                "CalibrationScreen.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\CalibrationScreen.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui"
+            ],
+            [
+                "DynamicIconSelectorDialog.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\DynamicIconSelectorDialog.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui"
+            ],
+            [
+                "EyeExamScreen.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\EyeExamScreen.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui"
+            ],
+            [
+                "PrivacyPolicyDialog.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\PrivacyPolicyDialog.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui"
+            ],
+            [
+                "YouTubeAccessibilityGuideDialog.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\YouTubeAccessibilityGuideDialog.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui"
+            ],
+            [
+                "Color.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\theme\\Color.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\theme"
+            ],
+            [
+                "Theme.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\theme\\Theme.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\theme"
+            ],
+            [
+                "Type.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\theme\\Type.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\theme"
+            ],
+            [
+                "GazeTracker.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\vision\\GazeTracker.kt",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\vision"
+            ],
+            [
+                "rules.keep",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\keepRules\\rules.keep",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\keepRules"
+            ],
+            [
+                "ic_launcher_background.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_background.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground_10_galaxy.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground_10_galaxy.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground_1_default.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground_1_default.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground_2_tired.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground_2_tired.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground_3_fire.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground_3_fire.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground_4_gold.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground_4_gold.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground_5_cyber.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground_5_cyber.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground_6_blink.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground_6_blink.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground_7_emerald.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground_7_emerald.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground_8_amethyst.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground_8_amethyst.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_foreground_9_ruby.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_foreground_9_ruby.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_theme_1.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_theme_1.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_theme_10.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_theme_10.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_theme_2.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_theme_2.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_theme_3.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_theme_3.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_theme_4.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_theme_4.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_theme_5.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_theme_5.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_theme_6.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_theme_6.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_theme_7.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_theme_7.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_theme_8.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_theme_8.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher_theme_9.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable\\ic_launcher_theme_9.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\drawable"
+            ],
+            [
+                "ic_launcher.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-anydpi\\ic_launcher.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-anydpi"
+            ],
+            [
+                "ic_launcher_round.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-anydpi\\ic_launcher_round.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-anydpi"
+            ],
+            [
+                "ic_launcher.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-hdpi"
+            ],
+            [
+                "ic_launcher_round.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_round.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-hdpi"
+            ],
+            [
+                "ic_launcher.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-mdpi"
+            ],
+            [
+                "ic_launcher_round.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_round.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-mdpi"
+            ],
+            [
+                "ic_launcher.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xhdpi"
+            ],
+            [
+                "ic_launcher_round.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_round.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xhdpi"
+            ],
+            [
+                "ic_launcher.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xxhdpi"
+            ],
+            [
+                "ic_launcher_round.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_round.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xxhdpi"
+            ],
+            [
+                "ic_launcher.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xxxhdpi"
+            ],
+            [
+                "ic_launcher_round.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_round.webp",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\mipmap-xxxhdpi"
+            ],
+            [
+                "colors.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\values\\colors.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\values"
+            ],
+            [
+                "strings.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\values\\strings.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\values"
+            ],
+            [
+                "themes.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\values\\themes.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\values"
+            ],
+            [
+                "accessibility_service_config.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml\\accessibility_service_config.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml"
+            ],
+            [
+                "backup_rules.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml\\backup_rules.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml"
+            ],
+            [
+                "data_extraction_rules.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml\\data_extraction_rules.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml"
+            ],
+            [
+                "file_paths.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml\\file_paths.xml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml"
+            ],
+            [
+                "gradle-daemon-jvm.properties",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradle\\gradle-daemon-jvm.properties",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradle"
+            ],
+            [
+                "libs.versions.toml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradle\\libs.versions.toml",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradle"
+            ],
+            [
+                "gradle-wrapper.jar",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradle\\wrapper\\gradle-wrapper.jar",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradle\\wrapper"
+            ],
+            [
+                "gradle-wrapper.properties",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradle\\wrapper\\gradle-wrapper.properties",
+                "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\gradle\\wrapper"
+            ]
+        ],
+        "gradles": [
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\build.gradle.kts",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\settings.gradle.kts",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\build.gradle.kts"
+        ],
+        "manifests": [
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\AndroidManifest.xml"
+        ],
+        "source_code": [
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ai\\GeminiNanoCoachManager.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data\\AppVersionManager.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data\\DynamicIconManager.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data\\GazeEvaluator.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data\\PreferencesManager.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\data\\ScoreManager.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\service\\EyeExerciseOverlayService.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\service\\YouTubeDetectionAccessibilityService.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\AiCoachChatDialog.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\CalibrationScreen.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\DynamicIconSelectorDialog.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\EyeExamScreen.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\PrivacyPolicyDialog.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\YouTubeAccessibilityGuideDialog.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\theme\\Color.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\theme\\Theme.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\ui\\theme\\Type.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\java\\com\\example\\myapplication\\vision\\GazeTracker.kt",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\values\\colors.xml",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\values\\strings.xml",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\values\\themes.xml",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml\\accessibility_service_config.xml",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml\\backup_rules.xml",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml\\data_extraction_rules.xml",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\res\\xml\\file_paths.xml"
+        ]
+    },
+    "data_safety_scan": {
+        "accessibility": {
+            "-": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\service\\YouTubeDetectionAccessibilityService.kt (Pattern: AccessibilityService)"
+            ]
+        },
+        "data_sources": {
+            "APPS_ON_DEVICE": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\data\\AppVersionManager.kt (Pattern: getPackageInfo)"
+            ],
+            "HEALTH": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\service\\EyeExerciseOverlayService.kt (Pattern: SensorManager)"
+            ],
+            "MUSIC": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: track)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\data\\PreferencesManager.kt (Pattern: track)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\service\\EyeExerciseOverlayService.kt (Pattern: track)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\ui\\CalibrationScreen.kt (Pattern: track)"
+            ],
+            "OTHER_MESSAGES": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\data\\PreferencesManager.kt (Pattern: chat_history)"
+            ],
+            "PERFORMANCE_DIAGNOSTICS": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: BatteryManager)"
+            ],
+            "PHOTOS": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: CAMERA)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\service\\EyeExerciseOverlayService.kt (Pattern: CAMERA)"
+            ],
+            "RACE_ETHNICITY": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\ai\\GeminiNanoCoachManager.kt (Pattern: race)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\data\\AppVersionManager.kt (Pattern: race)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\data\\DynamicIconManager.kt (Pattern: race)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\service\\EyeExerciseOverlayService.kt (Pattern: race)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\vision\\GazeTracker.kt (Pattern: race)"
+            ],
+            "USER_ACCOUNT": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: uid)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\ui\\YouTubeAccessibilityGuideDialog.kt (Pattern: uid)"
+            ],
+            "WEB_BROWSING_HISTORY": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: loadUrl)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\data\\AppVersionManager.kt (Pattern: loadUrl)"
+            ]
+        },
+        "disclosure": {
+            "-": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: AlertDialog)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\ui\\AiCoachChatDialog.kt (Pattern: AlertDialog)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\ui\\DynamicIconSelectorDialog.kt (Pattern: AlertDialog)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\ui\\PrivacyPolicyDialog.kt (Pattern: AlertDialog)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\ui\\YouTubeAccessibilityGuideDialog.kt (Pattern: AlertDialog)"
+            ]
+        },
+        "foreground_service": {
+            "-": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: startForeground)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\service\\EyeExerciseOverlayService.kt (Pattern: startForeground)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\service\\YouTubeDetectionAccessibilityService.kt (Pattern: startForeground)"
+            ]
+        }
+    },
+    "found_urls": [],
+    "semantic_files": {
+        "AUDIO": [
+            "DynamicIconManager.kt",
+            "DynamicIconSelectorDialog.kt"
+        ],
+        "CONFIG": [
+            "accessibility_service_config.xml"
+        ],
+        "LEGAL": [
+            "PrivacyPolicyDialog.kt"
+        ]
+    }
+}

@@ -1,0 +1,29 @@
+// Capture only this app's crash/last-ANR evidence, then stop its stalled test process.
+def adb = 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe'
+def serial = 'R3CW905VXZZ'
+def folder = new File('C:/Users/youns/AndroidStudioProjects/MyApplication/.scratch/p0_device_20261101')
+def capture = { List arguments ->
+    def process = new ProcessBuilder(([adb, '-s', serial] + arguments).collect { it.toString() })
+        .redirectErrorStream(true).start()
+    def bytes = new ByteArrayOutputStream()
+    def reader = Thread.start { process.inputStream.transferTo(bytes) }
+    if (!process.waitFor(20, java.util.concurrent.TimeUnit.SECONDS)) {
+        process.destroyForcibly()
+        throw new GradleException('Device diagnostic command timed out')
+    }
+    reader.join(2000)
+    bytes.toString('UTF-8')
+}
+def crash = capture(['shell', 'logcat', '-d', '-b', 'crash', '-t', '200'])
+def owned = false
+def ownLines = []
+crash.readLines().each { line ->
+    if (line.contains('Process:')) owned = line.contains('com.eyeoverlay.app')
+    if (owned) ownLines.add(line)
+}
+new File(folder, 'release-matched-crash.txt').setText(ownLines.join('\n'), 'UTF-8')
+def lastAnr = capture(['shell', 'dumpsys', 'activity', 'lastanr'])
+new File(folder, 'release-last-anr.txt').setText(
+    lastAnr.contains('com.eyeoverlay.app') ? lastAnr : 'No matching app ANR in lastanr record', 'UTF-8')
+capture(['shell', 'am', 'force-stop', 'com.eyeoverlay.app'])
+println 'P0 app-only diagnostics captured; stalled EyeOverlay test process stopped.'

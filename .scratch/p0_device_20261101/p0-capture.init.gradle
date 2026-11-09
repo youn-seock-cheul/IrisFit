@@ -1,0 +1,21 @@
+// Capture only after confirming EyeOverlay is foreground.
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    def adb = 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe'
+    def take = app.tasks.register('p0CaptureReleaseScreen', Exec) {
+        commandLine adb, '-s', 'R3CW905VXZZ', 'shell', 'screencap', '-p',
+            '/data/local/tmp/eyeoverlay-p0-release.png'
+    }
+    def pull = app.tasks.register('p0PullReleaseScreen', Exec) {
+        dependsOn take
+        commandLine adb, '-s', 'R3CW905VXZZ', 'pull',
+            '/data/local/tmp/eyeoverlay-p0-release.png',
+            rootProject.file('.scratch/p0_device_20261101/' +
+                (rootProject.findProperty('p0ScreenshotName') ?: 'release-timer.png')).absolutePath
+    }
+    app.tasks.register('p0SaveReleaseScreen', Exec) {
+        dependsOn pull
+        commandLine adb, '-s', 'R3CW905VXZZ', 'shell', 'rm',
+            '/data/local/tmp/eyeoverlay-p0-release.png'
+    }
+}

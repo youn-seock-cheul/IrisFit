@@ -1,0 +1,247 @@
+{
+    "findings": [
+        {
+            "policy_id": "data_safety_section",
+            "severity": "SUGGESTION",
+            "is_transferred": false,
+            "user_initiated": false,
+            "is_third_party": false,
+            "prominent_disclosure_status": "EXEMPT",
+            "purpose": "Local functionality only",
+            "linked_to_user": false,
+            "psl_constant": "RACE_ETHNICITY",
+            "issue_summary": "False-positive triage: no race or ethnicity source",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/ai/GeminiNanoCoachManager.kt",
+                "app/src/main/java/com/example/myapplication/data/AppVersionManager.kt",
+                "app/src/main/java/com/example/myapplication/data/DynamicIconManager.kt"
+            ],
+            "evidence": "All supplied race-pattern files were inspected. Matches are printStackTrace exception diagnostics, not race/ethnicity fields. GeminiNanoCoachManager processes user text through the on-device ML Kit Generation client; AppVersionManager copies an installed APK locally and invokes Package Installer; DynamicIconManager updates local component settings. No ethnicity source or transfer identified.",
+            "recommendation": "Prune the RACE_ETHNICITY heuristic match from collection declarations unless future functionality actually collects this type.",
+            "worker_file": "worker_data_safety_part_1.json",
+            "finding_id": "1"
+        },
+        {
+            "policy_id": "data_safety_section",
+            "severity": "SUGGESTION",
+            "is_transferred": false,
+            "user_initiated": false,
+            "is_third_party": false,
+            "prominent_disclosure_status": "EXEMPT",
+            "purpose": "Local functionality only",
+            "linked_to_user": false,
+            "psl_constant": "HEALTH",
+            "issue_summary": "Data Safety Compliant (Local-Only)",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/service/EyeExerciseOverlayService.kt",
+                "app/src/main/java/com/example/myapplication/vision/GazeTracker.kt"
+            ],
+            "evidence": "EyeExerciseOverlayService.kt:243-249 obtains only TYPE_LIGHT, an ambient illumination sensor, not a body/health sensor. Derived eye/blink/fatigue variables in the same service feed local overlays and notifications (lines 99-224, 270-299, 350-382) and local score preferences (lines 255-267, 648-665). GazeTracker.kt:52-89 analyzes InputImage using bundled ML Kit face detection and returns local results; no upload sink found.",
+            "recommendation": "Document local eye-feature processing and keep unsupported physiological claims separate from Data Safety collection; verify SDK disclosures against release configuration.",
+            "worker_file": "worker_data_safety_part_1.json",
+            "finding_id": "2"
+        },
+        {
+            "policy_id": "data_safety_section",
+            "severity": "SUGGESTION",
+            "is_transferred": false,
+            "user_initiated": false,
+            "is_third_party": false,
+            "prominent_disclosure_status": "EXEMPT",
+            "purpose": "Local functionality only",
+            "linked_to_user": false,
+            "psl_constant": "PHOTOS",
+            "issue_summary": "Data Safety Compliant (Local-Only)",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/MainActivity.kt",
+                "app/src/main/java/com/example/myapplication/service/EyeExerciseOverlayService.kt",
+                "app/src/main/java/com/example/myapplication/vision/GazeTracker.kt",
+                "app/build.gradle.kts"
+            ],
+            "evidence": "MainActivity.kt:166-180 requests CAMERA; no photo picker/gallery read or upload in this path. EyeExerciseOverlayService.kt:624-646 binds camera image analysis; imageProxy flows to GazeTracker.processImageProxy. GazeTracker.kt:50-96 passes frames to bundled ML Kit FaceDetection, emits in-memory face/eye callbacks, and closes imageProxy. No image save, network client or upload sink observed in this path. Gradle declares bundled face-detection, MediaPipe and on-device GenAI rather than analytics/ad SDKs.",
+            "recommendation": "Describe transient on-device camera frame processing accurately; do not declare gallery photos collected merely from CAMERA permission. Recheck merged dependencies and any future frame recording or transfer.",
+            "worker_file": "worker_data_safety_part_1.json",
+            "finding_id": "3"
+        },
+        {
+            "psl_constant": "MUSIC",
+            "policy_id": "data_safety_section",
+            "issue_summary": "Data Safety Compliant (Local-Only): music triage is a false positive",
+            "severity": "SUGGESTION",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/MainActivity.kt",
+                "app/src/main/java/com/example/myapplication/data/PreferencesManager.kt",
+                "app/src/main/java/com/example/myapplication/service/EyeExerciseOverlayService.kt"
+            ],
+            "evidence": "MainActivity.kt:332,517,553-571 uses trackingSpeedScore, Compose trackColor and exercise trackModes. PreferencesManager.kt:46-58,67-69 stores exercise capability scores and marker path selection in SharedPreferences. EyeExerciseOverlayService.kt:133,188-189,553-562 calculates marker exercise paths and uses GazeTracker for camera frames at 635-640. None refers to user music files or transmits music.",
+            "recommendation": "Exclude MUSIC from declarations based on these false-positive track matches; re-evaluate only if actual music-library functionality is introduced.",
+            "is_transferred": false,
+            "user_initiated": false,
+            "is_third_party": false,
+            "prominent_disclosure_status": "EXEMPT",
+            "purpose": "Local visual exercise configuration; no music source",
+            "linked_to_user": false,
+            "worker_file": "worker_data_safety_part_2.json",
+            "finding_id": "4"
+        },
+        {
+            "psl_constant": "OTHER_MESSAGES",
+            "policy_id": "data_safety_section",
+            "issue_summary": "Data Safety Compliant (Local-Only)",
+            "severity": "SUGGESTION",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/data/PreferencesManager.kt",
+                "app/src/main/java/com/example/myapplication/ui/AiCoachChatDialog.kt",
+                "app/src/main/java/com/example/myapplication/ai/GeminiNanoCoachManager.kt"
+            ],
+            "evidence": "PreferencesManager.kt:67-69 exposes savedChatHistory through private SharedPreferences string chat_history; no network sink. AiCoachChatDialog sends the user query directly to GeminiNanoCoachManager.getCoachResponse and retains messages in a remembered list. GeminiNanoCoachManager uses ML Kit on-device Generation.getClient/generateContent or a local deterministic response; no visible off-device chat upload.",
+            "recommendation": "Document local chat processing accurately. Verify release SDK behavior and backup handling separately; no chat collection declaration is established by these local-only paths.",
+            "is_transferred": false,
+            "user_initiated": false,
+            "is_third_party": false,
+            "prominent_disclosure_status": "EXEMPT",
+            "purpose": "Local chat functionality",
+            "linked_to_user": false,
+            "worker_file": "worker_data_safety_part_2.json",
+            "finding_id": "5"
+        },
+        {
+            "psl_constant": "APPS_ON_DEVICE",
+            "policy_id": "data_safety_section",
+            "issue_summary": "Data Safety Compliant (Local-Only): own-package version lookup",
+            "severity": "SUGGESTION",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/data/AppVersionManager.kt"
+            ],
+            "evidence": "AppVersionManager.kt:27 and 36 call getPackageInfo(context.packageName, 0) only for this application's version. checkForUpdate compares local constants. triggerAutoUpdate copies this application's own APK to cache and opens Package Installer only on user action. These calls do not enumerate installed apps or transmit an app inventory.",
+            "recommendation": "Do not infer an installed-app inventory from own-package version lookups. Accessibility usage events are a separate source covered by the restricted-permission audit.",
+            "is_transferred": false,
+            "user_initiated": false,
+            "is_third_party": false,
+            "prominent_disclosure_status": "EXEMPT",
+            "purpose": "Local installed-version checks",
+            "linked_to_user": false,
+            "worker_file": "worker_data_safety_part_2.json",
+            "finding_id": "6"
+        },
+        {
+            "psl_constant": "WEB_BROWSING_HISTORY",
+            "policy_id": "data_safety_section",
+            "issue_summary": "Data Safety Compliant (Local-Only): browsing-history triage is a false positive",
+            "severity": "SUGGESTION",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/MainActivity.kt"
+            ],
+            "evidence": "MainActivity.kt has no WebView/loadUrl call or visited-site history source. The triage pattern loadUrl matches the downloadUrl identifier used by triggerAutoUpdate at line 787. A separate user-selected navigation action opens a fixed Naver map search via ACTION_VIEW around line 476; it does not read or send prior browsing history.",
+            "recommendation": "Exclude WEB_BROWSING_HISTORY based on these false positives; distinguish opening a user-requested link from collecting visited websites.",
+            "is_transferred": false,
+            "user_initiated": false,
+            "is_third_party": false,
+            "prominent_disclosure_status": "EXEMPT",
+            "purpose": "No browsing-history collection",
+            "linked_to_user": false,
+            "worker_file": "worker_data_safety_part_2.json",
+            "finding_id": "7"
+        },
+        {
+            "psl_constant": "WEB_BROWSING_HISTORY",
+            "policy_id": "data_safety_section",
+            "issue_summary": "Data Safety Compliant (Local-Only): downloadUrl is not browsing history",
+            "severity": "SUGGESTION",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/data/AppVersionManager.kt"
+            ],
+            "evidence": "AppVersionManager.kt:18,68,75: loadUrl matches the substring of downloadUrl. The value is a fixed example APK URL, not visited websites. triggerAutoUpdate copies sourceDir to a cache APK and invokes the system installer at lines 79-96; it does not load websites or transmit browsing history.",
+            "recommendation": "No browsing-history declaration follows from this match. Reassess if a real web or update client is added.",
+            "is_transferred": false,
+            "user_initiated": false,
+            "is_third_party": false,
+            "prominent_disclosure_status": "EXEMPT",
+            "purpose": "Local functionality only; semantic false positive",
+            "linked_to_user": false,
+            "worker_file": "worker_data_safety_part_3.json",
+            "finding_id": "8"
+        },
+        {
+            "psl_constant": "USER_ACCOUNT",
+            "policy_id": "data_safety_section",
+            "issue_summary": "Data Safety Compliant (Local-Only): uid matches Guide identifiers, not user accounts",
+            "severity": "SUGGESTION",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/MainActivity.kt",
+                "app/src/main/java/com/example/myapplication/ui/YouTubeAccessibilityGuideDialog.kt"
+            ],
+            "evidence": "MainActivity.kt:75,135,416,755-756 references YouTubeAccessibilityGuideDialog/showAccessibilityGuideDialog. YouTubeAccessibilityGuideDialog.kt:34 declares its composable name. The uid pattern matches Guide, with no account ID or account transmission in these paths. Dialog settings intents use the app package, not a person identifier.",
+            "recommendation": "Exclude these lexical false positives from account-data declarations; reassess if actual sign-in or account identifiers are implemented.",
+            "is_transferred": false,
+            "user_initiated": false,
+            "is_third_party": false,
+            "prominent_disclosure_status": "EXEMPT",
+            "purpose": "Local functionality only; semantic false positive",
+            "linked_to_user": false,
+            "worker_file": "worker_data_safety_part_3.json",
+            "finding_id": "9"
+        },
+        {
+            "psl_constant": "PERFORMANCE_DIAGNOSTICS",
+            "policy_id": "data_safety_section",
+            "issue_summary": "Data Safety Compliant (Local-Only)",
+            "severity": "SUGGESTION",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/MainActivity.kt"
+            ],
+            "evidence": "MainActivity.kt:649-658 and 729-738 reads BatteryManager.BATTERY_PROPERTY_CAPACITY, compares batteryLevel with 40, and displays a local Toast to block an exercise start. batteryLevel is not passed to a network, analytics or uploading logger sink.",
+            "recommendation": "Keep battery checks local; update Data safety if future diagnostics uploads include these values.",
+            "is_transferred": false,
+            "user_initiated": false,
+            "is_third_party": false,
+            "prominent_disclosure_status": "EXEMPT",
+            "purpose": "Local functionality only",
+            "linked_to_user": false,
+            "worker_file": "worker_data_safety_part_3.json",
+            "finding_id": "10"
+        },
+        {
+            "policy_id": "accessibility_api_policy",
+            "issue_summary": "Accessibility setup lacks prominent data-use disclosure and affirmative consent",
+            "severity": "CRITICAL",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/ui/YouTubeAccessibilityGuideDialog.kt",
+                "app/src/main/res/xml/accessibility_service_config.xml",
+                "app/src/main/java/com/example/myapplication/service/YouTubeDetectionAccessibilityService.kt"
+            ],
+            "evidence": "YouTubeAccessibilityGuideDialog.kt:42-83 explains restricted-settings bypass and enabling service, but does not explain event/package data access, processing or sharing, and :109-116 opens Accessibility Settings without affirmative data-use consent. XML :6 enables canRetrieveWindowContent=true despite service :14-26 using only packageName for deterministic YouTube launch detection. isAccessibilityTool is absent. No screen-text or keystroke collection/upload observed.",
+            "recommendation": "Prefer manual operation or narrower API. If keeping the deterministic listener, disable window-content retrieval, provide separate prominent disclosure of package/window-event access and local use/sharing, require explicit consent before settings navigation, and complete the Play Accessibility declaration and listing disclosure. Do not mark this general wellness utility as a disability accessibility tool.",
+            "worker_file": "worker_permissions_and_apis.json",
+            "finding_id": "11"
+        },
+        {
+            "policy_id": "foreground_services_policy",
+            "issue_summary": "YouTube listener starts camera FGS from background without a demonstrated while-in-use exemption",
+            "severity": "IMPORTANT",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/service/YouTubeDetectionAccessibilityService.kt",
+                "app/src/main/java/com/example/myapplication/service/EyeExerciseOverlayService.kt",
+                "app/src/main/AndroidManifest.xml"
+            ],
+            "evidence": "YouTubeDetectionAccessibilityService.kt:21-26 invokes startForegroundService directly on package detection. Manifest :173-176 declares camera type. EyeExerciseOverlayService.kt:299-304 starts foreground notification then camera. AccessibilityService's background-start allowance does not itself establish the separate camera while-in-use exemption; this event-triggered path has no visible activity/user notification interaction.",
+            "recommendation": "Replace automatic camera startup with a user-visible prompt that opens the app; start a session from its visible Activity with CAMERA granted. Verify both background-start and camera while-in-use requirements independently and handle denial/revocation without crash.",
+            "worker_file": "worker_permissions_and_apis.json",
+            "finding_id": "12"
+        },
+        {
+            "policy_id": "foreground_services_policy",
+            "issue_summary": "Play Console camera foreground-service declaration remains to be confirmed",
+            "severity": "SUGGESTION",
+            "files_involved": [
+                "app/src/main/AndroidManifest.xml",
+                "app/src/main/java/com/example/myapplication/service/EyeExerciseOverlayService.kt",
+                "app/build.gradle.kts"
+            ],
+            "evidence": "Manifest declares FOREGROUND_SERVICE and FOREGROUND_SERVICE_CAMERA plus android:foregroundServiceType=camera. EyeExerciseOverlayService.kt:324-351 creates a low-importance channel and user-facing ongoing notification and calls startForeground. Gradle targetSdk=35. Type aligns with camera eye analysis; no missing type or specialUse property issue found. Play Console declarations cannot be verified from source.",
+            "recommendation": "Complete/verify camera FGS declaration in Play Console including core benefit, user initiation/stopping behavior and functional demonstration video; test notification visibility and stop controls on supported releases.",
+            "worker_file": "worker_permissions_and_apis.json",
+            "finding_id": "13"
+        }
+    ]
+}

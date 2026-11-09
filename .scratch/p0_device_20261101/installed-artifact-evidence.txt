@@ -1,0 +1,2 @@
+Installed APK matches full-R8 standalone test fixture: true
+SHA-256: 9769630762b47e84412d72ed4ee8cb5d84be80513070c377f04727ec01554a41

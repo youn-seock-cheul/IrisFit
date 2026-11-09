@@ -1,0 +1,10 @@
+releaseAndroidTestRuntimeClasspath: androidx.test.espresso:espresso-core:3.5.1
+releaseAndroidTestRuntimeClasspath: androidx.test.espresso:espresso-idling-resource:3.5.1
+releaseAndroidTestRuntimeClasspath: androidx.test.ext:junit:1.1.5
+releaseAndroidTestRuntimeClasspath: androidx.test.services:storage:1.4.2
+releaseAndroidTestRuntimeClasspath: androidx.test:annotation:1.0.1
+releaseAndroidTestRuntimeClasspath: androidx.test:core:1.5.0
+releaseAndroidTestRuntimeClasspath: androidx.test:monitor:1.6.1
+releaseAndroidTestRuntimeClasspath: androidx.test:runner:1.5.2
+releaseAndroidTestRuntimeClasspath: androidx.tracing:tracing:1.2.0
+releaseRuntimeClasspath: androidx.tracing:tracing:1.2.0

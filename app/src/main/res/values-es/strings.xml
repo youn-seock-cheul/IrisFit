@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">IrisFit</string>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_gym">Gimnasio Visual</string>
+    <string name="nav_bluelight">Luz Azul</string>
+    <string name="nav_ai">Entrenador IA</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <string name="home_title">IrisFit</string>
+    <string name="home_subtitle">Podómetro ocular &amp; hábitos</string>
+
+    <string name="battery_title">Batería Ocular IrisFit</string>
+    <string name="battery_subtitle">Informe de fatiga en tiempo real</string>
+    <string name="tap_mascot">👆 ¡Toca la mascota para descansar!</string>
+    <string name="screen_time_today">Tiempo de pantalla hoy</string>
+
+    <string name="status_optimal">Óptimo (Sin fatiga)</string>
+    <string name="status_caution">Precaución (Fatiga acumulada)</string>
+    <string name="status_warning">Advertencia (Alto consumo)</string>
+
+    <string name="rest_completed">Descanso completado</string>
+    <string name="eye_exercise">Ejercicio ocular</string>
+    <string name="sns_share">Compartir estado en SNS</string>
+
+    <string name="weekly_trend">Tendencia semanal</string>
+    <string name="monthly_trend">Tendencia mensual</string>
+    <string name="daily_trend">Tendencia diaria</string>
+
+    <string name="tab_daily">Diario</string>
+    <string name="tab_weekly">Semanal (7d)</string>
+    <string name="tab_monthly">Mensual (4s)</string>
+
+    <string name="cheer_header">Relevo de ánimo</string>
+    <string name="goals_header">Objetivos de salud visual &amp; trofeos</string>
+    <string name="gym_header">Estación de carga ocular</string>
+    <string name="ai_header">Entrenador IA IrisFit</string>
+    <string name="settings_header">Ajustes y gestión</string>
+
+    <string name="btn_close">Cerrar</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="btn_delete">Eliminar</string>
+</resources>

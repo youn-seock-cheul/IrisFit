@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">IrisFit</string>
+    <string name="nav_home">ホーム</string>
+    <string name="nav_gym">アイジム</string>
+    <string name="nav_bluelight">ブルーライト</string>
+    <string name="nav_ai">AIコーチ</string>
+    <string name="nav_settings">設定</string>
+
+    <string name="home_title">IrisFit</string>
+    <string name="home_subtitle">目の健康歩数計 &amp; 休憩習慣</string>
+
+    <string name="battery_title">IrisFit 目の健康バッテリー</string>
+    <string name="battery_subtitle">リアルタイム眼精疲労レポート</string>
+    <string name="tap_mascot">👆 マスコットをタップして即座に休憩!</string>
+    <string name="screen_time_today">本日の画面注視時間</string>
+
+    <string name="status_optimal">最適 (疲労なし)</string>
+    <string name="status_caution">注意 (疲労蓄積中)</string>
+    <string name="status_warning">危険 (エネルギー消耗大)</string>
+
+    <string name="rest_completed">休憩完了</string>
+    <string name="eye_exercise">眼の運動</string>
+    <string name="sns_share">目の健康バッテリーをSNSで共有</string>
+
+    <string name="weekly_trend">週間バッテリー動向</string>
+    <string name="monthly_trend">月간バッテリー動向</string>
+    <string name="daily_trend">日간バッテリー動向</string>
+
+    <string name="tab_daily">日別</string>
+    <string name="tab_weekly">週間 (7日)</string>
+    <string name="tab_monthly">月間 (4週)</string>
+
+    <string name="cheer_header">応援リレー</string>
+    <string name="goals_header">本日の目の健康目標 &amp; トロフィー</string>
+    <string name="gym_header">目のバッテリー充電所</string>
+    <string name="ai_header">IrisFit AI習慣コーチ</string>
+    <string name="settings_header">設定と管理</string>
+
+    <string name="btn_close">閉じる</string>
+    <string name="btn_cancel">キャンセル</string>
+    <string name="btn_delete">削除</string>
+</resources>

@@ -1,0 +1,38 @@
+import java.security.MessageDigest
+
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    def adb = 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe'
+    app.tasks.register('p0InstalledArtifactEvidence') {
+        doLast {
+            def paths = app.providers.exec {
+                commandLine adb, '-s', 'R3CW905VXZZ', 'shell', 'pm', 'path', 'com.eyeoverlay.app'
+            }
+            paths.result.get().assertNormalExitValue()
+            def rows = paths.standardOutput.asText.get().readLines().findAll { it.startsWith('package:') }
+            if (rows.size() != 1) throw new GradleException('Expected the single test APK, got ' + rows.size())
+            def installed = rows[0].substring('package:'.length())
+            def hashOutput = app.providers.exec {
+                commandLine adb, '-s', 'R3CW905VXZZ', 'shell', 'sha256sum', installed
+            }
+            hashOutput.result.get().assertNormalExitValue()
+            def installedHash = hashOutput.standardOutput.asText.get().trim().split(/\s+/)[0]
+            def fixture = rootProject.file('.scratch/p0_device_20261101/' +
+                (rootProject.findProperty('p0FixtureName') ?: 'production-optimized-test-signed.apk'))
+            def digest = MessageDigest.getInstance('SHA-256')
+            fixture.withInputStream { stream ->
+                byte[] buffer = new byte[65536]
+                int count
+                while ((count = stream.read(buffer)) != -1) digest.update(buffer, 0, count)
+            }
+            def fixtureHash = digest.digest().encodeHex().toString()
+            def match = installedHash == fixtureHash
+            def report = 'Installed APK matches full-R8 standalone test fixture: ' + match +
+                '\nSHA-256: ' + installedHash + '\n'
+            rootProject.file('.scratch/p0_device_20261101/' +
+                (rootProject.findProperty('p0EvidenceName') ?: 'installed-artifact-evidence.txt')).setText(report, 'UTF-8')
+            println report
+            if (!match) throw new GradleException('Installed app does not match the tested optimized fixture')
+        }
+    }
+}

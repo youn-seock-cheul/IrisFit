@@ -1,0 +1,97 @@
+// Read-only diagnostics except the explicitly named, temporary USB awake setting.
+// All captured application evidence is restricted to EyeOverlay.
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    def adb = 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe'
+    def serial = 'R3CW905VXZZ'
+    def dir = rootProject.file('.scratch/p0_device_20261101')
+    def previousAwake = new File(dir, 'followup-original-awake.txt')
+    def capture = app.tasks.register('p0CaptureAwake', Exec) {
+        def out = new ByteArrayOutputStream()
+        standardOutput = out
+        commandLine adb, '-s', serial, 'shell', 'settings', 'get', 'global', 'stay_on_while_plugged_in'
+        doLast {
+            if (previousAwake.exists()) throw new GradleException('Original setting already captured; do not overwrite it')
+            previousAwake.setText(out.toString('UTF-8').trim(), 'UTF-8')
+        }
+    }
+    app.tasks.register('p0KeepUsbAwake', Exec) {
+        dependsOn capture
+        commandLine adb, '-s', serial, 'shell', 'svc', 'power', 'stayon', 'usb'
+    }
+    app.tasks.register('p0RestoreAwake', Exec) {
+        doFirst {
+            def value = previousAwake.getText('UTF-8').trim()
+            if (!(value ==~ /\d+/) && value != 'null') throw new GradleException('Unexpected saved awake setting')
+            commandLine adb, '-s', serial, 'shell', 'settings',
+                value == 'null' ? 'delete' : 'put', 'global', 'stay_on_while_plugged_in'
+            if (value != 'null') args value
+        }
+    }
+    app.tasks.register('p0OwnRuntime') {
+        doLast {
+            def packageInfo = app.providers.exec {
+                commandLine adb, '-s', serial, 'shell', 'dumpsys', 'package', 'com.eyeoverlay.app'
+            }
+            packageInfo.result.get().assertNormalExitValue()
+            def packageRows = packageInfo.standardOutput.asText.get().readLines().findAll {
+                it.contains('POST_NOTIFICATIONS:') || it.contains('stopped=') || it.contains('versionCode=')
+            }
+            def pids = app.providers.exec {
+                commandLine adb, '-s', serial, 'shell', 'pidof', 'com.eyeoverlay.app'
+                ignoreExitValue = true
+            }
+            def pid = pids.standardOutput.asText.get().trim()
+            def report = packageRows.join('\n') + '\nLive PID: ' + pid + '\n'
+            if (pid ==~ /\d+/) {
+                def logs = app.providers.exec {
+                    commandLine adb, '-s', serial, 'shell', 'logcat', '-d', '-b', 'crash', '--pid=' + pid
+                }
+                logs.result.get().assertNormalExitValue()
+                report += logs.standardOutput.asText.get()
+            }
+            new File(dir, 'followup-runtime.txt').setText(report, 'UTF-8')
+            println report
+        }
+    }
+    app.tasks.register('p0RevokeOwnNotificationPermission', Exec) {
+        commandLine adb, '-s', serial, 'shell', 'pm', 'revoke',
+            'com.eyeoverlay.app', 'android.permission.POST_NOTIFICATIONS'
+    }
+    app.tasks.register('p0GrantOwnNotificationPermission', Exec) {
+        commandLine adb, '-s', serial, 'shell', 'pm', 'grant',
+            'com.eyeoverlay.app', 'android.permission.POST_NOTIFICATIONS'
+    }
+    app.tasks.register('p0OpenOwnReminderChannel', Exec) {
+        commandLine adb, '-s', serial, 'shell', 'am', 'start',
+            '-a', 'android.settings.CHANNEL_NOTIFICATION_SETTINGS',
+            '--es', 'android.provider.extra.APP_PACKAGE', 'com.eyeoverlay.app',
+            '--es', 'android.provider.extra.CHANNEL_ID', 'screen_breaks'
+    }
+    app.tasks.register('p0FinalDeviceSettings') {
+        doLast {
+            def report = []
+            [['global', 'stay_on_while_plugged_in'],
+             ['system', 'accelerometer_rotation'],
+             ['system', 'user_rotation']].each { setting ->
+                def output = app.providers.exec {
+                    commandLine adb, '-s', serial, 'shell', 'settings', 'get', setting[0], setting[1]
+                }
+                output.result.get().assertNormalExitValue()
+                report.add(setting[1] + '=' + output.standardOutput.asText.get().trim())
+            }
+            new File(dir, 'followup-final-device-settings.txt').setText(report.join('\n'), 'UTF-8')
+            println report.join('\n')
+        }
+    }
+    app.tasks.register('p0KillOwnBackgroundProcess', Exec) {
+        commandLine adb, '-s', serial, 'shell', 'am', 'kill', 'com.eyeoverlay.app'
+    }
+    app.tasks.register('p0ForceStopOwnApp', Exec) {
+        commandLine adb, '-s', serial, 'shell', 'am', 'force-stop', 'com.eyeoverlay.app'
+    }
+    app.tasks.register('p0LaunchOwnApp', Exec) {
+        commandLine adb, '-s', serial, 'shell', 'am', 'start', '-W', '-n',
+            'com.eyeoverlay.app/com.example.myapplication.MainActivity'
+    }
+}

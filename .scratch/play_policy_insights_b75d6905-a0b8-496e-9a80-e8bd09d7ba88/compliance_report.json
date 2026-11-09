@@ -1,0 +1,53 @@
+{
+    "data_safety_mismatches": [],
+    "findings": [
+        {
+            "evidence": "YouTubeAccessibilityGuideDialog.kt:42-83 explains restricted-settings bypass and enabling service, but does not explain event/package data access, processing or sharing, and :109-116 opens Accessibility Settings without affirmative data-use consent. XML :6 enables canRetrieveWindowContent=true despite service :14-26 using only packageName for deterministic YouTube launch detection. isAccessibilityTool is absent. No screen-text or keystroke collection/upload observed.\n\n**Critic Verification**: Guide dialog supplies restricted-settings instructions and direct accessibility-settings navigation, without an affirmative data-use consent gate or an explanation of package/window event access. XML enables window-content retrieval although the service only reads event.packageName. This confirms the concrete disclosure/minimization gap, without assuming any screen text upload. (Confidence: High)",
+            "files_involved": [
+                "app/src/main/java/com/example/myapplication/service/YouTubeDetectionAccessibilityService.kt",
+                "app/src/main/java/com/example/myapplication/ui/YouTubeAccessibilityGuideDialog.kt",
+                "app/src/main/res/xml/accessibility_service_config.xml"
+            ],
+            "finding_id": "11",
+            "issue_summary": "Accessibility setup lacks prominent data-use disclosure and affirmative consent",
+            "policy_id": "accessibility_api_policy",
+            "recommendation": "Prefer manual operation or narrower API. If keeping the deterministic listener, disable window-content retrieval, provide separate prominent disclosure of package/window-event access and local use/sharing, require explicit consent before settings navigation, and complete the Play Accessibility declaration and listing disclosure. Do not mark this general wellness utility as a disability accessibility tool.",
+            "severity": "CRITICAL"
+        },
+        {
+            "evidence": "YouTubeDetectionAccessibilityService.kt:21-26 invokes startForegroundService directly on package detection. Manifest :173-176 declares camera type. EyeExerciseOverlayService.kt:299-304 starts foreground notification then camera. AccessibilityService's background-start allowance does not itself establish the separate camera while-in-use exemption; this event-triggered path has no visible activity/user notification interaction.\n\n**Critic Verification**: YouTubeDetectionAccessibilityService directly calls startForegroundService on a package event, without visible-Activity interaction. Manifest declares camera FGS and EyeExerciseOverlayService.onCreate immediately starts foreground mode and setupCameraX. This confirms an unsupported camera-start path needing remediation; accessibility-related background-start permission does not establish a camera while-in-use exception. No off-device transmission is inferred. (Confidence: High)",
+            "files_involved": [
+                "app/src/main/AndroidManifest.xml",
+                "app/src/main/java/com/example/myapplication/service/EyeExerciseOverlayService.kt",
+                "app/src/main/java/com/example/myapplication/service/YouTubeDetectionAccessibilityService.kt"
+            ],
+            "finding_id": "12",
+            "issue_summary": "YouTube listener starts camera FGS from background without a demonstrated while-in-use exemption",
+            "policy_id": "foreground_services_policy",
+            "recommendation": "Replace automatic camera startup with a user-visible prompt that opens the app; start a session from its visible Activity with CAMERA granted. Verify both background-start and camera while-in-use requirements independently and handle denial/revocation without crash.",
+            "severity": "IMPORTANT"
+        },
+        {
+            "evidence": "Manifest declares FOREGROUND_SERVICE and FOREGROUND_SERVICE_CAMERA plus android:foregroundServiceType=camera. EyeExerciseOverlayService.kt:324-351 creates a low-importance channel and user-facing ongoing notification and calls startForeground. Gradle targetSdk=35. Type aligns with camera eye analysis; no missing type or specialUse property issue found. Play Console declarations cannot be verified from source.\n\n**Critic Verification**: Automatically verified (bypassed critic review). (Confidence: High)",
+            "files_involved": [
+                "app/build.gradle.kts",
+                "app/src/main/AndroidManifest.xml",
+                "app/src/main/java/com/example/myapplication/service/EyeExerciseOverlayService.kt"
+            ],
+            "finding_id": "13",
+            "issue_summary": "Play Console camera foreground-service declaration remains to be confirmed",
+            "policy_id": "foreground_services_policy",
+            "recommendation": "Complete/verify camera FGS declaration in Play Console including core benefit, user initiation/stopping behavior and functional demonstration video; test notification visibility and stop controls on supported releases.",
+            "severity": "SUGGESTION"
+        }
+    ],
+    "manual_review": [],
+    "metadata": {
+        "app_id": "com.eyeoverlay.app",
+        "overall_compliance": "Non-compliant",
+        "scan_date": "2026-10-31T22:45:27.595618"
+    },
+    "suggested_declaration": {
+        "collected_data": []
+    }
+}

@@ -1,0 +1,38 @@
+// Temporary rotation test; restore both captured system settings afterwards.
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    def adb = 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe'
+    def valuesFile = rootProject.file('.scratch/p0_device_20261101/followup-original-rotation.txt')
+    app.tasks.register('p0RotateLandscape') {
+        doLast {
+            if (valuesFile.exists()) throw new GradleException('Rotation baseline already exists')
+            def values = ['accelerometer_rotation', 'user_rotation'].collect { key ->
+                def output = app.providers.exec {
+                    commandLine adb, '-s', 'R3CW905VXZZ', 'shell', 'settings', 'get', 'system', key
+                }
+                output.result.get().assertNormalExitValue()
+                output.standardOutput.asText.get().trim()
+            }
+            valuesFile.setText(values.join('\n'), 'UTF-8')
+            ['accelerometer_rotation': '0', 'user_rotation': '1'].each { key, value ->
+                app.providers.exec {
+                    commandLine adb, '-s', 'R3CW905VXZZ', 'shell', 'settings', 'put', 'system', key, value
+                }.result.get().assertNormalExitValue()
+            }
+        }
+    }
+    app.tasks.register('p0RestoreRotation') {
+        doLast {
+            def values = valuesFile.readLines('UTF-8')
+            if (values.size() != 2) throw new GradleException('Invalid saved rotation setting count')
+            ['accelerometer_rotation', 'user_rotation'].eachWithIndex { key, index ->
+                def value = values[index]
+                if (!(value ==~ /\d+/) && value != 'null') throw new GradleException('Invalid saved rotation value')
+                def arguments = [adb, '-s', 'R3CW905VXZZ', 'shell', 'settings',
+                    value == 'null' ? 'delete' : 'put', 'system', key]
+                if (value != 'null') arguments.add(value)
+                app.providers.exec { commandLine arguments }.result.get().assertNormalExitValue()
+            }
+        }
+    }
+}

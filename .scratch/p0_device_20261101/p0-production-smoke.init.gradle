@@ -1,0 +1,60 @@
+// Local device smoke only: sign a COPY of the normal optimized APK with the existing development certificate.
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    def adb = 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe'
+    def serial = 'R3CW905VXZZ'
+    def scratch = rootProject.file('.scratch/p0_device_20261101')
+    def fixture = new File(scratch, rootProject.findProperty('p0FixtureName') ?: 'production-optimized-test-signed.apk')
+    def sign = app.tasks.register('p0SignOptimizedCopy', Exec) {
+        dependsOn app.tasks.named('assembleRelease')
+        commandLine 'cmd.exe', '/d', '/c',
+            'C:/Users/youns/AppData/Local/Android/Sdk/build-tools/36.0.0/apksigner.bat',
+            'sign', '--ks', 'C:/Users/youns/.android/debug.keystore', '--ks-key-alias', 'androiddebugkey',
+            '--ks-pass', 'pass:android', '--key-pass', 'pass:android',
+            '--out', fixture.absolutePath,
+            rootProject.file('app/build/outputs/apk/release/app-release-unsigned.apk').absolutePath
+    }
+    def install = app.tasks.register('p0InstallOptimizedCopy', Exec) {
+        dependsOn sign
+        commandLine adb, '-s', serial, 'install', '-r', fixture.absolutePath
+    }
+    def launch = app.tasks.register('p0LaunchOptimizedCopy', Exec) {
+        dependsOn install
+        def captured = new ByteArrayOutputStream()
+        standardOutput = captured
+        errorOutput = captured
+        commandLine adb, '-s', serial, 'shell', 'am', 'start', '-W', '-n',
+            'com.eyeoverlay.app/com.example.myapplication.MainActivity'
+        doLast {
+            def result = captured.toString('UTF-8')
+            new File(scratch, 'production-launch.txt').setText(result, 'UTF-8')
+            println result
+            if (!result.contains('Status: ok') || result.contains('Error:')) {
+                throw new GradleException('Optimized app launch did not return Status: ok')
+            }
+        }
+    }
+    app.tasks.register('p0OptimizedSmoke') {
+        dependsOn launch
+        doLast {
+            // Allow asynchronous Activity initialization failures to reach logcat.
+            Thread.sleep(3000L)
+            def pidOutput = app.providers.exec {
+                commandLine adb, '-s', serial, 'shell', 'pidof', 'com.eyeoverlay.app'
+            }
+            pidOutput.result.get().assertNormalExitValue()
+            def pid = pidOutput.standardOutput.asText.get().trim()
+            if (!(pid ==~ /\d+/)) throw new GradleException('No single live EyeOverlay process: ' + pid)
+            def logs = app.providers.exec {
+                commandLine adb, '-s', serial, 'shell', 'logcat', '-d', '-b', 'crash', '--pid=' + pid
+            }
+            logs.result.get().assertNormalExitValue()
+            def result = logs.standardOutput.asText.get()
+            new File(scratch, 'production-smoke.txt').setText('Live PID: ' + pid + '\n' + result, 'UTF-8')
+            if (result.contains('FATAL EXCEPTION') || result.contains('Fatal signal')) {
+                throw new GradleException('Current optimized app process has crash evidence')
+            }
+            println 'Optimized standalone app alive; no crash entry for current PID. Locked-screen visual validation is separate.'
+        }
+    }
+}

@@ -1,0 +1,18 @@
+  nowRTC=1793505144552=2026-11-01 12:52:24.552 nowELAPSED=279361131
+          type=ELAPSED_WAKEUP tag=*walarm*:com.eyeoverlay.app.REMIND
+          type=ELAPSED_WAKEUP tag=*walarm*:com.eyeoverlay.app.REMIND
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:d8922b7 OW=272807744 WL=899994 elapsed=271607753 rtc=2026-11-01 10:43:11.174]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:d8922b7 OW=272927301 WL=899999 elapsed=271727302 rtc=2026-11-01 10:45:10.723]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:d8922b7 OW=272928753 WL=900000 elapsed=271728753 rtc=2026-11-01 10:45:12.174]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:d8922b7 OW=272929094 WL=899999 elapsed=271729095 rtc=2026-11-01 10:45:12.516]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:d8922b7 OW=272929293 WL=899999 elapsed=271729294 rtc=2026-11-01 10:45:12.715]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:d8922b7 OW=272929487 WL=899999 elapsed=271729488 rtc=2026-11-01 10:45:12.909]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:4e8da77 OW=274316919 WL=899999 elapsed=273116920 rtc=2026-11-01 11:08:20.341]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:4e8da77 OW=274318731 WL=899999 elapsed=273118732 rtc=2026-11-01 11:08:22.153]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:a095131 OW=274845582 WL=899999 elapsed=273645583 rtc=2026-11-01 11:17:09.004]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:d80a004 OW=277935812 WL=899998 elapsed=276735814 rtc=2026-11-01 12:08:39.235]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:afe60bf OW=278589360 WL=899999 elapsed=277389361 rtc=2026-11-01 12:19:32.782]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:afe60bf OW=278707914 WL=899999 elapsed=277507915 rtc=2026-11-01 12:21:31.336]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND T=2 F=32 AC=false H=PI:39b3f52 OW=280520640 WL=899999 elapsed=279320642 rtc=2026-11-01 12:51:44.062]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND origWhen=274845582 H=PI:a095131 elapsed=275033025 rtc=2026-11-01 11:40:16.446]
+      [tag=*walarm*:com.eyeoverlay.app.REMIND origWhen=278707914 H=PI:afe60bf elapsed=278983028 rtc=2026-11-01 12:46:06.449]

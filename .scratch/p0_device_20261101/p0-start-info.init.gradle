@@ -1,0 +1,13 @@
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    app.tasks.register('p0OwnStartInfo', Exec) {
+        def out = new ByteArrayOutputStream()
+        standardOutput = out
+        commandLine 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe',
+            '-s', 'R3CW905VXZZ', 'shell', 'dumpsys', 'activity', 'start-info', 'com.eyeoverlay.app'
+        doLast {
+            def result = out.toString('UTF-8')
+            rootProject.file('.scratch/p0_device_20261101/own-start-info.txt').setText(result, 'UTF-8')
+        }
+    }
+}

@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">IrisFit</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_gym">Eye Gym</string>
+    <string name="nav_bluelight">Blue Light</string>
+    <string name="nav_ai">AI Coach</string>
+    <string name="nav_settings">Settings</string>
+
+    <string name="home_title">IrisFit</string>
+    <string name="home_subtitle">Eye Health &amp; Rest Habits</string>
+
+    <string name="battery_title">IrisFit Eye Health Battery</string>
+    <string name="battery_subtitle">Real-time Eye Fatigue Report</string>
+    <string name="tap_mascot">👆 Tap mascot for instant rest!</string>
+    <string name="screen_time_today">Screen Time Today</string>
+
+    <string name="status_optimal">Optimal (No Fatigue)</string>
+    <string name="status_caution">Caution (Fatigue Accumulating)</string>
+    <string name="status_warning">Warning (High Energy Drain)</string>
+
+    <string name="rest_completed">Rest Completed</string>
+    <string name="eye_exercise">Eye Exercise</string>
+    <string name="sns_share">Share My Eye Health Battery SNS</string>
+
+    <string name="weekly_trend">Weekly Eye Health Battery Trend</string>
+    <string name="monthly_trend">Monthly Eye Health Battery Trend</string>
+    <string name="daily_trend">Daily Eye Health Battery Trend</string>
+
+    <string name="tab_daily">Daily</string>
+    <string name="tab_weekly">Weekly (7d)</string>
+    <string name="tab_monthly">Monthly (4w)</string>
+
+    <string name="cheer_header">Eye Health Cheer Relay</string>
+    <string name="goals_header">Today\'s Eye Health Goals &amp; Trophies</string>
+    <string name="gym_header">Eye Battery Charging Station</string>
+    <string name="ai_header">IrisFit AI Habit Coach</string>
+    <string name="settings_header">Settings &amp; Management</string>
+
+    <string name="btn_close">Close</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_delete">Delete</string>
+</resources>

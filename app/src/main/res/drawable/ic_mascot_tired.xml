@@ -1,0 +1,32 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M54,14 C76,14 94,32 94,54 C94,76 76,94 54,94 C32,94 14,76 14,54 C14,32 32,14 54,14 Z"
+        android:fillColor="#FFB300" />
+    <!-- Sleepy droopy eyes -->
+    <path
+        android:pathData="M34,46 L50,42"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M58,42 L74,46"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <!-- Tired flat mouth -->
+    <path
+        android:pathData="M44,66 L64,66"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <!-- Zzz -->
+    <path
+        android:pathData="M78,26 L86,26 L78,34 L86,34"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+</vector>

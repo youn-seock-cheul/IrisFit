@@ -1,0 +1,82 @@
+ACTIVITY MANAGER LRU PROCESSES (dumpsys activity start-info)
+Last Timestamp of Persistence Into Persistent Storage: 26/11/1 오후 12:38
+  package: com.eyeoverlay.app
+    Historical Process Start for userId=10751
+        ApplicationStartInfo #0:
+ monotonicCreationTimeMs=28738356377
+ pid=0 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=COLD launchMode=0 wasForceStopped=true startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=181732315330619 1=181732325903639 2=181732406981139 3=181732378062129 4=181732525372129 6=181732499926660 7=181732548806191 
+        ApplicationStartInfo #1:
+ monotonicCreationTimeMs=28738328519
+ pid=2099 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=COLD launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=181704457376254 2=181704622405577 3=181704572903546 4=181704809361254 6=181704789893858 7=181704826930889 
+        ApplicationStartInfo #2:
+ monotonicCreationTimeMs=28738111080
+ pid=0 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=COLD launchMode=0 wasForceStopped=true startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=181487017989150 1=181487035826337 2=181487085901598 3=181487072736702 4=181487162029358 6=181487149158993 7=181487182668159 
+        ApplicationStartInfo #3:
+ monotonicCreationTimeMs=28738018379
+ pid=0 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=COLD launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=181394316845539 1=181394337258508 2=181394431975539 3=181394397747258 4=181394547953560 6=181394534428925 7=181394573735435 
+        ApplicationStartInfo #4:
+ monotonicCreationTimeMs=28737964319
+ pid=12575 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=HOT launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=181340256940456 4=181340379091237 6=181340353306185 7=181340397304986 
+        ApplicationStartInfo #5:
+ monotonicCreationTimeMs=28737580999
+ pid=12575 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=HOT launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=180956936725602 4=180957029115133 6=180957002012841 7=180957056463518 
+        ApplicationStartInfo #6:
+ monotonicCreationTimeMs=28737117648
+ pid=12575 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=HOT launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=180493584803695 4=180493686915206 6=180493668817341 7=180493703556611 
+        ApplicationStartInfo #7:
+ monotonicCreationTimeMs=28736912229
+ pid=12575 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=HOT launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=180288159779555 4=180288279502524 6=180288251547836 7=180288306941951 
+        ApplicationStartInfo #8:
+ monotonicCreationTimeMs=28736164541
+ pid=12575 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=HOT launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=179540473873382 4=179540529332340 6=179540522035726 7=179540543530361 
+        ApplicationStartInfo #9:
+ monotonicCreationTimeMs=28736080022
+ pid=12575 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=HOT launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=179455959674352 4=179456047866852 6=179456021836799 7=179456076093987 
+        ApplicationStartInfo #10:
+ monotonicCreationTimeMs=28735841960
+ pid=0 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=2 reason=START ACTIVITY startType=COLD launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=179217898266265 1=179217972899494 2=179218079152619 3=179218023996630 4=179218317430380 6=179218255109963 7=179218334155691 
+        ApplicationStartInfo #11:
+ monotonicCreationTimeMs=28735697547
+ pid=0 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=1 reason=START ACTIVITY startType=COLD launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=179073484742935 1=179073514893925 2=179073620920487 3=179073580413456 
+        ApplicationStartInfo #12:
+ monotonicCreationTimeMs=28735676212
+ pid=0 realUid=10751 packageUid=10751 definingUid=10751 user=0
+ package=com.eyeoverlay.app process=com.eyeoverlay.app startupState=1 reason=START ACTIVITY startType=COLD launchMode=0 wasForceStopped=false startComponent=ACTIVITY
+ intent=Intent { flg=0x10000000 xflg=0x4 cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+ timestamps: 0=179052149483568 1=179052271198464 2=179052377933099 3=179052333565078 

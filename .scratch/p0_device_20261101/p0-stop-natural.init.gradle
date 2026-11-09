@@ -1,0 +1,16 @@
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    app.tasks.register('p0StopNaturalObservation') {
+        doLast {
+            def adb = 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe'
+            [['am','force-stop','com.eyeoverlay.releasevalidation'],
+             ['am','force-stop','com.eyeoverlay.app'],
+             ['settings','put','global','stay_on_while_plugged_in','0']].each { args ->
+                def result = app.providers.exec {
+                    commandLine([adb, '-s', 'R3CW905VXZZ', 'shell'] + args)
+                }
+                result.result.get().assertNormalExitValue()
+            }
+        }
+    }
+}

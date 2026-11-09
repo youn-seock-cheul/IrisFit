@@ -1,0 +1,21 @@
+{
+    "app_dir": "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication",
+    "app_label": "app_name",
+    "foreground_services": [
+        {
+            "name": ".service.EyeExerciseOverlayService",
+            "type": "camera"
+        }
+    ],
+    "package_name": "com.eyeoverlay.app",
+    "permissions": [
+        "android.permission.BIND_ACCESSIBILITY_SERVICE",
+        "android.permission.CAMERA",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_CAMERA",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.REQUEST_INSTALL_PACKAGES",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+    ],
+    "target_sdk": 35
+}

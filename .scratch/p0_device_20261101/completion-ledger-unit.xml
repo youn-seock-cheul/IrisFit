@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.myapplication.CompletionRepositoryTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-01T06:37:27.522Z" hostname="DESKTOP-HNC3MT7" time="0.11">
+  <properties/>
+  <testcase name="corruptedRecordsAreNotSilentlyOverwrittenButCanBeExplicitlyDeleted" classname="com.example.myapplication.CompletionRepositoryTest" time="0.055"/>
+  <testcase name="failedDeleteDoesNotDiscardExistingRecords" classname="com.example.myapplication.CompletionRepositoryTest" time="0.018"/>
+  <testcase name="retainsMostRecentHundredAndPreservesOriginalLocalDate" classname="com.example.myapplication.CompletionRepositoryTest" time="0.021"/>
+  <testcase name="recordsRoundTripAndDuplicateConfirmationCountsOnce" classname="com.example.myapplication.CompletionRepositoryTest" time="0.0"/>
+  <testcase name="failedSaveDoesNotPublishSuccessAndCanBeRetried" classname="com.example.myapplication.CompletionRepositoryTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

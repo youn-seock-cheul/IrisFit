@@ -1,0 +1,10 @@
+// Explicit local-device testing only. Never use this init script for store artifacts.
+// The app keeps its release BuildConfig, source sets and full R8 optimization.
+// Only the certificate changes to the existing development signing config.
+gradle.beforeProject { project ->
+    project.pluginManager.withPlugin('com.android.application') {
+        def android = project.extensions.getByName('android')
+        android.buildTypes.getByName('release').signingConfig =
+            android.signingConfigs.getByName('debug')
+    }
+}

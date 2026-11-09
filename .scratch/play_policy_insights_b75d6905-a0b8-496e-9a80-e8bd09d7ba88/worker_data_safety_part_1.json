@@ -1,0 +1,62 @@
+{
+  "domain": "Data Safety and Privacy",
+  "findings": [
+    {
+      "policy_id": "data_safety_section",
+      "severity": "SUGGESTION",
+      "is_transferred": false,
+      "user_initiated": false,
+      "is_third_party": false,
+      "prominent_disclosure_status": "EXEMPT",
+      "purpose": "Local functionality only",
+      "linked_to_user": false,
+      "psl_constant": "RACE_ETHNICITY",
+      "issue_summary": "False-positive triage: no race or ethnicity source",
+      "files_involved": [
+        "app/src/main/java/com/example/myapplication/ai/GeminiNanoCoachManager.kt",
+        "app/src/main/java/com/example/myapplication/data/AppVersionManager.kt",
+        "app/src/main/java/com/example/myapplication/data/DynamicIconManager.kt"
+      ],
+      "evidence": "All supplied race-pattern files were inspected. Matches are printStackTrace exception diagnostics, not race/ethnicity fields. GeminiNanoCoachManager processes user text through the on-device ML Kit Generation client; AppVersionManager copies an installed APK locally and invokes Package Installer; DynamicIconManager updates local component settings. No ethnicity source or transfer identified.",
+      "recommendation": "Prune the RACE_ETHNICITY heuristic match from collection declarations unless future functionality actually collects this type."
+    },
+    {
+      "policy_id": "data_safety_section",
+      "severity": "SUGGESTION",
+      "is_transferred": false,
+      "user_initiated": false,
+      "is_third_party": false,
+      "prominent_disclosure_status": "EXEMPT",
+      "purpose": "Local functionality only",
+      "linked_to_user": false,
+      "psl_constant": "HEALTH",
+      "issue_summary": "Data Safety Compliant (Local-Only)",
+      "files_involved": [
+        "app/src/main/java/com/example/myapplication/service/EyeExerciseOverlayService.kt",
+        "app/src/main/java/com/example/myapplication/vision/GazeTracker.kt"
+      ],
+      "evidence": "EyeExerciseOverlayService.kt:243-249 obtains only TYPE_LIGHT, an ambient illumination sensor, not a body/health sensor. Derived eye/blink/fatigue variables in the same service feed local overlays and notifications (lines 99-224, 270-299, 350-382) and local score preferences (lines 255-267, 648-665). GazeTracker.kt:52-89 analyzes InputImage using bundled ML Kit face detection and returns local results; no upload sink found.",
+      "recommendation": "Document local eye-feature processing and keep unsupported physiological claims separate from Data Safety collection; verify SDK disclosures against release configuration."
+    },
+    {
+      "policy_id": "data_safety_section",
+      "severity": "SUGGESTION",
+      "is_transferred": false,
+      "user_initiated": false,
+      "is_third_party": false,
+      "prominent_disclosure_status": "EXEMPT",
+      "purpose": "Local functionality only",
+      "linked_to_user": false,
+      "psl_constant": "PHOTOS",
+      "issue_summary": "Data Safety Compliant (Local-Only)",
+      "files_involved": [
+        "app/src/main/java/com/example/myapplication/MainActivity.kt",
+        "app/src/main/java/com/example/myapplication/service/EyeExerciseOverlayService.kt",
+        "app/src/main/java/com/example/myapplication/vision/GazeTracker.kt",
+        "app/build.gradle.kts"
+      ],
+      "evidence": "MainActivity.kt:166-180 requests CAMERA; no photo picker/gallery read or upload in this path. EyeExerciseOverlayService.kt:624-646 binds camera image analysis; imageProxy flows to GazeTracker.processImageProxy. GazeTracker.kt:50-96 passes frames to bundled ML Kit FaceDetection, emits in-memory face/eye callbacks, and closes imageProxy. No image save, network client or upload sink observed in this path. Gradle declares bundled face-detection, MediaPipe and on-device GenAI rather than analytics/ad SDKs.",
+      "recommendation": "Describe transient on-device camera frame processing accurately; do not declare gallery photos collected merely from CAMERA permission. Recheck merged dependencies and any future frame recording or transfer."
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+Starting: Intent { cmp=com.eyeoverlay.app/com.example.myapplication.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.eyeoverlay.app/com.example.myapplication.MainActivity
+TotalTime: 442
+WaitTime: 445
+Complete

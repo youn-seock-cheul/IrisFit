@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer Eye Outline (안구 윤곽 - Cyan/Blue Gradient Look) -->
+    <path
+        android:pathData="M24,54 C34,36 74,36 84,54 C74,72 34,72 24,54 Z"
+        android:strokeColor="#00FFCC"
+        android:strokeWidth="3.5"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Outer Orbit Tracking Ring (시선 추적 루프) -->
+    <path
+        android:pathData="M54,26 A28,28 0 1,1 53.9,26 Z"
+        android:strokeColor="#3B82F6"
+        android:strokeWidth="2.5"
+        android:fillColor="#00000000" />
+
+    <!-- Inner Iris Circle (무지개채/동공 테두리) -->
+    <path
+        android:pathData="M54,39 A15,15 0 1,1 53.9,39 Z"
+        android:fillColor="#22003366"
+        android:strokeColor="#00FFFF"
+        android:strokeWidth="3" />
+
+    <!-- Pupil Core (동공 코어 - Glowing Cyan) -->
+    <path
+        android:pathData="M54,47 A7,7 0 1,1 53.9,47 Z"
+        android:fillColor="#00FFCC" />
+
+    <!-- Pupil Catchlight Sparkle (동공 반사광) -->
+    <path
+        android:pathData="M51,50 A2.5,2.5 0 1,1 50.9,50 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- AI Sparkle Star (상단 우측 AI 노드) -->
+    <path
+        android:pathData="M78,32 L80,36 L84,38 L80,40 L78,44 L76,40 L72,38 L76,36 Z"
+        android:fillColor="#FFD700" />
+
+    <path
+        android:pathData="M30,70 L31.5,73 L34.5,74.5 L31.5,76 L30,79 L28.5,76 L25.5,74.5 L28.5,73 Z"
+        android:fillColor="#10B981" />
+
+</vector>

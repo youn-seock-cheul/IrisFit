@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Fire Flame Eye Outline (불타는 눈) -->
+    <path
+        android:pathData="M24,54 C34,36 74,36 84,54 C74,72 34,72 24,54 Z"
+        android:strokeColor="#FF6D00"
+        android:strokeWidth="3.5"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M54,47 A7,7 0 1,1 53.9,47 Z"
+        android:fillColor="#FFD600" />
+    <!-- Fire Flame Icon -->
+    <path
+        android:pathData="M78,28 C78,28 82,32 80,36 C82,36 84,34 84,34 C84,40 78,42 78,42 C82,42 82,44 80,46 C76,46 76,38 78,28 Z"
+        android:fillColor="#FF3D00" />
+</vector>

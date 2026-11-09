@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-01T02:08:22" hostname="localhost">
+  <testsuite name="com.example.myapplication.WellnessHomeTest" tests="2" failures="0" errors="0" skipped="0" time="3.213" timestamp="2026-11-01T02:08:22" hostname="localhost">
+    <properties>
+      <property name="device" value="R3CW905VXZZ" />
+    </properties>
+    <testcase name="deletingLocalRecordsCancelsReminderAndRemovesLegacyData" classname="com.example.myapplication.WellnessHomeTest" time="1.850" />
+    <testcase name="timerNeedsNoCameraAndSurvivesActivityRecreation" classname="com.example.myapplication.WellnessHomeTest" time="1.363" />
+  </testsuite>
+</testsuites>

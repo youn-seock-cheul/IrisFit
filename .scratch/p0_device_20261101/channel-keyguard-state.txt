@@ -1,0 +1,7 @@
+    mKeyguardOccluded=false mKeyguardOccludedChanged=false mPendingKeyguardOccluded=false
+      showing=false
+      inputRestricted=false
+      secure=true
+        mIsShowing=false
+        mSimSecure=false
+        mInputRestricted=false

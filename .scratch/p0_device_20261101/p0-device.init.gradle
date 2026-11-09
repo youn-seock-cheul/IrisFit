@@ -1,0 +1,120 @@
+// Local P0 test harness. Installs only com.eyeoverlay.app and its instrumentation.
+// The fixture uses the existing development certificate, not an upload key.
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    def adb = 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe'
+    def serial = 'R3CW905VXZZ'
+    def fixture = rootProject.file('.scratch/p0_device_20261101/release-test-signed.apk')
+    def testApk = rootProject.file('app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk')
+    def report = rootProject.file('.scratch/p0_device_20261101/instrumentation-result.txt')
+
+    def installRelease = app.tasks.register('p0InstallReleaseFixture', Exec) {
+        commandLine adb, '-s', serial, 'install', '-r', fixture.absolutePath
+    }
+    def installTests = app.tasks.register('p0InstallInstrumentation', Exec) {
+        mustRunAfter installRelease
+        commandLine adb, '-s', serial, 'install', '-r', '-t', testApk.absolutePath
+    }
+    app.tasks.register('p0TestDependencyReport') {
+        doLast {
+            def rows = []
+            ['releaseRuntimeClasspath', 'releaseAndroidTestRuntimeClasspath'].each { name ->
+                def config = app.configurations.findByName(name)
+                if (config != null) {
+                    config.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+                        def id = artifact.moduleVersion.id
+                        if (id.group.startsWith('androidx.test') || id.group.startsWith('androidx.tracing')) {
+                            rows.add(name + ': ' + id)
+                        }
+                    }
+                }
+            }
+            rootProject.file('.scratch/p0_device_20261101/test-dependencies.txt')
+                .setText(rows.sort().join('\n'), 'UTF-8')
+        }
+    }
+    app.tasks.register('p0InspectCrash', Exec) {
+        def captured = new ByteArrayOutputStream()
+        standardOutput = captured
+        errorOutput = captured
+        commandLine adb, '-s', serial, 'shell', 'logcat', '-d', '-b', 'crash', '-t', '150'
+        doLast {
+            def lines = captured.toString('UTF-8').readLines()
+            def pids = lines.findAll { it.contains('Process: com.eyeoverlay.app, PID:') }
+                .collect { it.substring(it.lastIndexOf('PID:') + 4).trim() }.toSet()
+            def own = lines.findAll { line ->
+                def fields = line.trim().split(/\s+/)
+                fields.length > 2 && pids.contains(fields[2])
+            }
+            def result = own.join('\n')
+            rootProject.file('.scratch/p0_device_20261101/crash-state.txt').setText(result, 'UTF-8')
+            println result
+        }
+    }
+    app.tasks.register('p0InspectKeyguard', Exec) {
+        def captured = new ByteArrayOutputStream()
+        standardOutput = captured
+        errorOutput = captured
+        commandLine adb, '-s', serial, 'shell', 'dumpsys', 'window', 'policy'
+        doLast {
+            def result = captured.toString('UTF-8').readLines().findAll {
+                it.toLowerCase().contains('keyguard') || it.toLowerCase().contains('lockscreen')
+            }.join('\n')
+            rootProject.file('.scratch/p0_device_20261101/keyguard-state.txt').setText(result, 'UTF-8')
+            println result
+        }
+    }
+    app.tasks.register('p0InspectNotifications', Exec) {
+        def captured = new ByteArrayOutputStream()
+        standardOutput = captured
+        errorOutput = captured
+        commandLine adb, '-s', serial, 'shell', 'cmd', 'notification', 'list'
+        doLast {
+            def keys = captured.toString('UTF-8').readLines().findAll { it.contains('|com.eyeoverlay.app|') }
+            rootProject.file('.scratch/p0_device_20261101/notification-keys.txt')
+                .setText(keys.join('\n'), 'UTF-8')
+            println keys ? keys.join('\n') : 'No EyeOverlay notification registered'
+        }
+    }
+    app.tasks.register('p0InspectAlarm', Exec) {
+        def captured = new ByteArrayOutputStream()
+        standardOutput = captured
+        errorOutput = captured
+        commandLine adb, '-s', serial, 'shell', 'dumpsys', 'alarm'
+        doLast {
+            def lines = captured.toString('UTF-8').readLines()
+            def own = []
+            lines.eachWithIndex { line, index ->
+                if (line.contains('com.eyeoverlay.app') || line.contains('nowELAPSED') || line.contains('nowRTC')) {
+                    own.add(line)
+                    if (line.contains('Alarm{') && line.contains('com.eyeoverlay.app')) {
+                        own.addAll(lines.subList(index + 1, Math.min(index + 5, lines.size())))
+                    }
+                }
+            }
+            def result = own.join('\n')
+            rootProject.file('.scratch/p0_device_20261101/alarm-state.txt').setText(result, 'UTF-8')
+            println result
+        }
+    }
+    def selectedClasses = rootProject.findProperty('p0Classes') ?: 'com.example.myapplication.WellnessHomeTest,com.example.myapplication.BreakReminderDeliveryTest'
+    def expectedTests = (rootProject.findProperty('p0ExpectedTests') ?: '4').toInteger()
+    app.tasks.register('p0RunReleaseInstrumentation', Exec) {
+        dependsOn installRelease, installTests
+        def captured = new ByteArrayOutputStream()
+        standardOutput = captured
+        errorOutput = captured
+        commandLine adb, '-s', serial, 'shell', 'am', 'instrument', '-w', '-e', 'class',
+            selectedClasses,
+            'com.eyeoverlay.app.test/androidx.test.runner.AndroidJUnitRunner'
+        doLast {
+            def result = captured.toString('UTF-8')
+            report.setText(result, 'UTF-8')
+            println result
+            if (!result.contains('OK (' + expectedTests + ' tests)') || result.contains('FAILURES!!!') ||
+                    result.contains('INSTRUMENTATION_FAILED')) {
+                throw new GradleException('P0 device tests did not report the expected successful tests; inspect ' + report)
+            }
+        }
+    }
+}

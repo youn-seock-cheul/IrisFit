@@ -1,0 +1,30 @@
+{
+    "11": {
+        "policy_id": "accessibility_api_policy",
+        "issue_summary": "Accessibility setup lacks prominent data-use disclosure and affirmative consent",
+        "severity": "CRITICAL",
+        "files_involved": [
+            "app/src/main/java/com/example/myapplication/ui/YouTubeAccessibilityGuideDialog.kt",
+            "app/src/main/res/xml/accessibility_service_config.xml",
+            "app/src/main/java/com/example/myapplication/service/YouTubeDetectionAccessibilityService.kt"
+        ],
+        "evidence": "YouTubeAccessibilityGuideDialog.kt:42-83 explains restricted-settings bypass and enabling service, but does not explain event/package data access, processing or sharing, and :109-116 opens Accessibility Settings without affirmative data-use consent. XML :6 enables canRetrieveWindowContent=true despite service :14-26 using only packageName for deterministic YouTube launch detection. isAccessibilityTool is absent. No screen-text or keystroke collection/upload observed.",
+        "recommendation": "Prefer manual operation or narrower API. If keeping the deterministic listener, disable window-content retrieval, provide separate prominent disclosure of package/window-event access and local use/sharing, require explicit consent before settings navigation, and complete the Play Accessibility declaration and listing disclosure. Do not mark this general wellness utility as a disability accessibility tool.",
+        "worker_file": "worker_permissions_and_apis.json",
+        "finding_id": "11"
+    },
+    "12": {
+        "policy_id": "foreground_services_policy",
+        "issue_summary": "YouTube listener starts camera FGS from background without a demonstrated while-in-use exemption",
+        "severity": "IMPORTANT",
+        "files_involved": [
+            "app/src/main/java/com/example/myapplication/service/YouTubeDetectionAccessibilityService.kt",
+            "app/src/main/java/com/example/myapplication/service/EyeExerciseOverlayService.kt",
+            "app/src/main/AndroidManifest.xml"
+        ],
+        "evidence": "YouTubeDetectionAccessibilityService.kt:21-26 invokes startForegroundService directly on package detection. Manifest :173-176 declares camera type. EyeExerciseOverlayService.kt:299-304 starts foreground notification then camera. AccessibilityService's background-start allowance does not itself establish the separate camera while-in-use exemption; this event-triggered path has no visible activity/user notification interaction.",
+        "recommendation": "Replace automatic camera startup with a user-visible prompt that opens the app; start a session from its visible Activity with CAMERA granted. Verify both background-start and camera while-in-use requirements independently and handle denial/revocation without crash.",
+        "worker_file": "worker_permissions_and_apis.json",
+        "finding_id": "12"
+    }
+}

@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-01T06:38:20" hostname="localhost">
+  <testsuite name="com.example.myapplication.GuidedSessionUiTest" tests="2" failures="0" errors="0" skipped="0" time="37.708" timestamp="2026-11-01T06:38:20" hostname="localhost">
+    <properties>
+      <property name="device" value="R3CW905VXZZ" />
+    </properties>
+    <testcase name="thirtySecondCompletionRequiresConfirmationPersistsAndDeletes" classname="com.example.myapplication.GuidedSessionUiTest" time="33.673" />
+    <testcase name="rotationKeepsSessionAndBackgroundRequiresManualResume" classname="com.example.myapplication.GuidedSessionUiTest" time="4.035" />
+  </testsuite>
+  <testsuite name="com.example.myapplication.WellnessHomeTest" tests="2" failures="0" errors="0" skipped="0" time="2.000" timestamp="2026-11-01T06:38:20" hostname="localhost">
+    <properties>
+      <property name="device" value="R3CW905VXZZ" />
+    </properties>
+    <testcase name="deletingLocalRecordsCancelsReminderAndRemovesLegacyData" classname="com.example.myapplication.WellnessHomeTest" time="1.109" />
+    <testcase name="timerNeedsNoCameraAndSurvivesActivityRecreation" classname="com.example.myapplication.WellnessHomeTest" time="0.891" />
+  </testsuite>
+</testsuites>

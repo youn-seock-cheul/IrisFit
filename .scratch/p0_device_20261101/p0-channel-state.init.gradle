@@ -1,0 +1,35 @@
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    app.tasks.register('p0NaturalOriginalSettings') {
+        doLast {
+            def rows = []
+            [['global', 'stay_on_while_plugged_in'], ['system', 'accelerometer_rotation'],
+             ['system', 'user_rotation']].each { setting ->
+                def output = app.providers.exec {
+                    commandLine 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe',
+                        '-s', 'R3CW905VXZZ', 'shell', 'settings', 'get', setting[0], setting[1]
+                }
+                output.result.get().assertNormalExitValue()
+                rows.add(setting[1] + '=' + output.standardOutput.asText.get().trim())
+            }
+            rootProject.file('.scratch/p0_device_20261101/natural-original-settings.txt')
+                .setText(rows.join('\n'), 'UTF-8')
+        }
+    }
+    app.tasks.register('p0ChannelKeyguardState', Exec) {
+        def out = new ByteArrayOutputStream()
+        standardOutput = out
+        commandLine 'C:/Users/youns/AppData/Local/Android/Sdk/platform-tools/adb.exe',
+            '-s', 'R3CW905VXZZ', 'shell', 'dumpsys', 'window', 'policy'
+        doLast {
+            def rows = out.toString('UTF-8').readLines().findAll {
+                it.toLowerCase().contains('showing') ||
+                it.toLowerCase().contains('inputrestricted') ||
+                it.toLowerCase().contains('secure=') ||
+                it.contains('mKeyguardOccluded=')
+            }
+            rootProject.file('.scratch/p0_device_20261101/channel-keyguard-state.txt')
+                .setText(rows.join('\n'), 'UTF-8')
+        }
+    }
+}

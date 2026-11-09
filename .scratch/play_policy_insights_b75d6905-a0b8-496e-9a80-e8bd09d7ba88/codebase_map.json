@@ -1,0 +1,12 @@
+{
+    "key_files": {
+        "gradles": [
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\build.gradle.kts",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\settings.gradle.kts",
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\build.gradle.kts"
+        ],
+        "manifests": [
+            "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\app\\src\\main\\AndroidManifest.xml"
+        ]
+    }
+}

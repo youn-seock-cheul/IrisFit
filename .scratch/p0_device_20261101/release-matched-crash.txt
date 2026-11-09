@@ -1,0 +1,33 @@
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: Process: com.eyeoverlay.app, PID: 19901
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: java.lang.NoClassDefFoundError: Failed resolution of: Landroidx/tracing/Trace;
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at androidx.test.runner.AndroidJUnitRunner.onCreate(AndroidJUnitRunner.java:298)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:9114)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(ActivityThread.java:0)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:3016)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:132)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at android.os.Looper.dispatchMessage(Looper.java:358)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:288)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:392)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:10346)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:638)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:972)
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: Caused by: java.lang.ClassNotFoundException: androidx.tracing.Trace
+11-01 11:42:46.564 19901 19901 E AndroidRuntime: 	... 12 more
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: FATAL EXCEPTION: main
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: Process: com.eyeoverlay.app, PID: 22426
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: java.lang.NoClassDefFoundError: Failed resolution of: Landroidx/tracing/Trace;
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at androidx.test.runner.AndroidJUnitRunner.onCreate(r8-map-id-9d870a6e775a7aba0a0364e6f928524eb262600b5a5b1793003deade37e3f490:7)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:9114)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(ActivityThread.java:0)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:3016)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:132)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at android.os.Looper.dispatchMessage(Looper.java:358)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:288)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:392)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:10346)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:638)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:972)
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: Caused by: java.lang.ClassNotFoundException: androidx.tracing.Trace
+11-01 11:47:36.719 22426 22426 E AndroidRuntime: 	... 12 more

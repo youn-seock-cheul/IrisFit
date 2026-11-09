@@ -1,0 +1,9 @@
+// Local matching release instrumentation. R8 remains enabled for the entire app.
+// Only development signing and testBuildType differ from an upload build.
+gradle.beforeProject { project ->
+    project.pluginManager.withPlugin('com.android.application') {
+        def android = project.extensions.getByName('android')
+        android.testBuildType = 'release'
+        android.buildTypes.getByName('release').signingConfig = android.signingConfigs.getByName('debug')
+    }
+}

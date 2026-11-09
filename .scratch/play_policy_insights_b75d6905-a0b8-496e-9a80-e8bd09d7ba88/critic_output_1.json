@@ -1,0 +1,12 @@
+{
+  "11": {
+    "action": "VERIFIED",
+    "confidence": "High",
+    "critic_justification": "Guide dialog supplies restricted-settings instructions and direct accessibility-settings navigation, without an affirmative data-use consent gate or an explanation of package/window event access. XML enables window-content retrieval although the service only reads event.packageName. This confirms the concrete disclosure/minimization gap, without assuming any screen text upload."
+  },
+  "12": {
+    "action": "VERIFIED",
+    "confidence": "High",
+    "critic_justification": "YouTubeDetectionAccessibilityService directly calls startForegroundService on a package event, without visible-Activity interaction. Manifest declares camera FGS and EyeExerciseOverlayService.onCreate immediately starts foreground mode and setupCameraX. This confirms an unsupported camera-start path needing remediation; accessibility-related background-start permission does not establish a camera while-in-use exception. No off-device transmission is inferred."
+  }
+}

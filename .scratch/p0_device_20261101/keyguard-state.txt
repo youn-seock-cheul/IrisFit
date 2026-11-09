@@ -1,0 +1,6 @@
+    mKeyguardOccluded=false mKeyguardOccludedChanged=false mPendingKeyguardOccluded=false
+    mAllowLockscreenWhenOnDisplays=false mLockScreenTimeout=600000 mLockScreenTimerActive=false
+    KeyguardServiceDelegate
+      deviceHasKeyguard=true
+      KeyguardStateMonitor
+    mDexKeyguardOccluded=false mDexKeyguardOccludedChanged=false mPendingDexKeyguardOccluded=false

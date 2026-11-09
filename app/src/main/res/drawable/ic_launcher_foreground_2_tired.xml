@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Drooping Tired Eye Contour (피곤한 눈) -->
+    <path
+        android:pathData="M24,56 C34,44 74,44 84,56 C74,68 34,68 24,56 Z"
+        android:strokeColor="#EF4444"
+        android:strokeWidth="3.5"
+        android:fillColor="#00000000" />
+    <!-- Red Vein Bloodshot Lines (충혈) -->
+    <path
+        android:pathData="M28,52 L36,54 M78,52 L70,54"
+        android:strokeColor="#EF4444"
+        android:strokeWidth="1.5" />
+    <!-- Tired Drooping Pupil -->
+    <path
+        android:pathData="M54,51 A6,6 0 1,1 53.9,51 Z"
+        android:fillColor="#F87171" />
+</vector>

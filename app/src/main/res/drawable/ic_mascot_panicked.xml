@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M54,14 C76,14 94,32 94,54 C94,76 76,94 54,94 C32,94 14,76 14,54 C14,32 32,14 54,14 Z"
+        android:fillColor="#FF5252" />
+    <!-- Angry / Panicked eyes -->
+    <path
+        android:pathData="M34,38 L50,46"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M58,46 L74,38"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <!-- Shocked open mouth 'O' -->
+    <path
+        android:pathData="M48,58 A8,10 0 1,1 47.9,58 Z"
+        android:fillColor="#FFFFFF" />
+    <!-- Sweat drop -->
+    <path
+        android:pathData="M76,26 C76,26 80,32 80,36 C80,38.2 78.2,40 76,40 C73.8,40 72,38.2 72,36 C72,32 76,26 76,26 Z"
+        android:fillColor="#80D8FF" />
+</vector>

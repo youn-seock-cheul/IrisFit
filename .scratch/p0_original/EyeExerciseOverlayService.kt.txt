@@ -1,0 +1,716 @@
+package com.example.myapplication.service
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.PixelFormat
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.view.Gravity
+import android.view.View
+import android.view.WindowManager
+import android.widget.FrameLayout
+import android.widget.TextView
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleService
+import com.example.myapplication.MainActivity
+import com.example.myapplication.R
+import com.example.myapplication.data.GazeEvaluator
+import com.example.myapplication.data.PreferencesManager
+import com.example.myapplication.data.ScoreManager
+import com.example.myapplication.vision.GazeTracker
+import java.util.concurrent.Executors
+
+class EyeExerciseOverlayService : LifecycleService(), SensorEventListener {
+
+    private lateinit var windowManager: WindowManager
+    private lateinit var overlayView: FrameLayout
+    private lateinit var markerView: View
+    private lateinit var toastView: TextView
+    private lateinit var blinkReminderView: TextView
+
+    private lateinit var preferencesManager: PreferencesManager
+    private lateinit var scoreManager: ScoreManager
+    private lateinit var gazeTracker: GazeTracker
+
+    private lateinit var sensorManager: SensorManager
+    private var lightSensor: Sensor? = null
+    @Volatile
+    private var currentAmbientLux: Float = 100f
+
+    private val cameraExecutor = Executors.newSingleThreadExecutor()
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    @Volatile
+    private var latestGazeX: Float? = null
+    @Volatile
+    private var latestGazeY: Float? = null
+    @Volatile
+    private var lastFaceDetectedTimeMs: Long = 0L
+    @Volatile
+    private var lastBlinkTimeMs: Long = 0L
+    @Volatile
+    private var hasShownBlinkBannerForCurrentStare: Boolean = false
+
+    // DMS 졸음 운전 감지 (2초 연속 눈 감김 감지)
+    @Volatile
+    private var eyesClosedStartMs: Long = 0L
+    @Volatile
+    private var isDmsDrowsinessAlertActive: Boolean = false
+
+    private var screenWidthPx: Int = 1080
+    private var screenHeightPx: Int = 2400
+
+    private var currentMarkerX: Float = 0f
+    private var currentMarkerY: Float = 0f
+
+    private var accumulatedAnimTimeMs: Long = 0L
+    private var lastAnimTickMs: Long = 0L
+    private var isAnimRunning = false
+
+    // AI 눈 피로도 예측 및 자율 스마트 가동 상태
+    @Volatile
+    private var eyeFatigueScore: Int = 22 // Realtime AI Eye Fatigue Index (0~100)
+    @Volatile
+    private var isSmartExerciseActive: Boolean = false
+    @Volatile
+    private var focusStartTimeMs: Long = 0L
+
+    private val animRunnable = object : Runnable {
+        override fun run() {
+            if (!isAnimRunning) return
+
+            // 가로/세로 회전에 반응하여 실시간 화면 크기 수집
+            val metrics = resources.displayMetrics
+            screenWidthPx = metrics.widthPixels
+            screenHeightPx = metrics.heightPixels
+
+            val now = SystemClock.elapsedRealtime()
+            val timeSinceFaceMs = now - lastFaceDetectedTimeMs
+            val isFocused = timeSinceFaceMs < 3000L // 3초 이내 눈동자 감지 유지
+
+            if (isFocused && preferencesManager.isEyeExerciseEnabled) {
+                if (focusStartTimeMs == 0L) focusStartTimeMs = now
+                val focusedDurationSec = (now - focusStartTimeMs) / 1000L
+
+                // EAR 기반 깜빡임 건조 감지
+                val timeSinceBlinkMs = now - lastBlinkTimeMs
+                if (timeSinceBlinkMs >= 7000L) {
+                    if (!hasShownBlinkBannerForCurrentStare) {
+                        hasShownBlinkBannerForCurrentStare = true
+                        showBlinkReminderBriefly()
+                    }
+                } else {
+                    hasShownBlinkBannerForCurrentStare = false
+                }
+
+                // AI 실시간 눈 피로도 예측 스코어 산출
+                val fatigueIncrement = ((focusedDurationSec / 8L) * 3).toInt()
+                val blinkPenalty = if (timeSinceBlinkMs >= 7000L) 15 else 0
+                eyeFatigueScore = (20 + fatigueIncrement + blinkPenalty).coerceIn(10, 95)
+
+                // 피로도 스코어 상승(>= 40%) 시에만 스마트 오버레이가 가동!
+                if (eyeFatigueScore >= 40) {
+                    if (!isSmartExerciseActive) {
+                        isSmartExerciseActive = true
+                        val modeName = getTrackModeName(preferencesManager.selectedTrackModeIndex)
+                        showPhaseToast("✨ AI 눈 피로도 상승 감지 ($eyeFatigueScore%): $modeName 가동")
+                    }
+                } else if (eyeFatigueScore < 30 && isSmartExerciseActive) {
+                    isSmartExerciseActive = false
+                    showPhaseToast("🟢 눈 피로도 회복 완료 ($eyeFatigueScore%): 자율 휴식 전환")
+                }
+
+                if (isSmartExerciseActive) {
+                    // AI 스마트 눈 운동 진행 중 -> 마커 노출 및 트랙 애니메이션
+                    if (markerView.visibility != View.VISIBLE) {
+                        markerView.visibility = View.VISIBLE
+                    }
+
+                    // 야간 저조도 환경(<10 Lux) 오버레이 마커 자동 디밍(Dimming) 적용
+                    if (currentAmbientLux < 10f) {
+                        markerView.alpha = 0.5f // 야간 눈부심 방지 반투명 디밍
+                    } else {
+                        markerView.alpha = 1.0f
+                    }
+
+                    val deltaAnim = if (lastAnimTickMs > 0L) now - lastAnimTickMs else 0L
+                    accumulatedAnimTimeMs += deltaAnim
+                    lastAnimTickMs = now
+
+                    // 정확히 3회 회전(36초) 완수 체크
+                    val totalLoopsDone = accumulatedAnimTimeMs / 12000L
+                    if (totalLoopsDone >= 3L) {
+                        if (eyeFatigueScore >= 40) {
+                            // 피로도가 미도달된 경우 1회 추가 맞춤 회전 가동!
+                            showPhaseToast("⚠️ AI 감지: 눈 피로도가 여전히 높아 ($eyeFatigueScore%) 1회 추가 운동을 진행합니다!")
+                            accumulatedAnimTimeMs = 2 * 12000L
+                        } else {
+                            // 정상 피로도 도달시 자율 자동 종료!
+                            showPhaseToast("✨ 3회 안구 스트레칭 완수! 피로도가 회복되어 서비스를 자동 종료합니다. 🟢")
+                            mainHandler.postDelayed({
+                                stopSelf()
+                            }, 1500L)
+                            return
+                        }
+                    }
+
+                    val elapsed = accumulatedAnimTimeMs % 12000L
+                    val progress = elapsed / 12000f
+
+                    val density = metrics.density
+                    val sideMarginPx = 40 * density
+                    val topMarginPx = 60 * density
+                    val bottomMarginPx = 110 * density
+
+                    val left = sideMarginPx
+                    val top = topMarginPx
+                    val right = screenWidthPx - sideMarginPx
+                    val bottom = screenHeightPx - bottomMarginPx
+
+                    val trackMode = preferencesManager.selectedTrackModeIndex
+                    val (x, y, markerSizePx) = calculateTrackPositionAndSize(trackMode, progress, left, top, right, bottom, density)
+
+                    currentMarkerX = x
+                    currentMarkerY = y
+
+                    val layoutParams = markerView.layoutParams
+                    if (layoutParams.width != markerSizePx.toInt()) {
+                        layoutParams.width = markerSizePx.toInt()
+                        layoutParams.height = markerSizePx.toInt()
+                        markerView.layoutParams = layoutParams
+                    }
+
+                    markerView.translationX = x - (markerSizePx / 2f)
+                    markerView.translationY = y - (markerSizePx / 2f)
+
+                    updateFatigueNotification(isExerciseActive = true, fatigueScore = eyeFatigueScore)
+                } else {
+                    // 평소 (피로도 낮음) -> 시야 방해 없이 마커 숨김
+                    if (markerView.visibility != View.INVISIBLE) {
+                        markerView.visibility = View.INVISIBLE
+                    }
+                    lastAnimTickMs = 0L
+                    updateFatigueNotification(isExerciseActive = false, fatigueScore = eyeFatigueScore)
+                }
+            } else {
+                // 스마트폰 미주시 / 고개 돌림 -> 마커 및 알림 배너 숨김
+                focusStartTimeMs = 0L
+                hasShownBlinkBannerForCurrentStare = false
+                if (markerView.visibility != View.INVISIBLE) {
+                    markerView.visibility = View.INVISIBLE
+                }
+                lastAnimTickMs = 0L
+                hideBlinkReminder()
+                updateFatigueNotification(isExerciseActive = false, fatigueScore = eyeFatigueScore, isFocused = false)
+            }
+
+            mainHandler.postDelayed(this, 16L) // ~60 FPS
+        }
+    }
+
+    private val tickRunnable = object : Runnable {
+        override fun run() {
+            evaluateGazeAndTick()
+            mainHandler.postDelayed(this, 1000L)
+        }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        preferencesManager = PreferencesManager(this)
+        val now = SystemClock.elapsedRealtime()
+        lastFaceDetectedTimeMs = now
+        lastBlinkTimeMs = now
+
+        // 조도 센서 등록 (야간 디밍 및 카메라 가인 자동 보정)
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+        lightSensor?.let {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+
+        val metrics = resources.displayMetrics
+        screenWidthPx = metrics.widthPixels
+        screenHeightPx = metrics.heightPixels
+
+        scoreManager = ScoreManager(
+            initialLevel = preferencesManager.level,
+            initialExp = preferencesManager.exp,
+            targetExpPerLevel = 500,
+            onLevelUpListener = { newLevel ->
+                preferencesManager.level = newLevel
+                updateMarkerStyle(newLevel)
+                showLevelUpToast(newLevel)
+            },
+            onExpChangedListener = { currentExp, _ ->
+                preferencesManager.exp = currentExp
+            }
+        )
+
+        gazeTracker = GazeTracker(this, preferencesManager) { gazeX, gazeY, isFaceDetected, isBlinkEvent ->
+            latestGazeX = gazeX
+            latestGazeY = gazeY
+            val currentTime = SystemClock.elapsedRealtime()
+            if (isFaceDetected) {
+                lastFaceDetectedTimeMs = currentTime
+            }
+
+            // DMS 졸음 운전 감지 (isDmsEnabled가 true일 때만 작동)
+            if (preferencesManager.isDmsEnabled) {
+                if (!isFaceDetected) {
+                    if (eyesClosedStartMs == 0L) eyesClosedStartMs = currentTime
+                    val closedDuration = currentTime - eyesClosedStartMs
+                    if (closedDuration >= 2000L && !isDmsDrowsinessAlertActive) {
+                        isDmsDrowsinessAlertActive = true
+                        showPhaseToast("🛑 🚨 DMS 졸음 운전 위험 감지! 2초 이상 눈 감김! 가까운 졸음쉼터/휴게소로 이동하세요! 🚨 🛑")
+                    }
+                } else {
+                    eyesClosedStartMs = 0L
+                    isDmsDrowsinessAlertActive = false
+                }
+            } else {
+                eyesClosedStartMs = 0L
+                isDmsDrowsinessAlertActive = false
+            }
+
+            if (isBlinkEvent) {
+                lastBlinkTimeMs = currentTime
+                hasShownBlinkBannerForCurrentStare = false
+                hideBlinkReminder()
+            }
+        }
+
+        startForegroundServiceWithNotification()
+        setupOverlayView()
+        updateMarkerStyle(scoreManager.currentLevel)
+        startMarkerAnimation()
+        setupCameraX()
+
+        mainHandler.post(tickRunnable)
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_LIGHT) {
+            currentAmbientLux = event.values[0]
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val metrics = resources.displayMetrics
+        screenWidthPx = metrics.widthPixels
+        screenHeightPx = metrics.heightPixels
+    }
+
+    private fun startForegroundServiceWithNotification() {
+        val channelId = "eye_exercise_overlay_channel"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "눈 운동 오버레이 서비스",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, notificationIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification: Notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("EyeOverlay AI - DMS 졸음 감지 & AI 모니터링")
+            .setContentText("AI 눈 피로도 및 DMS 졸음 감지 모니터링 중 🟢")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentIntent(pendingIntent)
+            .setOngoing(true)
+            .build()
+
+        startForeground(NOTIFICATION_ID, notification)
+    }
+
+    private fun updateFatigueNotification(isExerciseActive: Boolean, fatigueScore: Int, isFocused: Boolean = true) {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+        val channelId = "eye_exercise_overlay_channel"
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, notificationIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val statusText = if (isDmsDrowsinessAlertActive) {
+            "🛑 DMS 졸음 경고! [가까운 졸음쉼터 T맵 내비 연결 ➔]"
+        } else if (!isFocused) {
+            "눈동자 미감지 🔴 - 스마트폰 응시 시 AI 모니터링 재개"
+        } else if (isExerciseActive) {
+            "✨ AI 맞춤 안근육 운동 진행 중 (현재 피로도: $fatigueScore%)"
+        } else {
+            "AI 눈 피로도 모니터링 중 🟢 (현재 피로도: $fatigueScore% - 양호)"
+        }
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("EyeOverlay AI - DMS 졸음 감지 & AI 모니터링")
+            .setContentText(statusText)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentIntent(pendingIntent)
+            .setOngoing(true)
+            .build()
+
+        notificationManager?.notify(NOTIFICATION_ID, notification)
+    }
+
+    private fun showPhaseToast(message: String) {
+        mainHandler.post {
+            toastView.text = message
+            toastView.visibility = View.VISIBLE
+            toastView.animate()
+                .alpha(1f)
+                .setDuration(300L)
+                .withEndAction {
+                    mainHandler.postDelayed({
+                        toastView.animate()
+                            .alpha(0f)
+                            .setDuration(300L)
+                            .withEndAction {
+                                toastView.visibility = View.GONE
+                            }
+                            .start()
+                    }, 2200L)
+                }
+                .start()
+        }
+    }
+
+    private fun showBlinkReminderBriefly() {
+        mainHandler.post {
+            blinkReminderView.visibility = View.VISIBLE
+            blinkReminderView.animate()
+                .alpha(1.0f)
+                .setDuration(300L)
+                .withEndAction {
+                    mainHandler.postDelayed({
+                        hideBlinkReminder()
+                    }, 2500L)
+                }
+                .start()
+        }
+    }
+
+    private fun hideBlinkReminder() {
+        mainHandler.post {
+            if (blinkReminderView.visibility == View.VISIBLE) {
+                blinkReminderView.animate()
+                    .alpha(0.0f)
+                    .setDuration(300L)
+                    .withEndAction {
+                        blinkReminderView.visibility = View.GONE
+                    }
+                    .start()
+            }
+        }
+    }
+
+    private fun setupOverlayView() {
+        windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+
+        overlayView = FrameLayout(this)
+
+        val density = resources.displayMetrics.density
+        val markerSizePx = (40 * density).toInt()
+
+        markerView = View(this).apply {
+            visibility = View.INVISIBLE
+        }
+        val markerParams = FrameLayout.LayoutParams(markerSizePx, markerSizePx)
+        overlayView.addView(markerView, markerParams)
+
+        toastView = TextView(this).apply {
+            text = ""
+            setTextColor(Color.WHITE)
+            textSize = 15f
+            setPadding((16 * density).toInt(), (8 * density).toInt(), (16 * density).toInt(), (8 * density).toInt())
+            val bgDrawable = GradientDrawable().apply {
+                setColor(Color.parseColor("#CC111122"))
+                cornerRadius = 16 * density
+            }
+            background = bgDrawable
+            visibility = View.GONE
+            alpha = 0f
+        }
+        val toastParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            topMargin = (48 * density).toInt()
+        }
+        overlayView.addView(toastView, toastParams)
+
+        blinkReminderView = TextView(this).apply {
+            text = "👁️ 눈이 마르고 있어요! '찡긋' 깜빡여 주세요 💧"
+            setTextColor(Color.WHITE)
+            textSize = 13.5f
+            setTypeface(null, Typeface.BOLD)
+            setPadding((18 * density).toInt(), (8 * density).toInt(), (18 * density).toInt(), (8 * density).toInt())
+            val bgDrawable = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                setColor(Color.parseColor("#E6002B49"))
+                cornerRadius = 20 * density
+                setStroke((1.5f * density).toInt(), Color.parseColor("#00FFFF"))
+            }
+            background = bgDrawable
+            visibility = View.GONE
+            alpha = 0f
+        }
+        val blinkParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            topMargin = (92 * density).toInt()
+        }
+        overlayView.addView(blinkReminderView, blinkParams)
+
+        val layoutParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            else
+                @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.LEFT
+        }
+
+        windowManager.addView(overlayView, layoutParams)
+    }
+
+    private fun updateMarkerStyle(level: Int) {
+        val density = resources.displayMetrics.density
+        val drawable = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            when (level) {
+                1 -> {
+                    setColor(Color.parseColor("#6600FFCC"))
+                    setStroke((2.5f * density).toInt(), Color.parseColor("#00FFCC"))
+                }
+                2 -> {
+                    setColor(Color.parseColor("#6600CCFF"))
+                    setStroke((3.5f * density).toInt(), Color.parseColor("#00FFFF"))
+                }
+                else -> {
+                    setColor(Color.parseColor("#66FFD700"))
+                    setStroke((4.0f * density).toInt(), Color.parseColor("#FFD700"))
+                }
+            }
+        }
+        mainHandler.post {
+            markerView.background = drawable
+        }
+    }
+
+    private fun startMarkerAnimation() {
+        overlayView.post {
+            val width = if (overlayView.width > 0) overlayView.width else screenWidthPx
+            val height = if (overlayView.height > 0) overlayView.height else screenHeightPx
+            screenWidthPx = width
+            screenHeightPx = height
+
+            isAnimRunning = true
+            accumulatedAnimTimeMs = 0L
+            lastAnimTickMs = SystemClock.elapsedRealtime()
+            mainHandler.removeCallbacks(animRunnable)
+            mainHandler.post(animRunnable)
+        }
+    }
+
+    private fun getTrackModeName(modeIndex: Int): String {
+        return when (modeIndex % 4) {
+            0 -> "4변 외곽 순회 스트레칭"
+            1 -> "8자형 무한 루프 스트레칭 ♾️"
+            2 -> "대각선 X자 교차 스트레칭 ✖️"
+            else -> "3D 줌인/아웃 원근 스트레칭 🔍"
+        }
+    }
+
+    private fun calculateTrackPositionAndSize(
+        modeIndex: Int,
+        progress: Float,
+        left: Float, top: Float, right: Float, bottom: Float,
+        density: Float
+    ): Triple<Float, Float, Float> {
+        val width = right - left
+        val height = bottom - top
+        val centerX = left + width / 2f
+        val centerY = top + height / 2f
+        val defaultMarkerSize = 40 * density
+
+        return when (modeIndex % 4) {
+            0 -> {
+                val (x, y) = calculatePerimeterPosition(progress, left, top, right, bottom)
+                Triple(x, y, defaultMarkerSize)
+            }
+            1 -> {
+                val angle = progress * 2.0 * Math.PI
+                val halfW = width / 2.3f
+                val halfH = height / 2.3f
+                val x = (centerX + halfW * kotlin.math.sin(angle)).toFloat()
+                val y = (centerY + halfH * kotlin.math.sin(2.0 * angle) / 2.0).toFloat()
+                Triple(x, y, defaultMarkerSize)
+            }
+            2 -> {
+                val (x, y) = if (progress < 0.5f) {
+                    val p = progress * 2f
+                    Pair(left + p * width, top + p * height)
+                } else {
+                    val p = (progress - 0.5f) * 2f
+                    Pair(right - p * width, top + p * height)
+                }
+                Triple(x, y, defaultMarkerSize)
+            }
+            else -> {
+                val pulse = (kotlin.math.sin(progress * 2.0 * Math.PI) + 1.0) / 2.0
+                val dynamicSize = ((20 + pulse * 50) * density).toFloat()
+                Triple(centerX, centerY, dynamicSize)
+            }
+        }
+    }
+
+    private fun calculatePerimeterPosition(
+        progress: Float,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float
+    ): Pair<Float, Float> {
+        val width = right - left
+        val height = bottom - top
+        val perimeter = 2 * (width + height)
+        val dist = progress * perimeter
+
+        return when {
+            dist < width -> Pair(left + dist, top)
+            dist < width + height -> Pair(right, top + (dist - width))
+            dist < 2 * width + height -> Pair(right - (dist - (width + height)), bottom)
+            else -> Pair(left, bottom - (dist - (2 * width + height)))
+        }
+    }
+
+    private fun setupCameraX() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        cameraProviderFuture.addListener({
+            try {
+                val cameraProvider = cameraProviderFuture.get()
+                val imageAnalysis = ImageAnalysis.Builder()
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+
+                imageAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
+                    gazeTracker.processImageProxy(imageProxy, screenWidthPx, screenHeightPx)
+                }
+
+                val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun evaluateGazeAndTick() {
+        val gazeX = latestGazeX
+        val gazeY = latestGazeY
+
+        val isHit = if (gazeX != null && gazeY != null) {
+            GazeEvaluator.evaluateHit(
+                markerX = currentMarkerX,
+                markerY = currentMarkerY,
+                gazeX = gazeX,
+                gazeY = gazeY,
+                screenWidthPx = screenWidthPx.toFloat(),
+                screenHeightPx = screenHeightPx.toFloat()
+            )
+        } else {
+            false
+        }
+
+        if (isSmartExerciseActive) {
+            scoreManager.processTick(isHit)
+        }
+    }
+
+    private fun showLevelUpToast(newLevel: Int) {
+        mainHandler.post {
+            toastView.text = "Lv.$newLevel 달성! 마커 스킨 업그레이드!"
+            toastView.visibility = View.VISIBLE
+            toastView.animate()
+                .alpha(1f)
+                .setDuration(300L)
+                .withEndAction {
+                    mainHandler.postDelayed({
+                        toastView.animate()
+                            .alpha(0f)
+                            .setDuration(300L)
+                            .withEndAction {
+                                toastView.visibility = View.GONE
+                            }
+                            .start()
+                    }, 2000L)
+                }
+                .start()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        isAnimRunning = false
+        mainHandler.removeCallbacks(animRunnable)
+        mainHandler.removeCallbacks(tickRunnable)
+
+        if (::sensorManager.isInitialized && lightSensor != null) {
+            sensorManager.unregisterListener(this)
+        }
+
+        if (::windowManager.isInitialized && ::overlayView.isInitialized) {
+            try {
+                windowManager.removeView(overlayView)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        gazeTracker.close()
+        cameraExecutor.shutdown()
+    }
+
+    companion object {
+        private const val NOTIFICATION_ID = 1001
+    }
+}

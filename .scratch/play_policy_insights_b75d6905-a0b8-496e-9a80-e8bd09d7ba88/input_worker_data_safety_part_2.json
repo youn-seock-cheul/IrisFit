@@ -1,0 +1,79 @@
+{
+    "APP_DIR": "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication",
+    "APP_NAME": "app_name",
+    "GOAL_NAME": "data_safety_part_2",
+    "PACKAGE_NAME": "com.eyeoverlay.app",
+    "REPO_ROOT": "C:\\Users\\youns\\.android-studio\\skills\\play-policy-insights",
+    "TARGET_SDK": 35,
+    "TEMP_DIR": "C:\\Users\\youns\\AndroidStudioProjects\\MyApplication\\.scratch\\play_policy_insights_b75d6905-a0b8-496e-9a80-e8bd09d7ba88",
+    "accessibility": [
+        "app\\src\\main\\java\\com\\example\\myapplication\\service\\YouTubeDetectionAccessibilityService.kt (Pattern: AccessibilityService)"
+    ],
+    "data_sources": {
+        "APPS_ON_DEVICE": {
+            "description": "Information about the apps installed on a user's device.",
+            "findings": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\data\\AppVersionManager.kt (Pattern: getPackageInfo)"
+            ]
+        },
+        "MUSIC": {
+            "description": "A user\u2019s music files.",
+            "findings": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: track)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\data\\PreferencesManager.kt (Pattern: track)",
+                "app\\src\\main\\java\\com\\example\\myapplication\\service\\EyeExerciseOverlayService.kt (Pattern: track)"
+            ]
+        },
+        "OTHER_MESSAGES": {
+            "description": "Any other types of messages. For example, instant messages or chat content.",
+            "findings": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\data\\PreferencesManager.kt (Pattern: chat_history)"
+            ]
+        },
+        "WEB_BROWSING_HISTORY": {
+            "description": "Information about the websites a user has visited.",
+            "findings": [
+                "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: loadUrl)"
+            ]
+        }
+    },
+    "disclosure": [
+        "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: AlertDialog)",
+        "app\\src\\main\\java\\com\\example\\myapplication\\ui\\AiCoachChatDialog.kt (Pattern: AlertDialog)",
+        "app\\src\\main\\java\\com\\example\\myapplication\\ui\\DynamicIconSelectorDialog.kt (Pattern: AlertDialog)",
+        "app\\src\\main\\java\\com\\example\\myapplication\\ui\\PrivacyPolicyDialog.kt (Pattern: AlertDialog)",
+        "app\\src\\main\\java\\com\\example\\myapplication\\ui\\YouTubeAccessibilityGuideDialog.kt (Pattern: AlertDialog)"
+    ],
+    "foreground_service": [
+        "app\\src\\main\\java\\com\\example\\myapplication\\MainActivity.kt (Pattern: startForeground)",
+        "app\\src\\main\\java\\com\\example\\myapplication\\service\\EyeExerciseOverlayService.kt (Pattern: startForeground)",
+        "app\\src\\main\\java\\com\\example\\myapplication\\service\\YouTubeDetectionAccessibilityService.kt (Pattern: startForeground)"
+    ],
+    "found_urls": [],
+    "requested_permissions": {
+        "PHOTOS": [
+            "android.permission.CAMERA"
+        ],
+        "VIDEOS": [
+            "android.permission.CAMERA"
+        ],
+        "accessibility": [
+            "android.permission.BIND_ACCESSIBILITY_SERVICE"
+        ],
+        "foreground_service": [
+            "android.permission.FOREGROUND_SERVICE"
+        ]
+    },
+    "semantic_files": {
+        "AUDIO": [
+            "DynamicIconManager.kt",
+            "DynamicIconSelectorDialog.kt"
+        ],
+        "CONFIG": [
+            "accessibility_service_config.xml"
+        ],
+        "LEGAL": [
+            "PrivacyPolicyDialog.kt"
+        ]
+    }
+}
