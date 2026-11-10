@@ -61,8 +61,17 @@ class IrisFitWidgetProvider : AppWidgetProvider() {
             }
 
             val selectedLang = LanguageManager.getSelectedLanguage(context)
+            val effectiveLang = AppLocalization.resolveEffectiveLang(selectedLang)
+
+            val localizedTitle = when (effectiveLang) {
+                "en" -> "IrisFit Eye Health Battery"
+                "ja" -> "IrisFit 目の健康バッテリー"
+                "es" -> "Batería Ocular IrisFit"
+                else -> "IrisFit 눈 건강 배터리"
+            }
+
             val localizedStatusLabel = AppLocalization.get(selectedLang, stats.fatigueStatus.labelKey)
-            val localizedBatteryText = when (AppLocalization.resolveEffectiveLang(selectedLang)) {
+            val localizedBatteryText = when (effectiveLang) {
                 "en" -> "Battery: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
                 "ja" -> "バッテリー: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
                 "es" -> "Batería: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
@@ -70,6 +79,7 @@ class IrisFitWidgetProvider : AppWidgetProvider() {
             }
 
             views.setImageViewResource(R.id.widget_mascot_icon, mascotRes)
+            views.setTextViewText(R.id.widget_title_text, localizedTitle)
             views.setTextViewText(R.id.widget_status_text, localizedBatteryText)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)

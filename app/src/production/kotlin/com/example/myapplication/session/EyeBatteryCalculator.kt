@@ -30,20 +30,24 @@ object EyeBatteryCalculator {
         poseMultiplier: Float = 1.0f,
         isCharging: Boolean = false
     ): EyeBatteryStats {
-        // Fallback baseline of 60 mins if usage stats permission is not yet granted, ensuring realistic active drain
-        val effectiveMins = screenTimeMinutes.coerceAtLeast(60)
+        // Effective screen minutes scaled smoothly
+        val effectiveMins = screenTimeMinutes.coerceAtLeast(30)
 
-        // Penalty calculation: -1.5% per 15 minutes of screen time
-        val penalty = ((effectiveMins.toFloat() / 15f) * 1.5f * poseMultiplier).toInt()
+        // Base screen time drain: -1.0% per 15 minutes (or smooth linear scale)
+        val baseDrain = (effectiveMins.toFloat() / 15f) * 1.0f
+
+        // Pose posture adjustment (gentle relative delta, avoiding massive jumps)
+        val poseDelta = when {
+            isCharging -> 3.0f          // +3% bonus for On Desk / Face Down resting posture
+            poseMultiplier > 1.2f -> -3.0f // -3% slight penalty for Lying Down strain
+            else -> 0.0f
+        }
 
         // Recovery from completed rests and mini-games
         val restRecovery = restCount * 12
         val gameRecovery = miniGameCount * 20
 
-        // Passive recharge when resting on desk / face down (+4% charging boost)
-        val poseRecharge = if (isCharging) 4 else 0
-
-        val score = (100 - penalty + restRecovery + gameRecovery + poseRecharge).coerceIn(20, 100)
+        val score = (100 - baseDrain.toInt() + restRecovery + gameRecovery + poseDelta.toInt()).coerceIn(20, 100)
 
         val status = when {
             score >= 85 -> EyeFatigueStatus.OPTIMAL

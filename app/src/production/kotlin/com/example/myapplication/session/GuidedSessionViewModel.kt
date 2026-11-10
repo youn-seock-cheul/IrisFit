@@ -20,17 +20,10 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
     private val markerPreferences = MarkerPreferences(FileCompletionStorage(application, "marker_preferences_v1.txt"))
     private var preferencesLoaded = false
 
-    var currentLang by mutableStateOf(
-        com.example.myapplication.data.LanguageManager.getSelectedLanguage(application).let {
-            if (it.isEmpty()) AppLocalization.resolveEffectiveLang("") else it
-        }
-    )
-        private set
+    val currentLang: String
+        get() = AppLocalization.resolveEffectiveLang("")
 
-    fun setLanguage(lang: String) {
-        currentLang = lang
-        com.example.myapplication.data.LanguageManager.setSelectedLanguage(getApplication(), lang)
-    }
+    fun setLanguage(lang: String) {}
 
     fun tr(key: String): String {
         return AppLocalization.get(currentLang, key)
@@ -71,7 +64,12 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
 
     val eyeBatteryStats: EyeBatteryStats
         get() {
-            val screenMinutes = com.example.myapplication.data.ScreenTimeManager.getTodayScreenTimeMinutes(getApplication())
+            val hasUsagePermission = com.example.myapplication.data.ScreenTimeManager.hasUsageStatsPermission(getApplication())
+            val screenMinutes = if (hasUsagePermission) {
+                com.example.myapplication.data.ScreenTimeManager.getTodayScreenTimeMinutes(getApplication())
+            } else {
+                com.example.myapplication.data.AppSessionTimer.getActiveMinutes(getApplication())
+            }
             val rests = records.count { it.completedLocalDate == today && it.routineId == "screen_rest" }
             val miniGames = records.count { it.completedLocalDate == today && (it.routineId == "eye_gym" || it.routineId == "smooth_pursuit") }
 

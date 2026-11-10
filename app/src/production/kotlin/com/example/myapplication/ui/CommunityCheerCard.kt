@@ -97,7 +97,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // LAYER 1: MY PROFILE HEADER
+            // LAYER 1: MY PROFILE HEADER (CLEAN STYLING)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -107,17 +107,17 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                     Box(
                         modifier = Modifier
                             .size(44.dp)
-                            .background(Color(0xFFFF5252).copy(alpha = 0.2f), CircleShape),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(userEmoji, fontSize = 24.sp)
+                        Text(userEmoji, fontSize = 22.sp)
                     }
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(userNickname, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Icon(painter = painterResource(id = R.drawable.ic_card_trophy), contentDescription = "프로필 수정", modifier = Modifier.size(14.dp).clickable { showProfileDialog = true }, tint = Color.Gray)
+                            Text(sessionModel.tr(userNickname), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Icon(painter = painterResource(id = R.drawable.ic_card_trophy), contentDescription = "Edit Profile", modifier = Modifier.size(14.dp).clickable { showProfileDialog = true }, tint = Color.Gray)
                         }
-                        Text(userOneLineGoal, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        Text(sessionModel.tr(userOneLineGoal), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                     }
                 }
 
@@ -125,11 +125,11 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("❤️ ${cheerCount}개", modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(sessionModel.tr("${cheerCount}개"), modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
             }
 
-            // FRONT ACTIVE RELAY CARD (TWO-ROW SPACED LAYOUT)
+            // FRONT ACTIVE RELAY CARD (CLEAN DECLUTTERED TWO-ROW LAYOUT)
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 shape = RoundedCornerShape(14.dp),
@@ -142,7 +142,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "🚩 ${sessionModel.tr("relay_title")} (${activeRelays.size}개)",
+                            text = sessionModel.tr("${sessionModel.tr("relay_title")} (${activeRelays.size}개)"),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFFF9800)
@@ -159,11 +159,12 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                     if (activeRelays.isNotEmpty()) {
                         val (topTopic, topRunners, _) = activeRelays.first()
                         val currentHolder = topRunners.lastOrNull() ?: userNickname
-                        Text(topTopic, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(sessionModel.tr(topTopic), fontWeight = FontWeight.Bold, fontSize = 13.sp)
 
                         // ROW 2: BATON HOLDER PATH (CLEAN SEPARATE LINE)
+                        val localizedRunners = topRunners.map { sessionModel.tr(it) }.joinToString(" ➔ ")
                         Text(
-                            text = "🏃 ${sessionModel.tr("relay_baton")}: [$currentHolder 👑] (${topRunners.joinToString(" ➔ ")})",
+                            text = sessionModel.tr("${sessionModel.tr("relay_baton")}: [${sessionModel.tr(currentHolder)}] ($localizedRunners)"),
                             fontSize = 11.sp,
                             color = Color.Gray,
                             modifier = Modifier.fillMaxWidth(),
@@ -181,7 +182,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Icon(painter = painterResource(id = R.drawable.ic_relay_baton), contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                                    Text("🏃 ${sessionModel.tr("relay_touch")}하기 (+50 눈 걸음)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(sessionModel.tr("1초 바통 터치 (+50 눈 걸음)"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         } else {
@@ -191,7 +192,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text(
-                                    text = "⏳ ${sessionModel.tr("relay_waiting")} ($currentHolder 님 차례입니다)",
+                                    text = sessionModel.tr("대기 중 (${sessionModel.tr(currentHolder)} 차례)"),
                                     modifier = Modifier.padding(vertical = 10.dp),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
@@ -210,7 +211,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("💌 ${sessionModel.tr("guestbook_title")}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text(sessionModel.tr("guestbook_title"), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                 Text(
                     text = "${sessionModel.tr("guestbook_more")} (${guestBookCards.size}개) ➔",
                     fontSize = 11.sp,
@@ -223,6 +224,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
             if (guestBookCards.isNotEmpty()) {
                 val currentRollingText = guestBookCards[rollingIndex % guestBookCards.size]
                 val targetFriendName = currentRollingText.substringBefore(":").ifEmpty { "친구" }
+                val localizedTarget = sessionModel.tr(targetFriendName)
 
                 Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -235,7 +237,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = currentRollingText,
+                            text = sessionModel.tr(currentRollingText),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.weight(1f).padding(end = 8.dp)
@@ -245,15 +247,15 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                                 cheerCount++
                                 RelayPreferences.setCheerCount(context, cheerCount)
                                 userCheered = true
-                                val newCard = "$userEmoji $userNickname: “$targetFriendName 님 오늘도 눈 피로 싹 날리고 파이팅! ✨” [❤️ 파이팅]"
+                                val newCard = "$userEmoji ${sessionModel.tr(userNickname)}: “$localizedTarget 님 오늘도 눈 피로 싹 날리고 파이팅! ✨” [❤️ 파이팅]"
                                 guestBookCards.add(0, newCard)
-                                Toast.makeText(context, "$targetFriendName 님에게 응원을 전달했습니다! ❤️ (+10P)", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, sessionModel.tr("$localizedTarget 님에게 응원을 전달했습니다! ❤️ (+10P)"), Toast.LENGTH_SHORT).show()
                             },
                             enabled = !userCheered,
                             shape = RoundedCornerShape(10.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                         ) {
-                            Text(if (userCheered) sessionModel.tr("cheer_done") else "❤️ $targetFriendName 응원", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(if (userCheered) sessionModel.tr("cheer_done") else sessionModel.tr("❤️ $localizedTarget 응원"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -265,7 +267,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
     if (showFullGuestBookDialog) {
         AlertDialog(
             onDismissRequest = { showFullGuestBookDialog = false },
-            title = { Text("💌 전체 응원 방명록 Board (${guestBookCards.size}개)") },
+            title = { Text(sessionModel.tr("전체 응원 방명록 Board (${guestBookCards.size}개)")) },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 350.dp).verticalScroll(rememberScrollState()),
@@ -277,13 +279,13 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(cardText, modifier = Modifier.padding(12.dp), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            Text(sessionModel.tr(cardText), modifier = Modifier.padding(12.dp), fontSize = 12.sp, fontWeight = FontWeight.Medium)
                         }
                     }
                 }
             },
             confirmButton = {
-                Button(onClick = { showFullGuestBookDialog = false }) { Text("닫기") }
+                Button(onClick = { showFullGuestBookDialog = false }) { Text(sessionModel.tr("btn_close")) }
             }
         )
     }
@@ -292,7 +294,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
     if (showRelayDialog) {
         AlertDialog(
             onDismissRequest = { showRelayDialog = false },
-            title = { Text("🏃 친구 응원 릴레이 탐색 & 생성") },
+            title = { Text(sessionModel.tr("친구 응원 릴레이 탐색 & 생성")) },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp).verticalScroll(rememberScrollState()),
@@ -306,7 +308,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                             onClick = { showAddFriendDialog = true },
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("➕ 실제 친구 추가", fontSize = 11.sp)
+                            Text(sessionModel.tr("실제 친구 추가"), fontSize = 11.sp)
                         }
                         Button(
                             onClick = {
@@ -320,18 +322,18 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                             },
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("📤 릴레이 링크 공유", fontSize = 11.sp)
+                            Text(sessionModel.tr("릴레이 링크 공유"), fontSize = 11.sp)
                         }
                     }
 
-                    Text("현재 등록된 친구 목록 (${friendsList.size}명):", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(sessionModel.tr("현재 등록된 친구 목록 (${friendsList.size}명):"), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     friendsList.forEach { f ->
                         Surface(
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("👤 $f", modifier = Modifier.padding(8.dp), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text("👤 ${sessionModel.tr(f)}", modifier = Modifier.padding(8.dp), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
 
@@ -341,9 +343,9 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("주간 공식 & 친구 릴레이 목록 (${activeRelays.size}개):", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(sessionModel.tr("주간 공식 & 친구 릴레이 목록 (${activeRelays.size}개):"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         TextButton(onClick = { showCreateRelayDialog = true }) {
-                            Text("➕ 새 릴레이 만들기", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(sessionModel.tr("새 릴레이 만들기"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -355,17 +357,17 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                         ) {
                             Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text(topic, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                                    Text(status, fontSize = 11.sp, color = Color(0xFF00E676), fontWeight = FontWeight.Bold)
+                                    Text(sessionModel.tr(topic), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                    Text(sessionModel.tr(status), fontSize = 11.sp, color = Color(0xFF00E676), fontWeight = FontWeight.Bold)
                                 }
-                                Text("🏃 순서: ${runners.joinToString(" ➔ ")}", fontSize = 11.sp, color = Color.Gray)
+                                Text(sessionModel.tr("순서: ${runners.map { sessionModel.tr(it) }.joinToString(" ➔ ")}"), fontSize = 11.sp, color = Color.Gray)
                             }
                         }
                     }
                 }
             },
             confirmButton = {
-                Button(onClick = { showRelayDialog = false }) { Text("닫기") }
+                Button(onClick = { showRelayDialog = false }) { Text(sessionModel.tr("btn_close")) }
             }
         )
     }
@@ -374,13 +376,13 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
     if (showAddFriendDialog) {
         AlertDialog(
             onDismissRequest = { showAddFriendDialog = false },
-            title = { Text("➕ 실제 친구 직접 추가") },
+            title = { Text(sessionModel.tr("실제 친구 직접 추가")) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
                         value = newFriendName,
                         onValueChange = { newFriendName = it },
-                        label = { Text("친구 닉네임 / 이메일 입력") },
+                        label = { Text(sessionModel.tr("친구 닉네임 / 이메일 입력")) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -393,14 +395,14 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                         selectedFirstFriend = "🧑 $newFriendName"
                         newFriendName = ""
                         showAddFriendDialog = false
-                        Toast.makeText(context, "새로운 친구가 정상적으로 추가되었습니다! 👥", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, sessionModel.tr("새로운 친구가 정상적으로 추가되었습니다! 👥"), Toast.LENGTH_SHORT).show()
                     }
                 }) {
-                    Text("친구 추가")
+                    Text(sessionModel.tr("친구 추가"))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAddFriendDialog = false }) { Text("취소") }
+                TextButton(onClick = { showAddFriendDialog = false }) { Text(sessionModel.tr("btn_cancel")) }
             }
         )
     }
@@ -409,25 +411,25 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
     if (showCreateRelayDialog) {
         AlertDialog(
             onDismissRequest = { showCreateRelayDialog = false },
-            title = { Text("✨ 새 응원 릴레이 만들기") },
+            title = { Text(sessionModel.tr("새 응원 릴레이 만들기")) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
                         value = newRelayTopic,
                         onValueChange = { newRelayTopic = it },
-                        label = { Text("새 릴레이 주제 (예: 눈 운동 함께하기)") },
+                        label = { Text(sessionModel.tr("릴레이 주제 직접 입력/수정")) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
 
-                    Text("첫 번째 바통 주자 선택:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(sessionModel.tr("첫 번째 바통 주자 선택:"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     friendsList.forEach { friend ->
                         Surface(
                             color = if (selectedFirstFriend == friend) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.fillMaxWidth().clickable { selectedFirstFriend = friend }
                         ) {
-                            Text(friend, modifier = Modifier.padding(8.dp), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text(sessionModel.tr(friend), modifier = Modifier.padding(8.dp), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -435,19 +437,19 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
             confirmButton = {
                 Button(onClick = {
                     if (activeRelays.size >= 5) {
-                        Toast.makeText(context, "최대 5개의 릴레이만 생성할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, sessionModel.tr("릴레이 집중을 위해 최대 5개로 제한됩니다."), Toast.LENGTH_SHORT).show()
                     } else if (newRelayTopic.isNotBlank()) {
                         activeRelays.add(0, Triple("🏆 $newRelayTopic", mutableListOf("🐰 $userNickname", selectedFirstFriend), "진행 중 (+150P)"))
                         showCreateRelayDialog = false
                         newRelayTopic = ""
-                        Toast.makeText(context, "새로운 릴레이가 성공적으로 시작되었습니다! 🏃", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, sessionModel.tr("릴레이를 시작했습니다!"), Toast.LENGTH_SHORT).show()
                     }
                 }) {
-                    Text("릴레이 시작")
+                    Text(sessionModel.tr("릴레이 시작"))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showCreateRelayDialog = false }) { Text("취소") }
+                TextButton(onClick = { showCreateRelayDialog = false }) { Text(sessionModel.tr("btn_cancel")) }
             }
         )
     }
@@ -456,20 +458,20 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
     if (showBatonPassDialog) {
         AlertDialog(
             onDismissRequest = { showBatonPassDialog = false },
-            title = { Text("🏃 응원 바통 터치 (인계)") },
+            title = { Text(sessionModel.tr("응원 바통 터치 (인계)")) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("응원 한마디와 스티kor를 남기고 다음 주자에게 바통을 넘기세요:", fontSize = 12.sp, color = Color.Gray)
+                    Text(sessionModel.tr("응원 한마디와 스티커를 남기고 다음 주자에게 바통을 넘기세요:"), fontSize = 12.sp, color = Color.Gray)
 
                     OutlinedTextField(
                         value = batonMessage,
                         onValueChange = { batonMessage = it },
-                        label = { Text("응원 한마디 (예: 30초 휴식 완료!)") },
+                        label = { Text(sessionModel.tr("응원 한마디 입력")) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
 
-                    Text("응원 스티커 선택:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(sessionModel.tr("응원 스티커 선택:"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         stickersList.forEach { sticker ->
                             Surface(
@@ -477,19 +479,19 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.clickable { selectedSticker = sticker }
                             ) {
-                                Text(sticker, modifier = Modifier.padding(8.dp), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(sessionModel.tr(sticker), modifier = Modifier.padding(8.dp), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
 
-                    Text("다음 바통 주자 지목:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(sessionModel.tr("다음 바통 주자 지목:"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     friendsList.forEach { friend ->
                         Surface(
                             color = if (selectedFirstFriend == friend) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier.fillMaxWidth().clickable { selectedFirstFriend = friend }
                         ) {
-                            Text(friend, modifier = Modifier.padding(10.dp), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text(sessionModel.tr(friend), modifier = Modifier.padding(10.dp), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -502,17 +504,17 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                         topRunners.add(selectedFirstFriend)
                         activeRelays[0] = Triple(topTopic, topRunners, status)
                     }
-                    val newCard = "$userEmoji $userNickname: “${batonMessage.ifEmpty { "오늘도 함께 눈 건강 지켜요!" }}” [$selectedSticker]"
+                    val newCard = "$userEmoji ${sessionModel.tr(userNickname)}: “${batonMessage.ifEmpty { sessionModel.tr("오늘도 함께 눈 건강 지켜요!") }}” [${sessionModel.tr(selectedSticker)}]"
                     guestBookCards.add(0, newCard)
                     isMyTurn = false
                     batonMessage = ""
-                    Toast.makeText(context, "$selectedFirstFriend 님에게 바통을 성공적으로 전달했습니다! 🏃✨", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, sessionModel.tr("바통 전달 완료!"), Toast.LENGTH_SHORT).show()
                 }) {
-                    Text("바통 터치 완료")
+                    Text(sessionModel.tr("바통 터치 완료"))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showBatonPassDialog = false }) { Text("취소") }
+                TextButton(onClick = { showBatonPassDialog = false }) { Text(sessionModel.tr("btn_cancel")) }
             }
         )
     }
@@ -521,10 +523,10 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
     if (showProfileDialog) {
         AlertDialog(
             onDismissRequest = { showProfileDialog = false },
-            title = { Text("🎀 마이 프로필 설정 & 캐릭터 선택") },
+            title = { Text(sessionModel.tr("마이 프로필 설정 & 캐릭터 선택")) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("마스코트 캐릭터 선택 (20종):", fontSize = 12.sp, color = Color.Gray)
+                    Text(sessionModel.tr("마스코트 캐릭터 선택 (20종):"), fontSize = 12.sp, color = Color.Gray)
 
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(5),
@@ -549,7 +551,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                     OutlinedTextField(
                         value = userNickname,
                         onValueChange = { userNickname = it },
-                        label = { Text("닉네임 입력") },
+                        label = { Text(sessionModel.tr("닉네임 입력")) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -557,7 +559,7 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                     OutlinedTextField(
                         value = userOneLineGoal,
                         onValueChange = { userOneLineGoal = it },
-                        label = { Text("한 줄 목표 / 관심사 설정") },
+                        label = { Text(sessionModel.tr("한 줄 목표 / 관심사 설정")) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -569,9 +571,9 @@ fun CommunityCheerWidget(sessionModel: GuidedSessionViewModel) {
                     RelayPreferences.setNickname(context, userNickname)
                     RelayPreferences.setEmoji(context, userEmoji)
                     RelayPreferences.setGoal(context, userOneLineGoal)
-                    Toast.makeText(context, "프로필이 성공적으로 저장되었습니다! ✨", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, sessionModel.tr("프로필이 성공적으로 저장되었습니다! ✨"), Toast.LENGTH_SHORT).show()
                 }) {
-                    Text("프로필 저장")
+                    Text(sessionModel.tr("프로필 저장"))
                 }
             }
         )

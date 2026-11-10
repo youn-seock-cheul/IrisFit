@@ -139,16 +139,16 @@ fun GuidedSessionCard(model: GuidedSessionViewModel) {
                                     strokeCap = StrokeCap.Round
                                 )
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("${state.remainingSeconds}초", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                    Text("눈 휴식 중", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                    Text(model.tr("${state.remainingSeconds}s"), style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                    Text(model.tr("눈 휴식 중"), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                                 }
                             }
                         }
 
                         Text(
-                            text = if (state.phase == SessionPhase.PAUSED) "안내를 잠시 멈췄어요."
-                            else if (model.isMarker) "점을 편한 범위에서 따라보세요"
-                            else "화면에서 시선을 떼고 편안히 쉬어보세요 🌿",
+                            text = if (state.phase == SessionPhase.PAUSED) model.tr("안내를 잠시 멈췄어요.")
+                            else if (model.isMarker) model.tr("점을 편한 범위에서 따라보세요")
+                            else model.tr("화면에서 시선을 떼고 편안히 쉬어보세요 🌿"),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
@@ -160,15 +160,15 @@ fun GuidedSessionCard(model: GuidedSessionViewModel) {
                         ) {
                             if (state.phase == SessionPhase.RUNNING) {
                                 OutlinedButton(onClick = model::pause, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)) {
-                                    Text("일시정지")
+                                    Text(model.tr("일시정지"))
                                 }
                             } else {
                                 Button(onClick = model::resume, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)) {
-                                    Text("계속하기")
+                                    Text(model.tr("계속하기"))
                                 }
                             }
                             Button(onClick = model::end, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
-                                Text("그만하기")
+                                Text(model.tr("그만하기"))
                             }
                         }
                     }
@@ -180,12 +180,12 @@ fun GuidedSessionCard(model: GuidedSessionViewModel) {
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         if (model.isMarker) {
-                            Text("마커 체험 안내가 끝났어요.", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                            Text("시선 추적이나 건강 측정 결과가 아니며 휴식 완료 기록에 합산하지 않습니다.", textAlign = TextAlign.Center)
-                            Button(onClick = model::home, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Text("홈으로") }
+                            Text(model.tr("마커 체험 안내가 끝났어요."), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                            Text(model.tr("시선 추적이나 건강 측정 결과가 아니며 휴식 완료 기록에 합산하지 않습니다."), textAlign = TextAlign.Center)
+                            Button(onClick = model::home, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Text(model.tr("홈으로")) }
                         } else {
-                            Text("🔋 눈 건강 배터리 충전 완료!", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            Text("30초 휴식이 완료되었습니다.\n+100 눈 걸음 수 & +50 포인트 충전!", textAlign = TextAlign.Center)
+                            Text(model.tr("🔋 눈 건강 배터리 충전 완료!"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(model.tr("30초 휴식이 완료되었습니다.\n+100 눈 걸음 수 & +50 포인트 충전!"), textAlign = TextAlign.Center)
 
                             Button(
                                 onClick = model::confirm,
@@ -193,10 +193,10 @@ fun GuidedSessionCard(model: GuidedSessionViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text(if (model.busy) "저장 중…" else "마일리지 적립 & 완료", fontWeight = FontWeight.Bold)
+                                Text(if (model.busy) model.tr("저장 중…") else model.tr("마일리지 적립 & 완료"), fontWeight = FontWeight.Bold)
                             }
                             TextButton(onClick = model::end, enabled = !model.busy) {
-                                Text("기록 남기지 않기", color = Color.Gray)
+                                Text(model.tr("기록 남기지 않기"), color = Color.Gray)
                             }
                         }
                     }
@@ -207,14 +207,14 @@ fun GuidedSessionCard(model: GuidedSessionViewModel) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text(if (state.phase == SessionPhase.COMPLETED) "🎉 휴식 완료 & 충전 성공!" else "안내를 종료했어요.", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                        Text("오늘도 건강한 눈 습관을 만드셨습니다.")
+                        Text(if (state.phase == SessionPhase.COMPLETED) model.tr("🎉 휴식 완료 & 충전 성공!") else model.tr("안내를 종료했어요."), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text(model.tr("오늘도 건강한 눈 습관을 만드셨습니다."))
                         Button(
                             onClick = model::home,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("홈으로 돌아가기", fontWeight = FontWeight.Bold)
+                            Text(model.tr("홈으로 돌아가기"), fontWeight = FontWeight.Bold)
                         }
                     }
                 }

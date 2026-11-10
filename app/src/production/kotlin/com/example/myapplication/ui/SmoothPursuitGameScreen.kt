@@ -116,7 +116,7 @@ fun SmoothPursuitGameScreen(
                             Text(sessionModel.tr("pursuit_ready_desc"))
 
                             if (initialMode < 0) {
-                                Text("훈련 모드 선택:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(sessionModel.tr("훈련 모드 선택:"), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                                     modeNames.forEachIndexed { idx, name ->
                                         val isSelected = selectedMode == idx
@@ -128,7 +128,7 @@ fun SmoothPursuitGameScreen(
                                                 .clickable { selectedMode = idx }
                                         ) {
                                             Text(
-                                                text = name,
+                                                text = sessionModel.tr(name),
                                                 modifier = Modifier.padding(12.dp),
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -149,7 +149,7 @@ fun SmoothPursuitGameScreen(
                     }
                 }
                 "PLAYING" -> {
-                    Text("${modeNames[selectedMode]} (${remainingSeconds}초)", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(sessionModel.tr("${modeNames[selectedMode]} (${remainingSeconds}초)"), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(20.dp))
                     Box(
                         modifier = Modifier

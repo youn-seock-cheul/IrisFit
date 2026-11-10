@@ -22,6 +22,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -306,6 +307,49 @@ fun EyePedometerCard(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                }
+            }
+
+            // PERMISSION WARNING BANNER IF USAGE STATS NOT PERMITTED
+            val hasUsagePermission = com.example.myapplication.data.ScreenTimeManager.hasUsageStatsPermission(context)
+            if (!hasUsagePermission) {
+                Card(
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        com.example.myapplication.data.ScreenTimeManager.openUsageStatsSettings(context)
+                    },
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f).padding(end = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_permission_lock),
+                                contentDescription = "Permission Lock",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Column {
+                                Text(sessionModel.tr("사용 정보 접근 권한 필요"), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onErrorContainer)
+                                Text(sessionModel.tr("실시간 화면 사용 시간 측정을 위해 권한을 허용해 주세요."), fontSize = 10.sp, color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f))
+                            }
+                        }
+                        Button(
+                            onClick = { com.example.myapplication.data.ScreenTimeManager.openUsageStatsSettings(context) },
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text(sessionModel.tr("권한 설정 바로가기 ➔"), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
             }
 

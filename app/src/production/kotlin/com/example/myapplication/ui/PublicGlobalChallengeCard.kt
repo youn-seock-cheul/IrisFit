@@ -23,6 +23,10 @@ fun PublicGlobalChallengeCard(sessionModel: GuidedSessionViewModel) {
     var isPublicChallengeJoined by remember { mutableStateOf(false) }
     var publicChallengeParticipants by remember { mutableIntStateOf(3420) }
 
+    val challengeTitle = sessionModel.tr("#오늘도30초휴식 공개 챌린지 🌍")
+    val joinedToast = sessionModel.tr("🎉 #오늘도30초휴식 공개 챌린지에 정식 참여했습니다! (+50 눈 걸음 적립)")
+    val cancelledToast = sessionModel.tr("공개 챌린지 참여를 취소했습니다.")
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -63,11 +67,11 @@ fun PublicGlobalChallengeCard(sessionModel: GuidedSessionViewModel) {
                     if (!isPublicChallengeJoined) {
                         isPublicChallengeJoined = true
                         publicChallengeParticipants++
-                        Toast.makeText(context, "🎉 #오늘도30초휴식 공개 챌린지에 정식 참여했습니다! (+50 눈 걸음 적립)", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, joinedToast, Toast.LENGTH_SHORT).show()
                     } else {
                         isPublicChallengeJoined = false
                         publicChallengeParticipants--
-                        Toast.makeText(context, "공개 챌린지 참여를 취소했습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, cancelledToast, Toast.LENGTH_SHORT).show()
                     }
                 }
             ) {
@@ -77,17 +81,17 @@ fun PublicGlobalChallengeCard(sessionModel: GuidedSessionViewModel) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("#오늘도30초휴식 공개 챌린지 🌍", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(challengeTitle, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         Button(
                             onClick = {
                                 if (!isPublicChallengeJoined) {
                                     isPublicChallengeJoined = true
                                     publicChallengeParticipants++
-                                    Toast.makeText(context, "🎉 #오늘도30초휴식 공개 챌린지에 정식 참여했습니다! (+50 눈 걸음 적립)", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, joinedToast, Toast.LENGTH_SHORT).show()
                                 } else {
                                     isPublicChallengeJoined = false
                                     publicChallengeParticipants--
-                                    Toast.makeText(context, "공개 챌린지 참여를 취소했습니다.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, cancelledToast, Toast.LENGTH_SHORT).show()
                                 }
                             },
                             shape = RoundedCornerShape(10.dp),
@@ -100,8 +104,13 @@ fun PublicGlobalChallengeCard(sessionModel: GuidedSessionViewModel) {
                             )
                         }
                     }
+                    val descText = if (isPublicChallengeJoined) {
+                        sessionModel.tr("참여자 ${publicChallengeParticipants}명 참여 중 • 나의 기여: 눈 휴식 4회 완료 (달성률 80%)")
+                    } else {
+                        sessionModel.tr("참여자 ${publicChallengeParticipants}명 참여 중 • 탭하여 즉시 동참 및 보상 받기")
+                    }
                     Text(
-                        text = "참여자 ${publicChallengeParticipants}명 참여 중 • " + if (isPublicChallengeJoined) "나의 기여: 눈 휴식 4회 완료 (달성률 80%)" else "탭하여 즉시 동참 및 보상 받기",
+                        text = descText,
                         fontSize = 11.sp,
                         color = Color.Gray
                     )

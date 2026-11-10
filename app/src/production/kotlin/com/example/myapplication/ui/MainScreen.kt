@@ -146,362 +146,6 @@ fun MainScreen(
 }
 
 @Composable
-fun BatteryTrendCard(sessionModel: GuidedSessionViewModel) {
-    var selectedPeriod by remember { mutableIntStateOf(1) } // 0: 일간(오늘), 1: 주간(7일), 2: 월간(4주)
-    val records = sessionModel.records
-    val today = LocalDate.now()
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(painter = painterResource(id = R.drawable.ic_card_chart), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                    }
-                    Column {
-                        Text(
-                            when (selectedPeriod) {
-                                0 -> sessionModel.tr("trend_daily_title")
-                                1 -> sessionModel.tr("trend_weekly_title")
-                                else -> sessionModel.tr("trend_monthly_title")
-                            },
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            when (selectedPeriod) {
-                                0 -> sessionModel.tr("trend_daily_sub")
-                                1 -> sessionModel.tr("trend_weekly_sub")
-                                else -> sessionModel.tr("trend_monthly_sub")
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                FilterChip(
-                    selected = selectedPeriod == 0,
-                    onClick = { selectedPeriod = 0 },
-                    label = { Text(sessionModel.tr("tab_daily"), fontSize = 11.sp) },
-                    shape = RoundedCornerShape(8.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                FilterChip(
-                    selected = selectedPeriod == 1,
-                    onClick = { selectedPeriod = 1 },
-                    label = { Text(sessionModel.tr("tab_weekly"), fontSize = 11.sp) },
-                    shape = RoundedCornerShape(8.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                FilterChip(
-                    selected = selectedPeriod == 2,
-                    onClick = { selectedPeriod = 2 },
-                    label = { Text(sessionModel.tr("tab_monthly"), fontSize = 11.sp) },
-                    shape = RoundedCornerShape(8.dp)
-                )
-            }
-
-            Box(
-                modifier = Modifier.fillMaxWidth().height(190.dp),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                when (selectedPeriod) {
-                    0 -> DailyStockChartView(sessionModel)
-                    1 -> {
-                        val past7Days = (6 downTo 0).map { today.minusDays(it.toLong()).toString() }
-                        val dailyScores = past7Days.associateWith { date ->
-                            val dayRecords = records.filter { it.completedLocalDate == date }
-                            val rests = dayRecords.count { it.routineId == "screen_rest" }
-                            val miniGames = dayRecords.count { it.routineId == "eye_gym" || it.routineId == "smooth_pursuit" }
-                            (70 + (rests * 15) + (miniGames * 25)).coerceIn(30, 100)
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            dailyScores.forEach { (dateStr, score) ->
-                                val (monthDay, dayName) = try {
-                                    val parsed = LocalDate.parse(dateStr)
-                                    val md = "${parsed.monthValue}/${parsed.dayOfMonth}"
-                                    val dn = parsed.dayOfWeek.getDisplayName(java.time.format.TextStyle.NARROW, java.util.Locale.KOREAN)
-                                    md to dn
-                                } catch (_: Exception) {
-                                    "" to ""
-                                }
-                                val heightFraction = (score.toFloat() / 100f).coerceIn(0.2f, 1.0f)
-                                val barColor = when {
-                                    score >= 80 -> Color(0xFF00C853)
-                                    score >= 50 -> Color(0xFFFFB300)
-                                    else -> Color(0xFFFF5252)
-                                }
-
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    Text("$score%", fontSize = 10.sp, color = barColor, fontWeight = FontWeight.Bold)
-                                    Box(
-                                        modifier = Modifier
-                                            .size(width = 28.dp, height = (60 * heightFraction).dp)
-                                            .background(
-                                                if (dateStr == sessionModel.today) barColor
-                                                else barColor.copy(alpha = 0.3f),
-                                                RoundedCornerShape(8.dp)
-                                            )
-                                    )
-                                    Text(dayName, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (dateStr == sessionModel.today) MaterialTheme.colorScheme.onSurface else Color.Gray)
-                                    Text(monthDay, fontSize = 9.sp, color = Color.Gray)
-                                }
-                            }
-                        }
-                    }
-                    else -> {
-                        val weeklyScores = (3 downTo 0).map { weekIndex ->
-                            val endDay = today.minusDays((weekIndex * 7).toLong())
-                            val startDay = endDay.minusDays(6)
-                            val weekDates = (0..6).map { startDay.plusDays(it.toLong()).toString() }
-
-                            val scores = weekDates.map { dateStr ->
-                                val dayRecords = records.filter { it.completedLocalDate == dateStr }
-                                val rests = dayRecords.count { it.routineId == "screen_rest" }
-                                val miniGames = dayRecords.count { it.routineId == "eye_gym" || it.routineId == "smooth_pursuit" }
-                                (70 + (rests * 15) + (miniGames * 25)).coerceIn(30, 100)
-                            }
-                            val avgScore = scores.average().toInt()
-                            val label = if (weekIndex == 0) "이번 주" else "${weekIndex}주 전"
-                            label to avgScore
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            weeklyScores.forEach { (weekLabel, score) ->
-                                val heightFraction = (score.toFloat() / 100f).coerceIn(0.2f, 1.0f)
-                                val barColor = when {
-                                    score >= 80 -> Color(0xFF00C853)
-                                    score >= 50 -> Color(0xFFFFB300)
-                                    else -> Color(0xFFFF5252)
-                                }
-
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    Text("$score%", fontSize = 11.sp, color = barColor, fontWeight = FontWeight.Bold)
-                                    Box(
-                                        modifier = Modifier
-                                            .size(width = 44.dp, height = (60 * heightFraction).dp)
-                                            .background(barColor, RoundedCornerShape(8.dp))
-                                    )
-                                    Text(weekLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DailyStockChartView(sessionModel: GuidedSessionViewModel) {
-    val records = sessionModel.records
-    val today = sessionModel.today
-    val currentScore = sessionModel.eyeBatteryStats.eyeHealthScore
-
-    val now = java.time.LocalTime.now()
-    val currentHour = now.hour
-    val currentMinute = now.minute
-    val currentTotalMinutes = currentHour * 60 + currentMinute
-
-    val points = remember(records, currentScore, currentTotalMinutes) {
-        val list = mutableListOf<Triple<String, Int, Boolean>>()
-        val hours = (0..currentHour).filter { it % 3 == 0 }.toMutableList()
-        if (!hours.contains(currentHour)) {
-            hours.add(currentHour)
-        }
-
-        hours.forEach { h ->
-            val m = if (h == currentHour) currentMinute else 0
-            val label = String.format(java.util.Locale.getDefault(), "%02d:%02d", h, m)
-            val totalM = h * 60 + m
-
-            // Cumulative screen minutes up to this hour
-            val cumulativeScreenTime = if (currentTotalMinutes > 0) {
-                ((sessionModel.eyeBatteryStats.screenTimeMinutes * totalM) / currentTotalMinutes).coerceAtLeast(0)
-            } else 0
-
-            // Cumulative completed rests up to this hour
-            val cumulativeRests = records.count {
-                it.completedLocalDate == today &&
-                        (it.completedAtEpochMillis % 86400000) / 60000 <= totalM &&
-                        it.routineId == "screen_rest"
-            }
-
-            // Cumulative completed mini-games up to this hour
-            val cumulativeGames = records.count {
-                it.completedLocalDate == today &&
-                        (it.completedAtEpochMillis % 86400000) / 60000 <= totalM &&
-                        (it.routineId == "eye_gym" || it.routineId == "smooth_pursuit")
-            }
-
-            // Evaluate using the exact same EyeBatteryCalculator engine!
-            val statsAtHour = EyeBatteryCalculator.calculateBattery(
-                screenTimeMinutes = cumulativeScreenTime,
-                restCount = cumulativeRests,
-                miniGameCount = cumulativeGames
-            )
-
-            val finalScore = if (h == currentHour) currentScore else statsAtHour.eyeHealthScore
-
-            list.add(Triple(label, finalScore, h == currentHour))
-        }
-        list
-    }
-
-    val dateFormatter = java.time.format.DateTimeFormatter.ofPattern("M월 d일")
-    val formattedDate = java.time.LocalDate.now().format(dateFormatter)
-
-    Column(
-        modifier = Modifier.fillMaxWidth().height(210.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Date Header
-        Text(
-            text = "$formattedDate ${sessionModel.tr("trend_daily_title")}",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        // Grid Graph Area with Y-Axis Percentage Labels
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .background(Color(0xFF161F28), RoundedCornerShape(16.dp))
-                .padding(horizontal = 12.dp, vertical = 10.dp)
-        ) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                // Left Y-Axis Percentage Labels (20% to 100% range)
-                Column(
-                    modifier = Modifier.fillMaxHeight().padding(end = 8.dp),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                    horizontalAlignment = Alignment.End
-                ) {
-                    listOf("100%", "80%", "60%", "40%", "20%").forEach { pct ->
-                        Text(pct, fontSize = 9.sp, color = Color.Gray)
-                    }
-                }
-
-                // Main Graph & Grid Lines Canvas
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .fillMaxHeight()
-                ) {
-                    Canvas(modifier = Modifier.fillMaxSize()) {
-                        val width = size.width
-                        val height = size.height
-                        val stepX = width / (points.size - 1).coerceAtLeast(1)
-
-                        // Draw Horizontal Grid Lines (100%, 80%, 60%, 40%, 20%)
-                        for (i in 0..4) {
-                            val y = height * (i / 4f)
-                            drawLine(
-                                color = Color.DarkGray.copy(alpha = 0.3f),
-                                start = Offset(0f, y),
-                                end = Offset(width, y),
-                                strokeWidth = 1.dp.toPx()
-                            )
-                        }
-
-                        // Draw Smooth Neon-Green Curve Path (20% to 100% range)
-                        val path = androidx.compose.ui.graphics.Path()
-                        points.forEachIndexed { index, (_, score, _) ->
-                            val x = index * stepX
-                            val normalizedScore = (score - 20f) / 80f
-                            val y = height * (1f - normalizedScore.coerceIn(0f, 1f))
-                            if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
-                        }
-
-                        drawPath(
-                            path = path,
-                            color = Color(0xFF00E676),
-                            style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-                        )
-
-                        // Draw Nodes
-                        points.forEachIndexed { index, (_, score, isCurrent) ->
-                            val x = index * stepX
-                            val normalizedScore = (score - 20f) / 80f
-                            val y = height * (1f - normalizedScore.coerceIn(0f, 1f))
-
-                            drawCircle(
-                                color = Color.White,
-                                radius = if (isCurrent) 6.dp.toPx() else 4.dp.toPx(),
-                                center = Offset(x, y)
-                            )
-                            drawCircle(
-                                color = Color(0xFF00E676),
-                                radius = if (isCurrent) 4.dp.toPx() else 2.5.dp.toPx(),
-                                center = Offset(x, y)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // X-Axis Time Labels
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            val displayPoints = if (points.size > 5) {
-                listOf(points.first(), points[points.size / 2], points.last())
-            } else points
-            displayPoints.forEach { (label, score, _) ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("$score%", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E676))
-                    Text(label, fontSize = 9.sp, color = Color.Gray)
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun CommunityCheerCard(sessionModel: GuidedSessionViewModel) {
     val context = LocalContext.current
     var cheerCount by remember { mutableIntStateOf(42) }
@@ -1408,34 +1052,34 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
             shape = RoundedCornerShape(20.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text("👑 IrisFit PRO 차세대 유료 플랜 혜택", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                Text("시선 추적(Gaze Tracking) 기술 기반의 독보적인 프리미엄 기능:")
+                Text(sessionModel.tr("IrisFit PRO 차세대 유료 플랜 혜택"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text(sessionModel.tr("시선 추적(Gaze Tracking) 기술 기반의 독보적인 프리미엄 기능:"))
 
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(12.dp)) {
                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("🗺️ 1. Gaze-Nav 시선 스크롤 지도", fontWeight = FontWeight.Bold)
-                        Text("손대지 않고 눈동자 이동만으로 지도 스크롤 & 확대/축소", fontSize = 12.sp, color = Color.Gray)
+                        Text(sessionModel.tr("1. Gaze-Nav 시선 스크롤 지도"), fontWeight = FontWeight.Bold)
+                        Text(sessionModel.tr("손대지 않고 눈동자 이동만으로 지도 스크롤 & 확대/축소"), fontSize = 12.sp, color = Color.Gray)
                     }
                 }
 
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(12.dp)) {
                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("🎵 2. Eye-Blink 힐링 사운드", fontWeight = FontWeight.Bold)
-                        Text("내 깜빡임 주기와 동기화되어 안구 근육을 이완시키는 오디오", fontSize = 12.sp, color = Color.Gray)
+                        Text(sessionModel.tr("2. Eye-Blink 힐링 사운드"), fontWeight = FontWeight.Bold)
+                        Text(sessionModel.tr("내 깜빡임 주기와 동기화되어 안구 근육을 이완시키는 오디오"), fontSize = 12.sp, color = Color.Gray)
                     }
                 }
 
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(12.dp)) {
                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("🤖 3. Gaze-AI 머무름 감지 요약", fontWeight = FontWeight.Bold)
-                        Text("오랫동안 쳐다보는 화면 영역을 LLM이 실시간 감지 및 브리핑", fontSize = 12.sp, color = Color.Gray)
+                        Text(sessionModel.tr("3. Gaze-AI 머무름 감지 요약"), fontWeight = FontWeight.Bold)
+                        Text(sessionModel.tr("오랫동안 쳐다보는 화면 영역을 LLM이 실시간 감지 및 브리핑"), fontSize = 12.sp, color = Color.Gray)
                     }
                 }
 
                 Button(onClick = {
-                    Toast.makeText(context, "PRO 프리미엄 7일 체험이 시작되었습니다! 👑", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, sessionModel.tr("PRO 프리미엄 7일 체험이 시작되었습니다!"), Toast.LENGTH_SHORT).show()
                 }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Text("PRO 7일 무료 체험 시작하기", fontWeight = FontWeight.Bold)
+                    Text(sessionModel.tr("PRO 7일 무료 체험 시작하기"), fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -1447,25 +1091,9 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showLanguageDialog by remember { mutableStateOf(false) }
     var showPrivacyDialog by remember { mutableStateOf(false) }
 
-    val languages = listOf(
-        "시스템 기본 언어 (System Default)" to "",
-        "한국어 (Korean)" to "ko",
-        "English" to "en",
-        "日本語 (Japanese)" to "ja",
-        "Español (Spanish)" to "es"
-    )
-
-    val currentLangCode = sessionModel.currentLang
-    val currentLangLabel = when (currentLangCode) {
-        "ko" -> "한국어 (Korean)"
-        "en" -> "English"
-        "ja" -> "日本語 (Japanese)"
-        "es" -> "Español (Spanish)"
-        else -> "시스템 기본 언어 (System Default)"
-    }
+    val sysLang = java.util.Locale.getDefault().displayLanguage
 
     Column(
         modifier = modifier.padding(20.dp).verticalScroll(scrollState),
@@ -1479,21 +1107,21 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
             shape = RoundedCornerShape(20.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(sessionModel.tr("lang_settings"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(sessionModel.tr("스마트폰 언어 자동 연동"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(sessionModel.tr("lang_current"), fontSize = 12.sp, color = Color.Gray)
-                        Text(currentLangLabel, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(sessionModel.tr("현재 스마트폰 시스템 언어"), fontSize = 12.sp, color = Color.Gray)
+                        Text(sysLang, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
                     }
-                    Button(
-                        onClick = { showLanguageDialog = true },
-                        shape = RoundedCornerShape(10.dp)
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(sessionModel.tr("lang_select_btn"))
+                        Text("🟢 " + sessionModel.tr("실시간 자동 번역 중"), modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -1536,8 +1164,8 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
             shape = RoundedCornerShape(20.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("💬 유저 피드백 & 버그 제보 (CS 센터)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text("앱 사용 중 버그가 발생하거나 개선 아이디어가 있으시면 언제든지 의견을 남겨주세요!", fontSize = 12.sp, color = Color.Gray)
+                Text(sessionModel.tr("유저 피드백 & 버그 제보 (CS 센터)"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(sessionModel.tr("앱 사용 중 버그가 발생하거나 개선 아이디어가 있으시면 언제든지 의견을 남겨주세요!"), fontSize = 12.sp, color = Color.Gray)
                 OutlinedButton(
                     onClick = {
                         try {
@@ -1550,7 +1178,7 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("✉️ 개발자에게 피드백 보내기 (Email)", fontWeight = FontWeight.Bold)
+                    Text(sessionModel.tr("개발자에게 피드백 보내기 (Email)"), fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -1561,8 +1189,8 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
             shape = RoundedCornerShape(20.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("🔋 백그라운드 강제종료 방지 (배터리 최적화 예외)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text("삼성, 샤오미 등 일부 기기에서 백그라운드 실시간 눈 건강 모니터링이 멈추지 않도록 [배터리 최적화 예외 앱]으로 등록해 주세요.", fontSize = 12.sp, color = Color.Gray)
+                Text(sessionModel.tr("백그라운드 강제종료 방지 (배터리 최적화 예외)"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(sessionModel.tr("삼성, 샤오미 등 일부 기기에서 백그라운드 실시간 눈 건강 모니터링이 멈추지 않도록 [배터리 최적화 예외 앱]으로 등록해 주세요."), fontSize = 12.sp, color = Color.Gray)
                 OutlinedButton(
                     onClick = {
                         try {
@@ -1580,7 +1208,7 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("⚙️ 배터리 최적화 예외 설정 열기", fontWeight = FontWeight.Bold)
+                    Text(sessionModel.tr("배터리 최적화 예외 설정 열기"), fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -1616,14 +1244,14 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
             shape = RoundedCornerShape(20.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("📜 개인정보 처리방침 및 이용약관", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text("구글 플레이 스토어 등록 필수 법적 문서 및 로컬 데이터 보호 정책", fontSize = 12.sp, color = Color.Gray)
+                Text(sessionModel.tr("개인정보 처리방침 및 이용약관"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(sessionModel.tr("구글 플레이 스토어 등록 필수 법적 문서 및 로컬 데이터 보호 정책"), fontSize = 12.sp, color = Color.Gray)
                 OutlinedButton(
                     onClick = { showPrivacyDialog = true },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("📄 개인정보 처리방침 전문 보기", fontWeight = FontWeight.Bold)
+                    Text(sessionModel.tr("개인정보 처리방침 전문 보기"), fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -1651,46 +1279,7 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
         )
     }
 
-    if (showLanguageDialog) {
-        AlertDialog(
-            onDismissRequest = { showLanguageDialog = false },
-            title = { Text(sessionModel.tr("lang_dialog_title")) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    languages.forEach { (label, code) ->
-                        val isSelected = currentLangCode == code
 
-                        Surface(
-                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    showLanguageDialog = false
-                                    sessionModel.setLanguage(code)
-                                    com.example.myapplication.data.LanguageManager.setSelectedLanguage(context, code)
-                                    Toast.makeText(context, sessionModel.tr("lang_settings") + ": $label", Toast.LENGTH_SHORT).show()
-                                }
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(14.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(label, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold, fontSize = 14.sp)
-                                if (isSelected) {
-                                    Text("✓", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showLanguageDialog = false }) { Text(sessionModel.tr("btn_close")) }
-            }
-        )
-    }
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -1706,100 +1295,6 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
                 TextButton(onClick = { showDeleteDialog = false }) { Text(sessionModel.tr("btn_cancel")) }
             }
         )
-    }
-}
-
-@Composable
-fun PublicGlobalChallengeCardWidget(sessionModel: GuidedSessionViewModel) {
-    val context = LocalContext.current
-    var isPublicChallengeJoined by remember { mutableStateOf(false) }
-    var publicChallengeParticipants by remember { mutableIntStateOf(3420) }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(Color(0xFF00E676).copy(alpha = 0.2f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("🌍", fontSize = 20.sp)
-                    }
-                    Column {
-                        Text(sessionModel.tr("global_challenge_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text(sessionModel.tr("global_challenge_sub"), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                    }
-                }
-            }
-
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isPublicChallengeJoined) Color(0xFF00E676).copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface
-                ),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth().clickable {
-                    if (!isPublicChallengeJoined) {
-                        isPublicChallengeJoined = true
-                        publicChallengeParticipants++
-                        Toast.makeText(context, "🎉 #오늘도30초휴식 공개 챌린지에 정식 참여했습니다! (+50 눈 걸음 적립)", Toast.LENGTH_SHORT).show()
-                    } else {
-                        isPublicChallengeJoined = false
-                        publicChallengeParticipants--
-                        Toast.makeText(context, "공개 챌린지 참여를 취소했습니다.", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            ) {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("#오늘도30초휴식 공개 챌린지 🌍", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        Button(
-                            onClick = {
-                                if (!isPublicChallengeJoined) {
-                                    isPublicChallengeJoined = true
-                                    publicChallengeParticipants++
-                                    Toast.makeText(context, "🎉 #오늘도30초휴식 공개 챌린지에 정식 참여했습니다! (+50 눈 걸음 적립)", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    isPublicChallengeJoined = false
-                                    publicChallengeParticipants--
-                                    Toast.makeText(context, "공개 챌린지 참여를 취소했습니다.", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            shape = RoundedCornerShape(10.dp),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = if (isPublicChallengeJoined) sessionModel.tr("global_challenge_joined") else sessionModel.tr("global_challenge_join"),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    Text(
-                        text = "참여자 ${publicChallengeParticipants}명 참여 중 • " + if (isPublicChallengeJoined) "나의 기여: 눈 휴식 4회 완료 (달성률 80%)" else "탭하여 즉시 동참 및 보상 받기",
-                        fontSize = 11.sp,
-                        color = Color.Gray
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -1821,7 +1316,7 @@ fun WellnessHomeTab(
         BatteryTrendCard(sessionModel)
         GoalAchievementCard(sessionModel)               // 1) 오늘의 눈 건강 목표
         CommunityCheerWidget(sessionModel)              // 2) 친구들과 릴레이
-        PublicGlobalChallengeCardWidget(sessionModel)   // 3) 공개 글로벌 릴레이
+        PublicGlobalChallengeCard(sessionModel)         // 3) 공개 글로벌 릴레이
     }
 
     if (sessionModel.state.phase != com.example.myapplication.session.SessionPhase.HOME) {
