@@ -9,6 +9,12 @@ import android.provider.Settings
 import java.time.LocalDate
 import java.time.ZoneId
 
+sealed class ScreenTimeQueryResult {
+    data class Success(val minutes: Int) : ScreenTimeQueryResult()
+    object PermissionDenied : ScreenTimeQueryResult()
+    data class QueryError(val reason: String) : ScreenTimeQueryResult()
+}
+
 object ScreenTimeManager {
 
     fun hasUsageStatsPermission(context: Context): Boolean {
@@ -33,18 +39,30 @@ object ScreenTimeManager {
         }
     }
 
-    fun getTodayScreenTimeMinutes(context: Context): Int {
-        if (!hasUsageStatsPermission(context)) return 0
-        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return 0
+    fun queryTodayScreenTime(context: Context): ScreenTimeQueryResult {
+        if (!hasUsageStatsPermission(context)) return ScreenTimeQueryResult.PermissionDenied
+        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+            ?: return ScreenTimeQueryResult.QueryError("UsageStatsService를 시작할 수 없습니다.")
 
-        val startOfDay = LocalDate.now()
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
+        val startOfDay = try {
+            LocalDate.now()
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+        } catch (e: Exception) {
+            return ScreenTimeQueryResult.QueryError("자정 시간 계산 오류: ${e.message}")
+        }
         val now = System.currentTimeMillis()
 
-        val aggregateStats = usageStatsManager.queryAndAggregateUsageStats(startOfDay, now)
-        if (aggregateStats.isNullOrEmpty()) return 0
+        val aggregateStats = try {
+            usageStatsManager.queryAndAggregateUsageStats(startOfDay, now)
+        } catch (e: Exception) {
+            return ScreenTimeQueryResult.QueryError("UsageStats 쿼리 실패: ${e.message}")
+        }
+
+        if (aggregateStats.isNullOrEmpty()) {
+            return ScreenTimeQueryResult.QueryError("집계된 UsageStats 데이터가 비어 있습니다.")
+        }
 
         var totalMs = 0L
         for ((_, stats) in aggregateStats) {
@@ -56,20 +74,28 @@ object ScreenTimeManager {
 
         val totalMinutes = (totalMs / (1000 * 60)).toInt()
         val minutesSinceMidnight = ((now - startOfDay).coerceAtLeast(0L) / (1000 * 60)).toInt()
+        val cappedMinutes = totalMinutes.coerceAtMost(minutesSinceMidnight)
 
-        // Strict cap at actual minutes elapsed since 00:00 AM local time today!
-        return totalMinutes.coerceAtMost(minutesSinceMidnight)
+        return ScreenTimeQueryResult.Success(cappedMinutes)
+    }
+
+    fun getTodayScreenTimeMinutes(context: Context): Int {
+        return when (val result = queryTodayScreenTime(context)) {
+            is ScreenTimeQueryResult.Success -> result.minutes
+            else -> 0
+        }
     }
 
     fun getTodayScreenTimeFormatted(context: Context): String {
-        if (!hasUsageStatsPermission(context)) return "미측정"
-        val minutes = getTodayScreenTimeMinutes(context)
-        val hours = minutes / 60
-        val mins = minutes % 60
-        return if (hours > 0) {
-            "${hours}시간 ${mins}분"
-        } else {
-            "${mins}분"
+        return when (val result = queryTodayScreenTime(context)) {
+            is ScreenTimeQueryResult.Success -> {
+                val minutes = result.minutes
+                val hours = minutes / 60
+                val mins = minutes % 60
+                if (hours > 0) "${hours}시간 ${mins}분" else "${mins}분"
+            }
+            is ScreenTimeQueryResult.PermissionDenied,
+            is ScreenTimeQueryResult.QueryError -> "미측정"
         }
     }
 }

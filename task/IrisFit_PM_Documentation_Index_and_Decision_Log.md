@@ -23,7 +23,7 @@
 - 진행 순서: **현재 Release 구현 감사 → 베타 범위/수용 기준 승인 → 개발·자체검증 → QA 재검수 → PM 완료 판정 → 내부 테스트 → 제한 베타 → 별도 정식 출시 승인**
 - `AUD-01` Developer 감사 및 `QA-01` 정적 재검토는 완료됐으나 실제 기기/Play 검증은 미완료다. 전체 제품 출시 준비는 **BLOCKED**다.
 - 실제 시청시간 목표는 유지한다. Android 13+ 범용 목표와 측정 불가 시 `미측정`을 승인했고, Galaxy S23/Z Fold7은 초기 시험 후보로만 정했다. 기기별 전력 허용치·정확도 기준·시험 절차는 미승인이다.
-- 현재 단계: **Developer 인계 접수 → QA 재검수 대기**. commit `3218622`를 확인하고 전체 단위 테스트 59 passed/0 skipped/0 failed를 재실행했다. PM 사전 검토에서 UsageStats 조회 오류와 실제 0분 구분, 실제 센서 가용성 및 일부 evaluator 경로가 QA 재검수 대상으로 남았다. 실기기 시험은 NOT RUN. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_2026-11-15.md`.
+- 현재 단계: **QA PARTIAL PASS 및 PM 완료 판정 보류**. commit `66aa763`를 확인하고 전체 단위 테스트 61 passed/0 skipped/0 failed를 재실행했다. UsageStats API의 서비스 부재/빈 결과가 운영 경로에서 0으로 처리될 수 있고, 하드웨어 센서·배터리·시청 정확도 검증은 NOT RUN이다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_66aa763_2026-11-15.md`.
 - 출시 Hold 해제, 내부 테스트 업로드 및 Production 배포는 별도 PM 승인 대상이다.
 
 ## 문서 인덱스
@@ -43,6 +43,7 @@
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Feasibility_Test_Plan_2026-11-15.md` | 계획 초안 — 기준 미승인/실기기 미실시 | 기기별 기준선 비교와 실제 시청 정확도 타당성 시험 제안 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Second_Review_2026-11-15.md` | PM 판정 — PARTIAL PASS/재개방 | 개발·QA 제출 결과의 코드/테스트 증거 검토 및 수정 지시 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_2026-11-15.md` | PM 사전 검토 완료 — QA 대기 | 최신 Developer 인계/commit 및 테스트 결과 확인, QA 검수 초점 |
+| `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_66aa763_2026-11-15.md` | QA PARTIAL PASS — PM 완료 보류 | `66aa763`, 61개 JVM 단위 테스트 및 운영 데이터/실기기 한계에 대한 PM 판정 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` | 사용자 정의 역할 반영 | QA 책임, 산출물, 출력 형식 및 판정 용어 |
 
 저장소의 `Walkthrough.md` 및 `docs/WALKTHROUGH_P0_LATEST.md`는 개발 변경/기술 검증 로그로 유지한다. 사용자와 PM의 전체 제품 로드맵/공동 진행 상태는 `C:\Users\youns\AndroidStudioProjects\IrisFit_LabA\task\IrisFit_PM_User_Walkthrough.md`를 기준으로 확인한다. 실제 PM 개발 지시 및 추가 검토 보고서는 사용자가 지정한 `C:\Users\youns\AndroidStudioProjects\task`에도 보관한다. 기존 기준·QA 문서는 작업 시 원본 파일과 기준 날짜를 확인한 후 새 감사 보고서의 입력 자료로 등록한다. 과거 보고의 검사 결과는 현재 상태의 증거로 재사용하지 않는다.
@@ -254,6 +255,13 @@
 - **다음 단계:** QA가 PM의 기존 재개방 지시와 최신 소스/테스트를 독립 검수한다. 실기기 배터리·시선 정확도 시험은 NOT RUN으로 유지한다. 완료/Release 승인은 보류한다.
 - **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_2026-11-15.md`.
 
+### DEC-2026-11-15-26 — QA PARTIAL PASS 및 기능 완료 보류
+
+- **상태:** PM 판정 — 단위 테스트/정적 UI 범위 부분 수용; 실제 지표 기능 완료 미승인
+- **결정:** commit `66aa763`의 전체 JVM 단위 테스트 61 passed/0 skipped/0 failed를 확인한다. evaluator 오류/음수 입력 방어 테스트는 해당 입력 계약 범위에서 수용한다. 그러나 실제 UsageStats 서비스 부재/빈 결과는 `ScreenTimeManager`에서 0으로 축약될 수 있어 실제 0분과 완전히 구분되지 않는다. 센서 freshness는 인자로 주입되는 테스트 조건이며 하드웨어 검증이 아니다.
+- **다음:** 운영 UsageStats 조회 결과를 실제 0과 구분할 필요가 있는 UI/API 경로에 대해 별도 구현 및 회귀 테스트를 수행한다. 실기기 시선 정확도·전력 시험은 NOT RUN. Release Hold 유지.
+- **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_66aa763_2026-11-15.md`.
+
 ## 진행 추적
 
 | ID | 작업 | 상태 | 담당 | 다음 결과 |
@@ -262,8 +270,8 @@
 | AUD-02 | dirty worktree/HEAD 기준점 기록 | 완료 | 개발자 | branch/HEAD, 24 modified, 34 untracked 기록 |
 | QA-01 | 감사 결과 acceptance criteria 재검토 | 완료 — 전체 QA BLOCKED | QA | `IrisFit_Current_State_Audit_QA_Review_2026-11-15.md` |
 | PM-01 | 베타 MVP 범위 및 제품 목표 승인 | 부분 완료 — 실제 시청시간 목표 유지, Android 13+ 및 `미측정` 결정 | PM/사용자 | 정확도·전력 기준 및 시험 절차 결정 |
-| DEV-02 | ViewingTimeEvaluator 상태·노출 리팩터링 | Developer 인계 제출 — commit `3218622`; PM 사전 검토 완료 | Developer | QA 재검수 및 필요 결함 수정/재인계 |
-| QA-03 | DEV-02 재검수 | 결과 대기 — 최신 변경 검수 예정 | QA | evaluator 실제 결과/실패 분기, sensor/query, edge cases, UI 및 미실행 증거 |
+| DEV-02 | ViewingTimeEvaluator 상태·노출 리팩터링 | Developer 수정 제출 — commit `66aa763`; JVM 테스트 61/0/0 | Developer | QA PARTIAL PASS, 제품 완료 보류 |
+| QA-03 | DEV-02 재검수 | PARTIAL PASS — 실기기 NOT RUN, QueryError/0 실제 API 구분 미완료 | QA | UsageStats 운영 결과 계약 및 실기기 타당성은 별도 작업/승인 |
 | TEST-01 | Galaxy S23/Z Fold7 타당성 시험 | 계획 초안 — OS/합격 기준/시험 미승인 | PM/Developer/QA | 사전 승인된 시험 기준과 기기별 결과 |
 | REL-01 | 내부 테스트 진입 및 Play 배포 승인 | 미승인 | PM/소유자 | 별도 명시적 승인 |
 

@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.content.ContextWrapper
+import com.example.myapplication.data.ScreenTimeQueryResult
 import com.example.myapplication.data.TargetDeviceModel
 import com.example.myapplication.data.ViewingTimeEvaluator
 import com.example.myapplication.data.ViewingTimeStatus
@@ -29,7 +30,7 @@ class ViewingTimeEvaluatorTest {
 
     @Test
     fun testEvaluate_PermissionDenied_ReturnsPermissionDeniedStatus() {
-        val result = ViewingTimeEvaluator.evaluateViewingTime(
+        val result = ViewingTimeEvaluator.evaluateViewingTimeInternal(
             context = testContext,
             hasPermission = false,
             isAppInForeground = true
@@ -39,7 +40,7 @@ class ViewingTimeEvaluatorTest {
 
     @Test
     fun testEvaluate_BackgroundPaused_ReturnsBackgroundPausedStatus() {
-        val result = ViewingTimeEvaluator.evaluateViewingTime(
+        val result = ViewingTimeEvaluator.evaluateViewingTimeInternal(
             context = testContext,
             hasPermission = true,
             isAppInForeground = false
@@ -51,7 +52,7 @@ class ViewingTimeEvaluatorTest {
 
     @Test
     fun testEvaluate_ScreenOff_ReturnsBackgroundPausedStatus() {
-        val result = ViewingTimeEvaluator.evaluateViewingTime(
+        val result = ViewingTimeEvaluator.evaluateViewingTimeInternal(
             context = testContext,
             hasPermission = true,
             isAppInForeground = true,
@@ -64,35 +65,35 @@ class ViewingTimeEvaluatorTest {
 
     @Test
     fun testEvaluate_SensorStaleOrNull_ReturnsSensorUnavailableStatus() {
-        val result = ViewingTimeEvaluator.evaluateViewingTime(
+        val result = ViewingTimeEvaluator.evaluateViewingTimeInternal(
             context = testContext,
             hasPermission = true,
             isAppInForeground = true,
             isScreenOn = true,
             poseDetector = null,
             isSensorFresh = false,
-            mockUsageMinutes = 45
+            mockQueryResult = ScreenTimeQueryResult.Success(45)
         )
         assertTrue(result is ViewingTimeStatus.SensorUnavailable)
     }
 
     @Test
     fun testEvaluate_MeasuredZeroMinutes_ReturnsMeasuredZeroStatus() {
-        val result = ViewingTimeEvaluator.evaluateViewingTime(
+        val result = ViewingTimeEvaluator.evaluateViewingTimeInternal(
             context = testContext,
             hasPermission = true,
             isAppInForeground = true,
             isScreenOn = true,
             poseDetector = null,
             isSensorFresh = true,
-            mockUsageMinutes = 0
+            mockQueryResult = ScreenTimeQueryResult.Success(0)
         )
         assertTrue(result is ViewingTimeStatus.MeasuredZero)
     }
 
     @Test
     fun testEvaluate_ConfigChanging_ReturnsConfigurationChangingStatus() {
-        val result = ViewingTimeEvaluator.evaluateViewingTime(
+        val result = ViewingTimeEvaluator.evaluateViewingTimeInternal(
             context = testContext,
             hasPermission = true,
             isAppInForeground = true,
@@ -102,25 +103,25 @@ class ViewingTimeEvaluatorTest {
     }
 
     @Test
-    fun testEvaluate_QueryException_ReturnsQueryErrorStatus() {
-        val result = ViewingTimeEvaluator.evaluateViewingTime(
+    fun testEvaluate_QueryError_ReturnsQueryErrorStatus() {
+        val result = ViewingTimeEvaluator.evaluateViewingTimeInternal(
             context = testContext,
             hasPermission = true,
             isAppInForeground = true,
-            mockQueryException = RuntimeException("Service Unavailable")
+            mockQueryResult = ScreenTimeQueryResult.QueryError("UsageStatsService 오류")
         )
         assertTrue(result is ViewingTimeStatus.QueryError)
         val error = result as ViewingTimeStatus.QueryError
-        assertTrue(error.errorDetail.contains("Service Unavailable"))
+        assertTrue(error.errorDetail.contains("UsageStatsService 오류"))
     }
 
     @Test
     fun testEvaluate_NegativeMinutes_ReturnsQueryErrorStatus() {
-        val result = ViewingTimeEvaluator.evaluateViewingTime(
+        val result = ViewingTimeEvaluator.evaluateViewingTimeInternal(
             context = testContext,
             hasPermission = true,
             isAppInForeground = true,
-            mockUsageMinutes = -10
+            mockQueryResult = ScreenTimeQueryResult.Success(-10)
         )
         assertTrue(result is ViewingTimeStatus.QueryError)
         val error = result as ViewingTimeStatus.QueryError
