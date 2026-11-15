@@ -2,7 +2,7 @@
     <string name="app_name">IrisFit</string>
     <string name="nav_home">ホーム</string>
     <string name="nav_gym">アイジム</string>
-    <string name="nav_bluelight">ブルーライト</string>
+    <string name="nav_eye_comfort">画面の快適設定</string>
     <string name="nav_ai">AIコーチ</string>
     <string name="nav_settings">設定</string>
 

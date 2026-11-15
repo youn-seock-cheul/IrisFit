@@ -9,22 +9,24 @@ IrisFit ("we", "our", or "us") values your privacy. This Privacy Policy explains
 ---
 
 ## 1. Information We Collect
-IrisFit is designed with a **privacy-first, local-storage architecture**. 
-- **Screen Time Data (`UsageStatsManager`):** We query your daily app usage statistics locally on your device to calculate your real-time Eye Health Battery score and rest compliance rate. This data **never leaves your device** and is not transmitted to any remote servers.
-- **Sensor Data (Accelerometer, Gyroscope, Proximity, Light):** We process motion and position sensor data locally on your device in real-time to determine your device posture (e.g., Handheld, On Desk, Lying Down). This sensor data is processed instantly in memory and is **not stored or transmitted**.
-- **Community & Relay Data (Optional):** If you participate in Friend Cheer Relays or Public Global Challenges, your chosen nickname, mascot emoji, and cheer messages are stored locally or synchronized for social interaction features.
+IrisFit stores guided-session completion records locally. Some operating-system APIs and bundled libraries may have separate processing behavior; this policy does not treat the app's local record file as proof that every SDK or system service is offline.
+- **Screen Time Data (`UsageStatsManager`):** If you grant Usage Access, IrisFit queries Android's app-usage statistics for the current local day to calculate an optional screen-time wellness indicator. Raw per-app usage history is not stored in the guided-session completion file. This statement does not establish the network behavior of unrelated SDKs or Android system services.
+- **Sensor Data (Accelerometer, Gyroscope, Proximity, Light):** Sensor values are processed in memory to estimate device posture. Posture does not confirm that your eyes are resting. Raw sensor values are not stored in the guided-session completion file.
+- **Community & Relay Data (Optional):** The current app build should be treated as local-only unless a separately documented network feature is enabled. Do not assume relay or challenge information is synchronized to a server; verify the actual build and service configuration before publishing this statement.
 
 ## 2. How We Use Your Information
 We use the collected information solely for the following purposes:
-- To calculate your daily Eye Health Battery and provide personalized eye rest reminders.
-- To display your daily and weekly eye health trends and stock-chart analytics.
-- To facilitate social cheer relays and milestone trophy rewards.
+- To calculate an in-app wellness habit indicator from permitted screen-usage statistics and locally stored completion records.
+- To display daily and weekly app-recorded habit trends.
+- To operate locally available reminders and milestone features.
 
 ## 3. Data Storage and Security
-All personal metrics, screen time logs, and eye health records are stored **exclusively in local device storage** (Encrypted SharedPreferences / Room database). We do not operate external central databases that store your personal screen time or sensor telemetry.
+Guided-session completion records are stored in an app-private local file using Android AtomicFile. This file is not encrypted by the application. Screen-time aggregates are queried from Android UsageStatsManager when permission is granted; the app does not persist a raw per-app usage history in its own completion ledger. We do not operate external central databases that store your personal screen time or sensor telemetry.
 
 ## 4. Third-Party Services
-We may use standard analytics and crash reporting tools (such as Firebase Analytics and Firebase Crashlytics) to collect anonymous diagnostic data and crash logs to improve app stability. These tools comply with standard data protection regulations.
+The app build includes Google's ML Kit GenAI Prompt SDK and AICore integration code. The AI Coach entry point is disabled while data handling is reviewed. The app has not independently verified all SDK or system-service network communication, retention, or model-training behavior; no claim that all app or SDK data stays on-device should be inferred. We will update this section before enabling the AI Coach.
+
+The reviewed production dependencies do not declare Firebase Analytics or Crashlytics runtime dependencies. This does not by itself establish the data behavior of other SDKs or Android system services.
 
 ## 5. Children's Privacy
 IrisFit is suitable for all ages and does not knowingly collect personal information from children under 13 without parental consent.

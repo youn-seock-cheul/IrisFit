@@ -1,6 +1,10 @@
 package com.example.myapplication.session
 
 import android.app.Application
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,12 +35,9 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
 
     val poseDetector = com.example.myapplication.data.SmartDevicePoseDetector(application)
 
-    init {
-        poseDetector.startListening()
-    }
-
     override fun onCleared() {
         super.onCleared()
+        getApplication<Application>().unregisterReceiver(dateChangeReceiver)
         poseDetector.stopListening()
     }
     var savedMarker by mutableStateOf<MarkerPreference?>(null)
@@ -53,9 +54,20 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
         private set
     var error by mutableStateOf<String?>(null)
         private set
+    private var currentDate by mutableStateOf(LocalDate.now())
     val today: String
-        get() = LocalDate.now().toString()
-    fun refreshDate() {}
+        get() = currentDate.toString()
+
+    private val dateChangeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            refreshDate()
+        }
+    }
+
+    fun refreshDate() {
+        val newDate = LocalDate.now()
+        if (currentDate != newDate) currentDate = newDate
+    }
 
     val pedometerStats: EyePedometerStats
         get() = EyePedometerCalculator.calculateStats(records, today)
@@ -68,18 +80,16 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
             val screenMinutes = if (hasUsagePermission) {
                 com.example.myapplication.data.ScreenTimeManager.getTodayScreenTimeMinutes(getApplication())
             } else {
-                com.example.myapplication.data.AppSessionTimer.getActiveMinutes(getApplication())
+                0
             }
             val rests = records.count { it.completedLocalDate == today && it.routineId == "screen_rest" }
             val miniGames = records.count { it.completedLocalDate == today && (it.routineId == "eye_gym" || it.routineId == "smooth_pursuit") }
 
-            val pose = poseDetector.currentPose
             val stats = EyeBatteryCalculator.calculateBattery(
                 screenTimeMinutes = screenMinutes,
                 restCount = rests,
                 miniGameCount = miniGames,
-                poseMultiplier = pose.drainMultiplier,
-                isCharging = pose.isCharging
+                screenTimeMeasured = hasUsagePermission
             )
 
             // Check status change for notification
@@ -124,7 +134,18 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
         if (state.phase == SessionPhase.READY) onEndSignal?.invoke(signalMode)
     }
 
-    init { reloadRecords() }
+    init {
+        getApplication<Application>().registerReceiver(
+            dateChangeReceiver,
+            IntentFilter().apply {
+                addAction(Intent.ACTION_DATE_CHANGED)
+                addAction(Intent.ACTION_TIME_CHANGED)
+                addAction(Intent.ACTION_TIMEZONE_CHANGED)
+            },
+            Context.RECEIVER_NOT_EXPORTED
+        )
+        reloadRecords()
+    }
 
     fun reloadRecords() {
         if (busy) return
@@ -235,6 +256,8 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun activityPaused() {
+        activityVisible = false
+        poseDetector.stopListening()
         pausedByLifecycle = state.phase == SessionPhase.RUNNING
         resumeAfterConfiguration = false
         session.pause()
@@ -245,13 +268,15 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
             state.phase == SessionPhase.PAUSED
     }
     fun activityResumed() {
+        activityVisible = true
+        poseDetector.startListening()
         refreshDate()
         if (recordsReady) reloadRecords()
         if (resumeAfterConfiguration) session.resume()
         pausedByLifecycle = false
         resumeAfterConfiguration = false
         publish()
-        com.example.myapplication.widget.IrisFitWidgetProvider.updateAllWidgets(getApplication())
+        com.example.myapplication.widget.BitmapWidgetProvider.updateWidget1(getApplication())
     }
 
     fun confirm() {
@@ -265,57 +290,41 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
                 error = null
                 session.saved()
                 publish()
-                com.example.myapplication.widget.IrisFitWidgetProvider.updateAllWidgets(getApplication())
+                com.example.myapplication.widget.BitmapWidgetProvider.updateWidget1(getApplication())
             } catch (_: Exception) {
                 error = "완료 기록을 저장하지 못했어요."
             } finally { busy = false }
         }
     }
 
-    fun completeEyeGym(onSuccess: () -> Unit) {
-        if (busy) return
-        val record = CompletionRecord(
-            sessionId = UUID.randomUUID().toString(),
-            completedAtEpochMillis = System.currentTimeMillis(),
-            completedLocalDate = LocalDate.now().toString(),
-            routineId = "eye_gym",
-            routineVersion = 1,
-            plannedDurationSeconds = 20,
-            confirmation = "user_confirmed"
-        )
-        busy = true
-        viewModelScope.launch {
-            try {
-                records = withContext(Dispatchers.IO) { repository.save(record) }
-                error = null
-                onSuccess()
-                com.example.myapplication.widget.IrisFitWidgetProvider.updateAllWidgets(getApplication())
-            } catch (_: Exception) {
-                error = "미니게임 완료 기록을 저장하지 못했어요."
-            } finally { busy = false }
-        }
+    private val workoutCompletion = WorkoutCompletion(repository)
+    var workoutSaved by mutableStateOf(false)
+        private set
+    var activityVisible by mutableStateOf(false)
+        private set
+
+    fun prepareWorkoutSession(routineId: String): String {
+        check(!busy && recordsReady) { "Records are not ready." }
+        workoutSaved = false
+        error = null
+        return workoutCompletion.start(routineId)
     }
 
-    fun completeSmoothPursuit(onSuccess: () -> Unit) {
-        if (busy) return
-        val record = CompletionRecord(
-            sessionId = UUID.randomUUID().toString(),
-            completedAtEpochMillis = System.currentTimeMillis(),
-            completedLocalDate = LocalDate.now().toString(),
-            routineId = "smooth_pursuit",
-            routineVersion = 1,
-            plannedDurationSeconds = 20,
-            confirmation = "user_confirmed"
-        )
+    fun completeWorkout(sessionId: String, routineId: String, onSuccess: () -> Unit) {
+        if (busy || workoutCompletion.isSaved(sessionId)) return
         busy = true
         viewModelScope.launch {
             try {
-                records = withContext(Dispatchers.IO) { repository.save(record) }
+                val result = withContext(Dispatchers.IO) {
+                    workoutCompletion.save(sessionId, routineId, System.currentTimeMillis(), LocalDate.now().toString())
+                }
+                records = result.records
+                workoutSaved = true
                 error = null
-                onSuccess()
-                com.example.myapplication.widget.IrisFitWidgetProvider.updateAllWidgets(getApplication())
+                if (result.newlySaved) onSuccess()
+                com.example.myapplication.widget.BitmapWidgetProvider.updateWidget1(getApplication())
             } catch (_: Exception) {
-                error = "시선 추적 미니게임 완료 기록을 저장하지 못했어요."
+                error = "미니게임 완료 기록을 저장하지 못했어요. 다시 시도해 주세요."
             } finally { busy = false }
         }
     }

@@ -2,7 +2,7 @@
     <string name="app_name">IrisFit</string>
     <string name="nav_home">Inicio</string>
     <string name="nav_gym">Gimnasio Visual</string>
-    <string name="nav_bluelight">Luz Azul</string>
+    <string name="nav_eye_comfort">Comodidad visual</string>
     <string name="nav_ai">Entrenador IA</string>
     <string name="nav_settings">Ajustes</string>
 

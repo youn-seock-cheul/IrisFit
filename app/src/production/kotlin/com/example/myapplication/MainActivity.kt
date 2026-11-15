@@ -24,6 +24,7 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 
 class MainActivity : ComponentActivity() {
@@ -62,7 +63,6 @@ class MainActivity : ComponentActivity() {
         ProcessStartReminderRecovery.observe(this)
         val initialScreen = intent?.getStringExtra("target_screen") ?: "home"
         
-        // Reset app icon to fresh state when user opens the app after resting
         try {
             if (sessionModel.todayRestCount > 0) {
                 com.example.myapplication.data.DynamicIconManager.switchAppIcon(this, 1)
@@ -72,37 +72,28 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    var currentScreen by remember { mutableStateOf(initialScreen) }
+                    var currentScreen by rememberSaveable { mutableStateOf(initialScreen) }
+                    var pursuitModeIdx by rememberSaveable { mutableStateOf(0) }
+
                     when (currentScreen) {
                         "exam" -> EyeExamScreen(onBack = { currentScreen = "home" })
                         "gym" -> EyeGymGameScreen(
                             sessionModel = sessionModel,
                             onBack = { currentScreen = "home" },
-                            onGameCompleted = {
-                                sessionModel.completeEyeGym {
-                                    Toast.makeText(this, "미니게임 완료! +200 눈 걸음 수 & +100 포인트 적립!", Toast.LENGTH_SHORT).show()
+                            onGameCompleted = { id ->
+                                sessionModel.completeWorkout(id, "eye_gym") {
+                                    Toast.makeText(this, "미니게임 완료 기록을 저장했습니다.", Toast.LENGTH_SHORT).show()
                                     try { com.example.myapplication.data.DynamicIconManager.switchAppIcon(this@MainActivity, 1) } catch (_: Exception) {}
                                 }
                             }
                         )
                         "pursuit" -> SmoothPursuitGameScreen(
                             sessionModel = sessionModel,
-                            initialMode = -1,
+                            initialMode = pursuitModeIdx,
                             onBack = { currentScreen = "home" },
-                            onGameCompleted = {
-                                sessionModel.completeSmoothPursuit {
-                                    Toast.makeText(this, "시선 추적 완료! +250 눈 걸음 수 & +120 포인트 적립!", Toast.LENGTH_SHORT).show()
-                                    try { com.example.myapplication.data.DynamicIconManager.switchAppIcon(this@MainActivity, 1) } catch (_: Exception) {}
-                                }
-                            }
-                        )
-                        "pursuit_random" -> SmoothPursuitGameScreen(
-                            sessionModel = sessionModel,
-                            initialMode = (0..3).random(),
-                            onBack = { currentScreen = "home" },
-                            onGameCompleted = {
-                                sessionModel.completeSmoothPursuit {
-                                    Toast.makeText(this, "시선 추적 완료! +250 눈 걸음 수 & +120 포인트 적립!", Toast.LENGTH_SHORT).show()
+                            onGameCompleted = { id ->
+                                sessionModel.completeWorkout(id, "smooth_pursuit") {
+                                    Toast.makeText(this, "미니게임 완료 기록을 저장했습니다.", Toast.LENGTH_SHORT).show()
                                     try { com.example.myapplication.data.DynamicIconManager.switchAppIcon(this@MainActivity, 1) } catch (_: Exception) {}
                                 }
                             }
@@ -113,9 +104,25 @@ class MainActivity : ComponentActivity() {
                             onStopCameraSession = {
                                 stopService(Intent().setClassName(this, "com.example.myapplication.service.EyeExerciseOverlayService"))
                             },
-                            onNavigateToGym = { currentScreen = "gym" },
-                            onNavigateToPursuit = { currentScreen = "pursuit" },
-                            onNavigateToPursuitRandom = { currentScreen = "pursuit_random" },
+                            onNavigateToGym = {
+                                currentScreen = "gym"
+                            },
+                            onNavigateToWorkoutRandom = {
+                                if ((0..1).random() == 0) {
+                                    currentScreen = "gym"
+                                } else {
+                                    pursuitModeIdx = (0..3).random()
+                                    currentScreen = "pursuit"
+                                }
+                            },
+                            onNavigateToPursuit = {
+                                pursuitModeIdx = (0..3).random()
+                                currentScreen = "pursuit"
+                            },
+                            onNavigateToPursuitMode = { modeIdx ->
+                                pursuitModeIdx = modeIdx
+                                currentScreen = "pursuit"
+                            },
                             onNavigateToExam = { currentScreen = "exam" }
                         )
                     }
@@ -132,7 +139,6 @@ class MainActivity : ComponentActivity() {
             return
         }
         try {
-            // User action in this visible Activity; never started by app-detection events.
             startForegroundService(Intent().setClassName(this, "com.example.myapplication.service.EyeExerciseOverlayService"))
         } catch (_: RuntimeException) {
             Toast.makeText(this, "세션을 시작하지 못했습니다. 앱을 연 상태에서 다시 시도해 주세요.", Toast.LENGTH_LONG).show()

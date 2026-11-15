@@ -3,32 +3,13 @@ package com.example.myapplication.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -36,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.session.GuidedSessionViewModel
@@ -44,18 +26,23 @@ import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SmoothPursuitGameScreen(
     sessionModel: GuidedSessionViewModel,
     initialMode: Int = -1,
     onBack: () -> Unit,
-    onGameCompleted: () -> Unit
+    onGameCompleted: (String) -> Unit
 ) {
-    var gameState by remember { mutableStateOf("READY") }
-    var remainingSeconds by remember { mutableIntStateOf(20) }
+    var gameState by rememberSaveable { mutableStateOf("READY") }
+    var remainingSeconds by rememberSaveable { mutableIntStateOf(20) }
+    var workoutId by rememberSaveable { mutableStateOf<String?>(null) }
     var angle by remember { mutableFloatStateOf(0f) }
     var selectedMode by remember { mutableIntStateOf(if (initialMode in 0..3) initialMode else 0) }
+    LaunchedEffect(sessionModel.activityVisible) {
+        if (!sessionModel.activityVisible && gameState == "PLAYING") {
+            gameState = "PAUSED"
+        }
+    }
 
     val modeNames = listOf(
         "♾️ Infinity (∞) 궤적",
@@ -78,19 +65,40 @@ fun SmoothPursuitGameScreen(
             }
             if (remainingSeconds == 0) {
                 gameState = "FINISHED"
-                onGameCompleted()
+                workoutId?.let(onGameCompleted)
             }
         }
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(sessionModel.tr("pursuit_screen_title"), fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    Button(onClick = onBack) { Text(sessionModel.tr("gym_back")) }
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 4.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedButton(
+                        onClick = onBack,
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(sessionModel.tr("gym_back"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Text(
+                        text = sessionModel.tr("pursuit_screen_title"),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
-            )
+            }
         }
     ) { innerPadding ->
         Column(
@@ -104,11 +112,12 @@ fun SmoothPursuitGameScreen(
             when (gameState) {
                 "READY" -> {
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                        shape = RoundedCornerShape(20.dp)
                     ) {
                         Column(
-                            modifier = Modifier.padding(24.dp),
+                            modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
@@ -138,11 +147,12 @@ fun SmoothPursuitGameScreen(
                                 }
                             }
 
-                            Button(onClick = {
+                            Button(enabled = sessionModel.recordsReady && !sessionModel.busy, onClick = {
+                                workoutId = sessionModel.prepareWorkoutSession("smooth_pursuit")
                                 remainingSeconds = 20
                                 angle = 0f
                                 gameState = "PLAYING"
-                            }, modifier = Modifier.fillMaxWidth()) {
+                            }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
                                 Text(sessionModel.tr("pursuit_start"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
                         }
@@ -153,9 +163,9 @@ fun SmoothPursuitGameScreen(
                     Spacer(modifier = Modifier.height(20.dp))
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp)),
+                            .fillMaxWidth(0.95f)
+                            .height(320.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -170,7 +180,6 @@ fun SmoothPursuitGameScreen(
 
                             when (selectedMode) {
                                 0 -> {
-                                    // Infinity (∞)
                                     for (i in 0..100) {
                                         val theta = i * 2f * Math.PI.toFloat() / 100f
                                         val scale = 1 / (1 + sin(theta) * sin(theta))
@@ -182,7 +191,6 @@ fun SmoothPursuitGameScreen(
                                     dotOffset = Offset(centerX + rx * scale * cos(t), centerY + ry * scale * sin(t) * cos(t))
                                 }
                                 1 -> {
-                                    // Figure-8 (8자)
                                     for (i in 0..100) {
                                         val theta = i * 2f * Math.PI.toFloat() / 100f
                                         val x = centerX + rx * sin(theta)
@@ -192,7 +200,6 @@ fun SmoothPursuitGameScreen(
                                     dotOffset = Offset(centerX + rx * sin(t), centerY + ry * sin(2 * t))
                                 }
                                 2 -> {
-                                    // Circle (원형)
                                     for (i in 0..100) {
                                         val theta = i * 2f * Math.PI.toFloat() / 100f
                                         val x = centerX + rx * cos(theta)
@@ -202,7 +209,6 @@ fun SmoothPursuitGameScreen(
                                     dotOffset = Offset(centerX + rx * cos(t), centerY + ry * sin(t))
                                 }
                                 else -> {
-                                    // Zig-Zag (지그재그) - Properly bounded inside canvas box
                                     val padding = 40f
                                     val graphWidth = size.width - (padding * 2)
                                     val topY = centerY - ry * 0.7f
@@ -229,14 +235,36 @@ fun SmoothPursuitGameScreen(
                         }
                     }
                     Spacer(modifier = Modifier.height(30.dp))
-                    Button(onClick = { gameState = "READY" }) {
-                        Text(sessionModel.tr("gym_stop"))
+                    Button(onClick = { gameState = "READY" }, shape = RoundedCornerShape(12.dp)) {
+                        Text(sessionModel.tr("gym_stop"), fontWeight = FontWeight.Bold)
+                    }
+                }
+                "PAUSED" -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(sessionModel.tr("workout_paused_title"), style = MaterialTheme.typography.titleLarge)
+                            Button(onClick = { gameState = "PLAYING" }) {
+                                Text(sessionModel.tr("workout_resume"))
+                            }
+                            TextButton(onClick = { gameState = "READY" }) {
+                                Text(sessionModel.tr("workout_cancel"))
+                            }
+                        }
                     }
                 }
                 "FINISHED" -> {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                        shape = RoundedCornerShape(20.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(24.dp),
@@ -244,14 +272,19 @@ fun SmoothPursuitGameScreen(
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Text(sessionModel.tr("pursuit_finished"), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                            Text(sessionModel.tr("pursuit_finished_desc"))
-                            Button(onClick = {
-                                gameState = "READY"
-                            }, modifier = Modifier.fillMaxWidth()) {
-                                Text(sessionModel.tr("gym_restart"))
+                            if (sessionModel.busy) Text("완료 기록을 저장하고 있어요.")
+                            else if (sessionModel.workoutSaved) Text(sessionModel.tr("pursuit_finished_desc"))
+                            else {
+                                Text(sessionModel.error ?: "완료 기록을 저장하지 못했어요.")
+                                Button(onClick = { workoutId?.let(onGameCompleted) }) { Text("저장 다시 시도") }
                             }
-                            Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-                                Text(sessionModel.tr("gym_home"))
+                            Button(enabled = !sessionModel.busy && sessionModel.workoutSaved, onClick = {
+                                gameState = "READY"
+                            }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
+                                Text(sessionModel.tr("gym_restart"), fontWeight = FontWeight.Bold)
+                            }
+                            Button(onClick = onBack, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
+                                Text(sessionModel.tr("gym_home"), fontWeight = FontWeight.Bold)
                             }
                         }
                     }

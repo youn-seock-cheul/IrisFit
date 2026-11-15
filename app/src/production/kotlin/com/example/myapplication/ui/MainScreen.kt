@@ -74,9 +74,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.myapplication.R
-import com.example.myapplication.ai.GeminiNanoCoachManager
 import com.example.myapplication.data.ScreenTimeManager
-import com.example.myapplication.service.BlueLightFilterService
 import com.example.myapplication.session.GuidedSessionViewModel
 import com.example.myapplication.session.EyeBatteryCalculator
 import kotlinx.coroutines.delay
@@ -91,9 +89,25 @@ fun MainScreen(
     onNavigateToExam: () -> Unit,
     onNavigateToGym: () -> Unit,
     onNavigateToPursuit: () -> Unit,
-    onNavigateToPursuitRandom: () -> Unit = onNavigateToPursuit
+    onNavigateToPursuitMode: (Int) -> Unit = {},
+    onNavigateToPursuitRandom: () -> Unit = onNavigateToPursuit,
+    onNavigateToWorkoutRandom: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
+    var showBetaNoticeDialog by remember { mutableStateOf(false) }
+
+    if (showBetaNoticeDialog) {
+        AlertDialog(
+            onDismissRequest = { showBetaNoticeDialog = false },
+            title = { Text(text = "알림", fontWeight = FontWeight.Bold) },
+            text = { Text(text = "베타 준비 중입니다.") },
+            confirmButton = {
+                TextButton(onClick = { showBetaNoticeDialog = false }) {
+                    Text("확인")
+                }
+            }
+        )
+    }
 
     Scaffold(
         bottomBar = {
@@ -116,12 +130,12 @@ fun MainScreen(
                 NavigationBarItem(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
-                    icon = { Icon(painter = painterResource(id = R.drawable.ic_nav_bluelight), contentDescription = sessionModel.tr("nav_bluelight"), modifier = Modifier.size(22.dp)) },
-                    label = { Text(sessionModel.tr("nav_bluelight"), fontWeight = FontWeight.SemiBold) }
+                    icon = { Icon(painter = painterResource(id = R.drawable.ic_nav_eye_comfort), contentDescription = sessionModel.tr("nav_eye_comfort"), modifier = Modifier.size(22.dp)) },
+                    label = { Text(sessionModel.tr("nav_eye_comfort"), fontWeight = FontWeight.SemiBold) }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 },
+                    onClick = { showBetaNoticeDialog = true },
                     icon = { Icon(painter = painterResource(id = R.drawable.ic_nav_ai), contentDescription = sessionModel.tr("nav_ai"), modifier = Modifier.size(22.dp)) },
                     label = { Text(sessionModel.tr("nav_ai"), fontWeight = FontWeight.SemiBold) }
                 )
@@ -136,9 +150,14 @@ fun MainScreen(
     ) { innerPadding ->
         val modifier = Modifier.fillMaxSize().padding(innerPadding)
         when (selectedTab) {
-            0 -> WellnessHomeTab(sessionModel, modifier, onNavigateToPursuitRandom)
-            1 -> GymAndExamTab(sessionModel, modifier, onNavigateToGym, onNavigateToPursuit, onNavigateToExam)
-            2 -> BlueLightTab(sessionModel, modifier)
+            0 -> WellnessHomeTab(
+                sessionModel = sessionModel,
+                modifier = modifier,
+                onNavigateToGym = onNavigateToGym,
+                onNavigateToPursuit = onNavigateToPursuitRandom
+            )
+            1 -> GymAndExamTab(sessionModel, modifier, onNavigateToGym, onNavigateToPursuitMode, onNavigateToExam)
+            2 -> EyeComfortSettingsTab(sessionModel, modifier)
             3 -> AiCoachTab(sessionModel, modifier)
             4 -> SettingsTab(sessionModel, modifier)
         }
@@ -815,7 +834,13 @@ fun GoalAchievementCard(sessionModel: GuidedSessionViewModel) {
 }
 
 @Composable
-fun GymAndExamTab(sessionModel: GuidedSessionViewModel, modifier: Modifier, onNavigateToGym: () -> Unit, onNavigateToPursuit: () -> Unit, onNavigateToExam: () -> Unit) {
+fun GymAndExamTab(
+    sessionModel: GuidedSessionViewModel,
+    modifier: Modifier,
+    onNavigateToGym: () -> Unit,
+    onNavigateToPursuitMode: (Int) -> Unit = {},
+    onNavigateToExam: () -> Unit
+) {
     val scrollState = rememberScrollState()
     Column(
         modifier = modifier.padding(20.dp).verticalScroll(scrollState),
@@ -853,6 +878,7 @@ fun GymAndExamTab(sessionModel: GuidedSessionViewModel, modifier: Modifier, onNa
             }
         }
 
+        // PURSUIT MODES CARD (4 Distinct Pursuit Modes: Infinity, Figure-8, Circle, Zig-Zag)
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -861,8 +887,22 @@ fun GymAndExamTab(sessionModel: GuidedSessionViewModel, modifier: Modifier, onNa
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(sessionModel.tr("gym_pursuit_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(sessionModel.tr("gym_pursuit_sub"))
-                Button(onClick = onNavigateToPursuit, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Text(sessionModel.tr("gym_pursuit_btn"), fontWeight = FontWeight.Bold)
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Button(onClick = { onNavigateToPursuitMode(0) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(10.dp)) {
+                        Text(sessionModel.tr("♾️ Infinity (∞)"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Button(onClick = { onNavigateToPursuitMode(1) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(10.dp)) {
+                        Text(sessionModel.tr("🔀 Figure-8 (8자)"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Button(onClick = { onNavigateToPursuitMode(2) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(10.dp)) {
+                        Text(sessionModel.tr("⭕ Circle (원형)"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Button(onClick = { onNavigateToPursuitMode(3) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(10.dp)) {
+                        Text(sessionModel.tr("〰️ Zig-Zag"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
@@ -884,52 +924,55 @@ fun GymAndExamTab(sessionModel: GuidedSessionViewModel, modifier: Modifier, onNa
 }
 
 @Composable
-fun BlueLightTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
+fun EyeComfortSettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
 
     Column(
-        modifier = modifier.padding(20.dp).verticalScroll(scrollState),
+        modifier = modifier.padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(sessionModel.tr("bluelight_title"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(sessionModel.tr("bluelight_desc"))
+        Text(
+            sessionModel.tr("eye_comfort_title"),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        Text(sessionModel.tr("eye_comfort_desc"))
 
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-            shape = RoundedCornerShape(20.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            shape = RoundedCornerShape(20.dp)
         ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("🛡️ 삼성 갤럭시 내장 '시력 보호 화면(Eye Comfort Shield)'", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                Text("소프트웨어 앱 오버레이 필터는 상태바나 시스템 UI를 완벽히 커버하지 못하며 기기 보안 정책에 의해 차단될 수 있습니다. 스마트폰 디스플레이 하드웨어 수준에서 블루라이트를 완벽히 차단하는 '시력 보호 화면'을 시스템 설정에서 켜시는 것이 가장 효과적입니다.", style = MaterialTheme.typography.bodySmall)
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    sessionModel.tr("eye_comfort_card_title"),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    sessionModel.tr("eye_comfort_card_desc"),
+                    style = MaterialTheme.typography.bodySmall
+                )
                 Button(
                     onClick = {
                         try {
-                            val intent = Intent(Settings.ACTION_DISPLAY_SETTINGS)
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            context.startActivity(intent)
+                            context.startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS))
                         } catch (_: Exception) {
-                            Toast.makeText(context, "디스플레이 설정 창을 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                sessionModel.tr("eye_comfort_open_failed"),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("⚙️ 시스템 '시력 보호 화면' 설정 바로가기", fontWeight = FontWeight.Bold)
+                    Text(sessionModel.tr("eye_comfort_open_settings"), fontWeight = FontWeight.Bold)
                 }
-            }
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(sessionModel.tr("bluelight_tip_title"), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                Text(sessionModel.tr("bluelight_tip_desc"), style = MaterialTheme.typography.bodySmall)
             }
         }
     }
@@ -956,13 +999,9 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
 
     val hours = realMinutes / 60
     val mins = realMinutes % 60
-    val formattedTime = if (hasPermission) "${hours}시간 ${mins}분 (실제 실측 🟢)" else "권한 필요 🔒"
+    val formattedTime = if (hasPermission) "${hours}시간 ${mins}분" else sessionModel.tr("미측정")
 
-    val expectedRests = (realMinutes / 30).coerceAtLeast(1)
     val actualRests = sessionModel.todayRestCount
-    val complianceRate = if (hasPermission) {
-        ((actualRests.toFloat() / expectedRests.toFloat()) * 100).coerceIn(0f, 100f).toInt()
-    } else 0
 
     val batteryScore = sessionModel.eyeBatteryStats.eyeHealthScore
 
@@ -988,6 +1027,17 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
 
         Card(
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("AI 코치 (검토 중)", fontWeight = FontWeight.Bold)
+                Text(sessionModel.tr("privacy_ai"), fontSize = 13.sp)
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             shape = RoundedCornerShape(20.dp)
         ) {
@@ -1000,14 +1050,19 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(sessionModel.tr("ai_battery_remain"), color = Color.Gray)
-                    Text("${batteryScore}% (${sessionModel.eyeBatteryStats.fatigueStatus.label})", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text("${batteryScore}% (${sessionModel.tr(sessionModel.eyeBatteryStats.fatigueStatus.labelKey)})", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(sessionModel.tr("ai_compliance"), color = Color.Gray)
-                    Text(if (hasPermission) "$complianceRate% (실시간 연동)" else "미측정", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text("${actualRests}회", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
 
                 if (!hasPermission) {
+                    Text(
+                        sessionModel.tr("screen_time_unmeasured"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
                     Button(onClick = {
                         showUsageDisclosureDialog = true
@@ -1019,29 +1074,12 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
         }
 
         if (showUsageDisclosureDialog) {
-            AlertDialog(
-                onDismissRequest = { showUsageDisclosureDialog = false },
-                title = { Text("권한 및 개인정보 안내 (Prominent Disclosure)") },
-                text = {
-                    Text(
-                        "IrisFit은 사용자의 화면 응시 시간과 휴식 패턴을 실시간 분석하기 위해 [사용 정보 접근 권한(Usage Access)]을 사용합니다.\n\n" +
-                                "• 수집 항목: 오늘 앱 사용 시간 및 화면 켜짐 통계\n" +
-                                "• 사용 목적: 스마트폰 사용시간 대비 눈 휴식 패턴 준수율 계산\n" +
-                                "• 데이터 보관: 모든 데이터는 100% 기기 내부에만 보관되며 외부 서버로 전송되거나 저장되지 않습니다."
-                    )
-                },
-                confirmButton = {
-                    Button(onClick = {
-                        showUsageDisclosureDialog = false
-                        ScreenTimeManager.openUsageStatsSettings(context)
-                    }) {
-                        Text("이해했으며 설정으로 이동")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showUsageDisclosureDialog = false }) {
-                        Text(sessionModel.tr("btn_cancel"))
-                    }
+            UsageAccessDisclosureDialog(
+                sessionModel = sessionModel,
+                onDismiss = { showUsageDisclosureDialog = false },
+                onOpenSettings = {
+                    showUsageDisclosureDialog = false
+                    ScreenTimeManager.openUsageStatsSettings(context)
                 }
             )
         }
@@ -1053,6 +1091,7 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
         ) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Text(sessionModel.tr("IrisFit PRO 차세대 유료 플랜 혜택"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text(sessionModel.tr("pro_demo_status"), style = MaterialTheme.typography.bodySmall)
                 Text(sessionModel.tr("시선 추적(Gaze Tracking) 기술 기반의 독보적인 프리미엄 기능:"))
 
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(12.dp)) {
@@ -1076,14 +1115,18 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
                     }
                 }
 
-                Button(onClick = {
-                    Toast.makeText(context, sessionModel.tr("PRO 프리미엄 7일 체험이 시작되었습니다!"), Toast.LENGTH_SHORT).show()
-                }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Text(sessionModel.tr("PRO 7일 무료 체험 시작하기"), fontWeight = FontWeight.Bold)
+                Button(
+                    onClick = {},
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(sessionModel.tr("pro_unavailable"), fontWeight = FontWeight.Bold)
                 }
             }
         }
     }
+
 }
 
 @Composable
@@ -1260,15 +1303,19 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
     if (showPrivacyDialog) {
         AlertDialog(
             onDismissRequest = { showPrivacyDialog = false },
-            title = { Text("📜 IrisFit 개인정보 처리방침") },
+            title = { Text(sessionModel.tr("privacy_policy_title")) },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp).verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("1. 수집하는 정보 및 목적\n- 화면 응시 시간(UsageStats): 기기 내부에서만 실시간 안구 피로도 계산용으로 사용되며 외부로 절대 전송되지 않습니다.\n- 센서 데이터: 기기 자세(핸드헬드, 데스크, 엎어둠) 판정에만 실시간 메모리로 사용되고 저장되지 않습니다.", fontSize = 12.sp)
+                    Text(sessionModel.tr("privacy_usage"), fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("2. 데이터 보관 및 보안\n- 모든 개인 메트릭과 기록은 100% 로컬 기기 내부에만 암호화 저장됩니다.", fontSize = 12.sp)
+                    Text(sessionModel.tr("privacy_sensor"), fontSize = 12.sp)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(sessionModel.tr("privacy_storage"), fontSize = 12.sp)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(sessionModel.tr("privacy_ai"), fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text("3. 문의 사항\n- 이메일: support@irisfit.app", fontSize = 12.sp)
                 }
@@ -1302,6 +1349,7 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
 fun WellnessHomeTab(
     sessionModel: GuidedSessionViewModel,
     modifier: Modifier,
+    onNavigateToGym: () -> Unit = {},
     onNavigateToPursuit: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
@@ -1312,7 +1360,7 @@ fun WellnessHomeTab(
         Text("IrisFit", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text(sessionModel.tr("home_subtitle"), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
 
-        EyePedometerCard(sessionModel, onNavigateToPursuit)
+        EyePedometerCard(sessionModel, onNavigateToGym, onNavigateToPursuit)
         BatteryTrendCard(sessionModel)
         GoalAchievementCard(sessionModel)               // 1) 오늘의 눈 건강 목표
         CommunityCheerWidget(sessionModel)              // 2) 친구들과 릴레이

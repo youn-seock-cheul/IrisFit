@@ -60,4 +60,16 @@ object ScreenTimeManager {
         // Strict cap at actual minutes elapsed since 00:00 AM local time today!
         return totalMinutes.coerceAtMost(minutesSinceMidnight)
     }
+
+    fun getTodayScreenTimeFormatted(context: Context): String {
+        if (!hasUsageStatsPermission(context)) return "미측정"
+        val minutes = getTodayScreenTimeMinutes(context)
+        val hours = minutes / 60
+        val mins = minutes % 60
+        return if (hours > 0) {
+            "${hours}시간 ${mins}분"
+        } else {
+            "${mins}분"
+        }
+    }
 }

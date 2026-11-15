@@ -3,6 +3,8 @@ import javax.xml.parsers.DocumentBuilderFactory
 import java.util.zip.ZipFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -12,6 +14,38 @@ plugins {
 android {
     namespace = "com.example.myapplication"
     compileSdk = 36
+
+    signingConfigs {
+        create("release") {
+            val rootProp = rootProject.file("keystore.properties")
+            if (rootProp.isFile) {
+                val props = Properties().apply { rootProp.inputStream().use(::load) }
+                storeFile = props.getProperty("storeFile")?.takeIf { it.isNotBlank() }?.let { file(it) }
+                storePassword = props.getProperty("storePassword")
+                keyAlias = props.getProperty("keyAlias")
+                keyPassword = props.getProperty("keyPassword")
+            }
+        }
+    }
+
+    val releaseSigning = android.signingConfigs.getByName("release")
+    val signingPropertiesFile = rootProject.file("keystore.properties")
+    val signingStoreFile = releaseSigning.storeFile
+    val signingError = when {
+        releaseSigning.storePassword.isNullOrBlank() -> "Release signing storePassword is missing."
+        releaseSigning.keyAlias.isNullOrBlank() -> "Release signing keyAlias is missing."
+        releaseSigning.keyPassword.isNullOrBlank() -> "Release signing keyPassword is missing."
+        else -> null
+    }
+    val verifyReleaseSigningConfig = tasks.register("verifyReleaseSigningConfig") {
+        doLast {
+            check(signingPropertiesFile.isFile) { "Release signing requires root keystore.properties." }
+            check(signingStoreFile?.isFile == true) { "Release signing storeFile is missing or invalid." }
+            check(signingError == null) { signingError!! }
+        }
+    }
+    tasks.matching { it.name == "validateSigningRelease" || it.name == "signReleaseBundle" }
+        .configureEach { dependsOn(verifyReleaseSigningConfig) }
 
     defaultConfig {
 
@@ -49,6 +83,7 @@ android {
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = true
                 // Optimize the complete app; avoid experimental cross-package partial optimization.
@@ -148,16 +183,22 @@ abstract class VerifyReleaseBoundary : DefaultTask() {
         val permissionNames = (0 until permissions.length).map {
             permissions.item(it).attributes.getNamedItem("android:name").nodeValue
         }
-        val forbidden = setOf("android.permission.CAMERA", "android.permission.SYSTEM_ALERT_WINDOW",
-            "android.permission.FOREGROUND_SERVICE", "android.permission.FOREGROUND_SERVICE_CAMERA",
-            "android.permission.REQUEST_INSTALL_PACKAGES", "android.permission.INTERNET",
-            "android.permission.ACCESS_NETWORK_STATE")
-        check(permissionNames.none { it in forbidden }) { "Research/network permission in release: $permissionNames" }
-        check(document.getElementsByTagName("service").length == 0) { "Unexpected release service" }
+        val forbidden = setOf(
+            "android.permission.CAMERA",
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            "android.permission.FOREGROUND_SERVICE_CAMERA",
+            "android.permission.REQUEST_INSTALL_PACKAGES"
+        )
+        check(permissionNames.none { it in forbidden }) { "Forbidden research permission in release build: $permissionNames" }
+        val services = document.getElementsByTagName("service")
+        val serviceNames = (0 until services.length).map {
+            services.item(it).attributes.getNamedItem("android:name")?.nodeValue ?: ""
+        }
+        check(serviceNames.none { it.contains("EyeExerciseOverlayService") }) { "Debug overlay service found in release build: $serviceNames" }
         check(runtimeModules.get().none {
-            it.startsWith("com.google.mlkit:") || it.startsWith("androidx.camera:") ||
-                it.startsWith("com.google.mediapipe:")
-        }) { "Research SDK found in release" }
+            it.startsWith("com.google.mlkit:face-detection") ||
+                it.startsWith("androidx.camera:") || it.startsWith("com.google.mediapipe:")
+        }) { "Camera/Face-detection research vision SDK found in release build" }
         println("Release boundary verified. Permissions: $permissionNames; camera/ML SDKs excluded.")
     }
 }
@@ -166,16 +207,22 @@ androidComponents.onVariants(androidComponents.selector().withBuildType("release
     val modules = configurations.getByName("releaseRuntimeClasspath").incoming.artifacts.resolvedArtifacts.map {
         artifacts -> artifacts.map { it.id.componentIdentifier.displayName }
     }
-    tasks.register<VerifyReleaseBoundary>("verifyReleaseBoundary") {
+    val verifyTask = tasks.register<VerifyReleaseBoundary>("verifyReleaseBoundary") {
         group = "verification"
         manifestFile.set(variant.artifacts.get(SingleArtifact.MERGED_MANIFEST))
         runtimeModules.set(modules)
+    }
+    tasks.matching { (it.name.startsWith("package") || it.name.startsWith("bundle")) && it.name.contains("Release") }.configureEach {
+        dependsOn(verifyTask)
     }
 }
 
 dependencies {
     // Android 기본 및 UI 라이브러리
     implementation(libs.androidx.core.ktx)
+
+    // On-device Gemini Nano through Android AICore (no cloud API key)
+    implementation("com.google.mlkit:genai-prompt:1.0.0-beta4")
 
     // 1. Google MediaPipe Vision & ML Kit Face Detection & On-Device GenAI Prompt API (Gemini Nano)
     debugImplementation("com.google.mlkit:face-detection:16.1.7")

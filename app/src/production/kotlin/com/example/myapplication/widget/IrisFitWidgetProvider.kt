@@ -33,56 +33,77 @@ class IrisFitWidgetProvider : AppWidgetProvider() {
                 for (appWidgetId in appWidgetIds) {
                     updateAppWidget(context, appWidgetManager, appWidgetId)
                 }
+                // Keep every registered bitmap widget in sync with newly saved activity records.
+                try { BitmapWidgetProvider.updateAll(context) } catch (_: Exception) {}
             } catch (_: Exception) {}
         }
 
         fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
-            val intent = Intent(context, MainActivity::class.java)
-            val pendingIntent = PendingIntent.getActivity(
-                context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
+            try {
+                val intent = Intent(context, MainActivity::class.java)
+                val pendingIntent = PendingIntent.getActivity(
+                    context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
 
-            val views = RemoteViews(context.packageName, R.layout.iris_fit_widget)
-            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
+                val options = try { appWidgetManager.getAppWidgetOptions(appWidgetId) } catch (_: Exception) { null }
+                val minWidth = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0) ?: 0
+                val isLargeWidget = minWidth >= 250
 
-            val screenTime = try { ScreenTimeManager.getTodayScreenTimeMinutes(context) } catch (_: Exception) { 0 }
-            val records = try { FileCompletionStorage.repository(context).records() } catch (_: Exception) { emptyList() }
-            val today = LocalDate.now().toString()
-            val rests = records.count { it.completedLocalDate == today && it.routineId == "screen_rest" }
-            val miniGames = records.count { it.completedLocalDate == today && (it.routineId == "eye_gym" || it.routineId == "smooth_pursuit") }
+                val layoutRes = if (isLargeWidget) R.layout.iris_fit_widget_large else R.layout.iris_fit_widget
+                val views = RemoteViews(context.packageName, layoutRes)
+                views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-            val stats = EyeBatteryCalculator.calculateBattery(screenTime, rests, miniGames)
+                val screenTime = try { ScreenTimeManager.getTodayScreenTimeMinutes(context) } catch (_: Exception) { 0 }
+                val records = try { FileCompletionStorage.repository(context).records() } catch (_: Exception) { emptyList() }
+                val today = LocalDate.now().toString()
+                val rests = records.count { it.completedLocalDate == today && it.routineId == "screen_rest" }
+                val miniGames = records.count { it.completedLocalDate == today && (it.routineId == "eye_gym" || it.routineId == "smooth_pursuit") }
 
-            val mascotRes = when (stats.fatigueStatus) {
-                EyeFatigueStatus.OPTIMAL -> R.drawable.ic_mascot_happy
-                EyeFatigueStatus.CAUTION -> R.drawable.ic_mascot_tired
-                EyeFatigueStatus.WARNING -> R.drawable.ic_mascot_tired
-                EyeFatigueStatus.DANGER -> R.drawable.ic_mascot_panicked
+                val stats = EyeBatteryCalculator.calculateBattery(screenTime, rests, miniGames)
+
+                val selectedLang = LanguageManager.getSelectedLanguage(context)
+                val effectiveLang = AppLocalization.resolveEffectiveLang(selectedLang)
+                val localizedStatusLabel = AppLocalization.get(selectedLang, stats.fatigueStatus.labelKey)
+
+                val mascotRes = when (stats.fatigueStatus) {
+                    EyeFatigueStatus.OPTIMAL -> R.drawable.ic_mascot_happy
+                    EyeFatigueStatus.CAUTION -> R.drawable.ic_mascot_tired
+                    EyeFatigueStatus.WARNING -> R.drawable.ic_mascot_tired
+                    EyeFatigueStatus.DANGER -> R.drawable.ic_mascot_panicked
+                }
+
+                if (isLargeWidget) {
+                    val localizedTitle = when (effectiveLang) {
+                        "en" -> "IrisFit Eye Health Dashboard"
+                        "ja" -> "IrisFit 目の健康ダッシュボード"
+                        "es" -> "Panel IrisFit"
+                        else -> "IrisFit 눈 건강 대시보드"
+                    }
+                    views.setImageViewResource(R.id.widget_large_mascot, mascotRes)
+                    views.setTextViewText(R.id.widget_large_title, localizedTitle)
+                    views.setTextViewText(R.id.widget_large_score, "${stats.eyeHealthScore}% ($localizedStatusLabel)")
+                } else {
+                    val localizedTitle = when (effectiveLang) {
+                        "en" -> "IrisFit Eye Health Battery"
+                        "ja" -> "IrisFit 目の健康バッテリー"
+                        "es" -> "Batería Ocular IrisFit"
+                        else -> "IrisFit 눈 건강 배터리"
+                    }
+                    val localizedBatteryText = when (effectiveLang) {
+                        "en" -> "Battery: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
+                        "ja" -> "バッテリー: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
+                        "es" -> "Batería: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
+                        else -> "배터리: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
+                    }
+                    views.setImageViewResource(R.id.widget_mascot_icon, mascotRes)
+                    views.setTextViewText(R.id.widget_title_text, localizedTitle)
+                    views.setTextViewText(R.id.widget_status_text, localizedBatteryText)
+                }
+
+                appWidgetManager.updateAppWidget(appWidgetId, views)
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-
-            val selectedLang = LanguageManager.getSelectedLanguage(context)
-            val effectiveLang = AppLocalization.resolveEffectiveLang(selectedLang)
-
-            val localizedTitle = when (effectiveLang) {
-                "en" -> "IrisFit Eye Health Battery"
-                "ja" -> "IrisFit 目の健康バッテリー"
-                "es" -> "Batería Ocular IrisFit"
-                else -> "IrisFit 눈 건강 배터리"
-            }
-
-            val localizedStatusLabel = AppLocalization.get(selectedLang, stats.fatigueStatus.labelKey)
-            val localizedBatteryText = when (effectiveLang) {
-                "en" -> "Battery: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
-                "ja" -> "バッテリー: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
-                "es" -> "Batería: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
-                else -> "배터리: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
-            }
-
-            views.setImageViewResource(R.id.widget_mascot_icon, mascotRes)
-            views.setTextViewText(R.id.widget_title_text, localizedTitle)
-            views.setTextViewText(R.id.widget_status_text, localizedBatteryText)
-
-            appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 }

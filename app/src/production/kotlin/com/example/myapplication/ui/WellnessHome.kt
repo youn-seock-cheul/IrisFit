@@ -63,6 +63,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -77,6 +78,7 @@ import java.time.LocalDate
 @Composable
 fun EyePedometerCard(
     sessionModel: GuidedSessionViewModel,
+    onNavigateToGym: () -> Unit = {},
     onNavigateToPursuit: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -169,14 +171,14 @@ fun EyePedometerCard(
                         Icon(
                             painter = painterResource(id = sessionModel.poseDetector.currentPose.iconRes),
                             contentDescription = null,
-                            tint = if (!sessionModel.poseDetector.currentPose.isCharging) statusColor else Color(0xFF00E676),
+                            tint = statusColor,
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
                             text = sessionModel.tr(sessionModel.poseDetector.currentPose.labelKey),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (!sessionModel.poseDetector.currentPose.isCharging) statusColor else Color(0xFF00E676)
+                            color = statusColor
                         )
                     }
                 }
@@ -209,6 +211,15 @@ fun EyePedometerCard(
                 )
             }
 
+            // SCREEN TIME DISPLAY (IRIS-REQ-SCORE-001)
+            val formattedScreenTime = com.example.myapplication.data.ScreenTimeManager.getTodayScreenTimeFormatted(context)
+            Text(
+                text = "오늘 누적 화면 사용: $formattedScreenTime",
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                color = Color.LightGray
+            )
+
             // GAUGE WITH 4-TIER LEGEND (Left 0% -> Right 100% Correct Order)
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -236,12 +247,12 @@ fun EyePedometerCard(
                 }
             }
 
-            // CLICKABLE REST & EYE EXERCISE CARDS
+            // CLICKABLE REST & EYE EXERCISE CARDS (3 Dedicated Workout Cards)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // REST CARD (Click to start 30s Rest Popup!)
+                // 1. REST CARD (30s Rest)
                 Surface(
                     modifier = Modifier
                         .weight(1f)
@@ -249,23 +260,39 @@ fun EyePedometerCard(
                     color = statusColor.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Column(
+                        modifier = Modifier.padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        Icon(painter = painterResource(id = R.drawable.ic_nav_bluelight), contentDescription = null, tint = statusColor, modifier = Modifier.size(20.dp))
-                        Column {
-                            Text(sessionModel.tr("rest_completed"), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                            val restFmt = sessionModel.tr("fmt_rest_completed")
-                            val restTxt = String.format(java.util.Locale.getDefault(), restFmt, stats.restCount, stats.restCount * 30)
-                            Text(restTxt, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = statusColor)
-                            Text(sessionModel.tr("tap_to_rest"), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = statusColor)
-                        }
+                        Icon(painter = painterResource(id = R.drawable.ic_nav_eye_comfort), contentDescription = null, tint = statusColor, modifier = Modifier.size(18.dp))
+                        Text(sessionModel.tr("rest_completed"), style = MaterialTheme.typography.bodySmall, color = Color.Gray, fontSize = 10.sp)
+                        val restFmt = sessionModel.tr("fmt_rest_completed")
+                        val restTxt = String.format(java.util.Locale.getDefault(), restFmt, stats.restCount, stats.restCount * 30)
+                        Text(restTxt, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = statusColor, fontSize = 11.sp)
+                        Text(sessionModel.tr("tap_to_rest"), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = statusColor)
                     }
                 }
 
-                // EYE EXERCISE CARD (Click to start Pursuit Game!)
+                // 2. FOCUS GYM CARD (원근 조절 모양근 스트레칭)
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { onNavigateToGym() },
+                    color = statusColor.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Icon(painter = painterResource(id = R.drawable.ic_nav_gym), contentDescription = null, tint = statusColor, modifier = Modifier.size(18.dp))
+                        Text(sessionModel.tr("원근 조절"), style = MaterialTheme.typography.bodySmall, color = Color.Gray, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(sessionModel.tr("모양근 스트레칭"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = statusColor, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(sessionModel.tr("탭하여 훈련"), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = statusColor)
+                    }
+                }
+
+                // 3. PURSUIT GAME CARD (부드러운 시선 추적)
                 Surface(
                     modifier = Modifier
                         .weight(1f)
@@ -273,19 +300,14 @@ fun EyePedometerCard(
                     color = statusColor.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Column(
+                        modifier = Modifier.padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        Icon(painter = painterResource(id = R.drawable.ic_nav_gym), contentDescription = null, tint = statusColor, modifier = Modifier.size(20.dp))
-                        Column {
-                            Text(sessionModel.tr("eye_exercise"), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                            val exerciseFmt = sessionModel.tr("fmt_eye_exercise")
-                            val exerciseTxt = String.format(java.util.Locale.getDefault(), exerciseFmt, stats.miniGameCount)
-                            Text(exerciseTxt, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = statusColor)
-                            Text(sessionModel.tr("tap_to_exercise"), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = statusColor)
-                        }
+                        Icon(painter = painterResource(id = R.drawable.ic_nav_ai), contentDescription = null, tint = statusColor, modifier = Modifier.size(18.dp))
+                        Text(sessionModel.tr("시선 추적"), style = MaterialTheme.typography.bodySmall, color = Color.Gray, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(sessionModel.tr("무한대 궤적"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = statusColor, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(sessionModel.tr("탭하여 추적"), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = statusColor)
                     }
                 }
             }
@@ -311,11 +333,12 @@ fun EyePedometerCard(
             }
 
             // PERMISSION WARNING BANNER IF USAGE STATS NOT PERMITTED
+            var showUsageDisclosureDialog by remember { mutableStateOf(false) }
             val hasUsagePermission = com.example.myapplication.data.ScreenTimeManager.hasUsageStatsPermission(context)
             if (!hasUsagePermission) {
                 Card(
                     modifier = Modifier.fillMaxWidth().clickable {
-                        com.example.myapplication.data.ScreenTimeManager.openUsageStatsSettings(context)
+                        showUsageDisclosureDialog = true
                     },
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                     shape = RoundedCornerShape(12.dp)
@@ -342,16 +365,25 @@ fun EyePedometerCard(
                             }
                         }
                         Button(
-                            onClick = { com.example.myapplication.data.ScreenTimeManager.openUsageStatsSettings(context) },
+                            onClick = { showUsageDisclosureDialog = true },
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                         ) {
-                            Text(sessionModel.tr("권한 설정 바로가기 ➔"), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(sessionModel.tr("권한 안내 ➔"), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
             }
+
+            if (showUsageDisclosureDialog) UsageAccessDisclosureDialog(
+                sessionModel = sessionModel,
+                onDismiss = { showUsageDisclosureDialog = false },
+                onOpenSettings = {
+                    showUsageDisclosureDialog = false
+                    com.example.myapplication.data.ScreenTimeManager.openUsageStatsSettings(context)
+                }
+            )
 
             // SHARE BUTTON
             Row(

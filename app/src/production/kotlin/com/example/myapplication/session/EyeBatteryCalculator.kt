@@ -1,10 +1,13 @@
 package com.example.myapplication.session
 
+import kotlin.math.roundToInt
+
 data class EyeBatteryStats(
     val screenTimeMinutes: Int,
+    val screenTimeMeasured: Boolean,
     val restCount: Int,
     val miniGameCount: Int,
-    val eyeHealthScore: Int, // 10% to 100%
+    val eyeHealthScore: Int, // 20% to 100% Clamped Wellness Metric
     val fatigueStatus: EyeFatigueStatus
 )
 
@@ -17,9 +20,6 @@ enum class EyeFatigueStatus(
     CAUTION("status_caution", "🟡", "desc_caution"),
     WARNING("status_warning", "🟠", "desc_warning"),
     DANGER("status_danger", "🔴", "desc_danger");
-
-    val label: String get() = labelKey
-    val description: String get() = descKey
 }
 
 object EyeBatteryCalculator {
@@ -27,27 +27,19 @@ object EyeBatteryCalculator {
         screenTimeMinutes: Int,
         restCount: Int,
         miniGameCount: Int,
-        poseMultiplier: Float = 1.0f,
-        isCharging: Boolean = false
+        screenTimeMeasured: Boolean = true
     ): EyeBatteryStats {
-        // Effective screen minutes scaled smoothly
-        val effectiveMins = screenTimeMinutes.coerceAtLeast(30)
+        val safeScreenMins = screenTimeMinutes.coerceAtLeast(0).coerceAtMost(1440)
+        val safeRestCount = restCount.coerceAtLeast(0).toLong()
+        val safeGameCount = miniGameCount.coerceAtLeast(0).toLong()
 
-        // Base screen time drain: -1.0% per 15 minutes (or smooth linear scale)
-        val baseDrain = (effectiveMins.toFloat() / 15f) * 1.0f
+        val baseDrainFloat = (safeScreenMins.toFloat() / 15f) * 1.0f
 
-        // Pose posture adjustment (gentle relative delta, avoiding massive jumps)
-        val poseDelta = when {
-            isCharging -> 3.0f          // +3% bonus for On Desk / Face Down resting posture
-            poseMultiplier > 1.2f -> -3.0f // -3% slight penalty for Lying Down strain
-            else -> 0.0f
-        }
+        val restRecovery = (safeRestCount * 12L).coerceAtMost(200L)
+        val gameRecovery = (safeGameCount * 20L).coerceAtMost(200L)
 
-        // Recovery from completed rests and mini-games
-        val restRecovery = restCount * 12
-        val gameRecovery = miniGameCount * 20
-
-        val score = (100 - baseDrain.toInt() + restRecovery + gameRecovery + poseDelta.toInt()).coerceIn(20, 100)
+        val rawScoreFloat = 100f - baseDrainFloat + restRecovery.toFloat() + gameRecovery.toFloat()
+        val score = rawScoreFloat.roundToInt().coerceIn(20, 100)
 
         val status = when {
             score >= 85 -> EyeFatigueStatus.OPTIMAL
@@ -57,7 +49,8 @@ object EyeBatteryCalculator {
         }
 
         return EyeBatteryStats(
-            screenTimeMinutes = screenTimeMinutes,
+            screenTimeMinutes = safeScreenMins,
+            screenTimeMeasured = screenTimeMeasured,
             restCount = restCount,
             miniGameCount = miniGameCount,
             eyeHealthScore = score,

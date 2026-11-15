@@ -17,3 +17,9 @@ local.properties
 **/.gradle/
 **/.artifacts/
 .artifacts/
+keystore.properties
+app/keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pfx

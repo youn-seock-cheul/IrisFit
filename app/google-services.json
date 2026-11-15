@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "730414529581",
+    "project_id": "irisfit-c05e5",
+    "storage_bucket": "irisfit-c05e5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:730414529581:android:64b3d9c3092de3b9ba0ca4",
+        "android_client_info": {
+          "package_name": "com.eyeoverlay.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvwQmXVfpVKsFY7Wx7XndyT2veETJIv-g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -2,7 +2,7 @@
     <string name="app_name">IrisFit</string>
     <string name="nav_home">Home</string>
     <string name="nav_gym">Eye Gym</string>
-    <string name="nav_bluelight">Blue Light</string>
+    <string name="nav_eye_comfort">Eye Comfort</string>
     <string name="nav_ai">AI Coach</string>
     <string name="nav_settings">Settings</string>
 

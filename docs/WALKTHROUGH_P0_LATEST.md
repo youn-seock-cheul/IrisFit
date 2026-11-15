@@ -211,3 +211,35 @@
 앱 부착 release instrumentation은 Trace 클래스 부재로 실패했다. 별도 self-instrumenting 모듈이 러너를 격리해 실제 release 외부 UI를 검증한다. 기존 debug UI 2개·비최적화 QA 알림 계약 2개와 합산하지 않는다. 충전·화면 유지 관찰을 심층 절전/배터리 성능이나 지연 상한으로 해석하지 않는다. 개발용 인증서는 업로드 키가 아니며 판매·게시·Console 제출은 수행하지 않았다.
 
 [실기기 결과](P0_DEVICE_VALIDATION_2026-11-01.md), [시험표](P0_MANUAL_TEST_MATRIX.md), [테스트 재현](testing.md), [Console 신고 초안](PLAY_CONSOLE_DECLARATIONS_DRAFT.ko.md).
+
+
+## 2026-11-12 — Widget 1 단일화 및 Release 컴파일 오류 수정
+
+### 변경 사항
+- 홈 화면 위젯은 `IrisFitWidget1Provider`만 남겼습니다. Widget 2~6의 Manifest receiver, Provider 선언, appwidget-info XML, 레이아웃 및 사용하지 않는 미리보기 리소스를 제거했습니다.
+- 세션 완료/기록 갱신 경로는 Widget 1만 갱신하도록 변경했습니다.
+- 당시 중간 단계에서는 `BlueLightFilterService`를 Android 기본 `Service`로 변경했습니다. 이 서비스는 2026-11-13 후속 요청으로 최종 삭제되었습니다.
+- 기본 `Service`에 필요한 `onBind()`를 추가했습니다. `onCreate`, `onStartCommand`, foreground notification, overlay 생성/제거, stop action 흐름은 유지했습니다.
+- README의 위젯 개수/구조 설명을 실제 구현과 일치시켰습니다.
+
+### 검증 상태
+- 정적 확인: Manifest에 Widget 1 receiver만 남음, Widget 2~6 리소스 및 Provider 참조 제거 확인.
+- 당시 중간 단계에서 Android `Service` 상속 및 `onBind()` 구현을 확인했으나, 최신 소스에는 해당 서비스가 없습니다.
+- **미실행:** 이 환경에서 Android SDK/Gradle 빌드를 실행할 수 없어 `app:assembleRelease`, 단위 테스트, Lint 및 실기기 검증은 아직 실행하지 않았습니다. 따라서 Release 빌드 성공을 보장한다고 판정하지 않습니다.
+
+### 로컬 재검증 명령
+```powershell
+.\gradlew.bat app:assembleRelease
+.\gradlew.bat app:testDebugUnitTest
+.\gradlew.bat app:lintRelease
+```
+
+
+## 2026-11-13 — 앱 자체 블루라이트 오버레이 기능 삭제
+
+- 사용자 확인에 따라 IrisFit 앱이 직접 화면 위에 색상 필터를 덮는 `BlueLightFilterService`를 삭제했습니다.
+- 기존 '시력 보호' 탭은 유지하며, 휴대폰 디스플레이 설정 화면을 여는 바로가기만 제공합니다. IrisFit은 Eye Comfort Shield를 직접 켜거나 상태를 읽지 않습니다.
+- 관련 Kotlin import/탭 문구/다국어 키를 정리하고, 블루라이트가 안구 질환을 예방한다는 과장 가능 문구를 제거했습니다.
+- `SYSTEM_ALERT_WINDOW` 권한은 눈 운동 오버레이 서비스가 사용하므로 유지했습니다.
+- 이전 문서의 `BlueLightFilterService`를 기본 `Service`로 바꿨다는 기록은 삭제 전 중간 단계의 변경 이력입니다. 최신 프로젝트에는 서비스 클래스가 존재하지 않습니다.
+- 이번 변경 후 `assembleRelease`, 테스트, Lint 및 기기 검증은 아직 수행하지 않았습니다.
