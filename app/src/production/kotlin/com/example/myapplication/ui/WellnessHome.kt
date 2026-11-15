@@ -396,9 +396,14 @@ fun EyePedometerCard(
             ) {
                 TextButton(
                     onClick = {
+                        val shareMsg = if (stats.fatigueStatus == EyeFatigueStatus.UNMEASURED || stats.eyeHealthScore < 0) {
+                            "오늘 IrisFit 눈 건강 배터리 상태는 미측정입니다! 🔋✨ 함께 눈 피로를 충전해요!\n\n📲 IrisFit 앱 다운로드: https://play.google.com/store/apps/details?id=com.eyeoverlay.app"
+                        } else {
+                            "오늘 IrisFit 눈 건강 배터리 컨디션은 ${stats.eyeHealthScore}% (${sessionModel.tr(stats.fatigueStatus.labelKey)})입니다! 🔋✨ 함께 눈 피로를 충전해요!\n\n📲 IrisFit 앱 다운로드: https://play.google.com/store/apps/details?id=com.eyeoverlay.app"
+                        }
                         val sendIntent = Intent().apply {
                             action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, "오늘 IrisFit 눈 건강 배터리 컨디션은 ${stats.eyeHealthScore}% (${sessionModel.tr(stats.fatigueStatus.labelKey)})입니다! 🔋✨ 함께 눈 피로를 충전해요!\n\n📲 IrisFit 앱 다운로드: https://play.google.com/store/apps/details?id=com.eyeoverlay.app")
+                            putExtra(Intent.EXTRA_TEXT, shareMsg)
                             type = "text/plain"
                         }
                         val shareIntent = Intent.createChooser(sendIntent, "눈 건강 배터리 공유하기")

@@ -84,21 +84,34 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (!listening || event == null) return
+        val values = event.values ?: return
+        if (values.isEmpty()) return
+
+        // Validate payload finiteness (Reject NaN, Infinite or empty sensor arrays)
+        for (v in values) {
+            if (v.isNaN() || v.isInfinite()) {
+                classifier.reset()
+                updatePose()
+                return
+            }
+        }
+
         val now = SystemClock.elapsedRealtime()
         val sampleTime = event.timestamp / 1_000_000L
         if (sampleTime <= 0L || sampleTime > now) {
             classifier.reset()
             updatePose()
-            return // Reject invalid timestamp events from updating freshness
+            return // Reject invalid timestamp events
         }
-        lastEventTimestampMs = now // Only update timestamp after event payload and time check pass!
+
+        // Freshness timestamp updated ONLY after payload and timestamp verification pass
+        lastEventTimestampMs = now
+
         when (event.sensor.type) {
-            Sensor.TYPE_ACCELEROMETER -> classifier.accelerometer(sampleTime, event.values)
-            Sensor.TYPE_GYROSCOPE -> classifier.gyroscope(sampleTime, event.values)
-            Sensor.TYPE_LIGHT -> if (event.values.isNotEmpty()) classifier.light(sampleTime, event.values[0])
-            Sensor.TYPE_PROXIMITY -> if (event.values.isNotEmpty()) {
-                classifier.proximity(sampleTime, event.values[0], event.sensor.maximumRange)
-            }
+            Sensor.TYPE_ACCELEROMETER -> classifier.accelerometer(sampleTime, values)
+            Sensor.TYPE_GYROSCOPE -> classifier.gyroscope(sampleTime, values)
+            Sensor.TYPE_LIGHT -> classifier.light(sampleTime, values[0])
+            Sensor.TYPE_PROXIMITY -> classifier.proximity(sampleTime, values[0], event.sensor.maximumRange)
         }
         updatePose()
     }

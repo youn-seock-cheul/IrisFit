@@ -89,9 +89,14 @@ class IrisFitWidgetProvider : AppWidgetProvider() {
                         "es" -> "Panel IrisFit"
                         else -> "IrisFit 눈 건강 대시보드"
                     }
+                    val localizedScoreText = if (stats.fatigueStatus == EyeFatigueStatus.UNMEASURED || stats.eyeHealthScore < 0) {
+                        AppLocalization.get(selectedLang, "screen_time_unmeasured")
+                    } else {
+                        "${stats.eyeHealthScore}% ($localizedStatusLabel)"
+                    }
                     views.setImageViewResource(R.id.widget_large_mascot, mascotRes)
                     views.setTextViewText(R.id.widget_large_title, localizedTitle)
-                    views.setTextViewText(R.id.widget_large_score, "${stats.eyeHealthScore}% ($localizedStatusLabel)")
+                    views.setTextViewText(R.id.widget_large_score, localizedScoreText)
                 } else {
                     val localizedTitle = when (effectiveLang) {
                         "en" -> "IrisFit Eye Health Battery"
@@ -99,11 +104,15 @@ class IrisFitWidgetProvider : AppWidgetProvider() {
                         "es" -> "Batería Ocular IrisFit"
                         else -> "IrisFit 눈 건강 배터리"
                     }
-                    val localizedBatteryText = when (effectiveLang) {
-                        "en" -> "Battery: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
-                        "ja" -> "バッテリー: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
-                        "es" -> "Batería: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
-                        else -> "배터리: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
+                    val localizedBatteryText = if (stats.fatigueStatus == EyeFatigueStatus.UNMEASURED || stats.eyeHealthScore < 0) {
+                        AppLocalization.get(selectedLang, "screen_time_unmeasured")
+                    } else {
+                        when (effectiveLang) {
+                            "en" -> "Battery: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
+                            "ja" -> "バッテリー: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
+                            "es" -> "Batería: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
+                            else -> "배터리: ${stats.eyeHealthScore}% ($localizedStatusLabel)"
+                        }
                     }
                     views.setImageViewResource(R.id.widget_mascot_icon, mascotRes)
                     views.setTextViewText(R.id.widget_title_text, localizedTitle)
