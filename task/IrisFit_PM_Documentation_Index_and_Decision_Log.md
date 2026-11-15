@@ -23,8 +23,8 @@
 - 진행 순서: **현재 Release 구현 감사 → 베타 범위/수용 기준 승인 → 개발·자체검증 → QA 재검수 → PM 완료 판정 → 내부 테스트 → 제한 베타 → 별도 정식 출시 승인**
 - `AUD-01` Developer 감사 및 `QA-01` 정적 재검토는 완료됐으나 실제 기기/Play 검증은 미완료다. 전체 제품 출시 준비는 **BLOCKED**다.
 - 실제 시청시간 목표는 유지한다. Android 13+ 범용 목표와 측정 불가 시 `미측정`을 승인했고, Galaxy S23/Z Fold7은 초기 시험 후보로만 정했다. 기기별 전력 허용치·정확도 기준·시험 절차는 미승인이다.
-- 현재 단계: **commit `311ab4c` PM 검토 — PARTIAL PASS, 기능 완료 보류**. Gradle XML에서 63 passed/0 skipped/0 failed 확인. `SM-S916N`→S23 profile mapping, 센서 finite/size/known type/timestamp/positive finite proximity maximumRange guard를 수용한다. AI/목표/추세에서 `-1` 처리와 detector/UI 경계 테스트는 미완료이며 proximity sample 값이 maximumRange를 넘는 경우도 명시적으로 막지 않는다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_311ab4c_2026-11-16.md`.
-- 실기기 상태: Galaxy S23+ (SM-S916N, Android 16/API 36)에 `311ab4c` Debug를 재설치/실행했다. 홈 화면에 `책상 위 놓임`, `99%`, `15분`이 표시됐으나 이는 UI 스모크일 뿐 정답 라벨 기반 자세/실제 시청 정확도 증거가 아니다. 배터리 status는 충전 중이므로 drain 비교 미실시. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_311ab4c_2026-11-16.md`.
+- 현재 단계: **commit `59bb238` PM 검토 — PARTIAL PASS, 기능 완료 보류**. Gradle XML에서 63 passed/0 skipped/0 failed 확인. `SM-S916N` mapping과 proximity value `<= maximumRange` 검사를 수용한다. `BatteryTrendCard`는 -1을 그래프 하한으로 plot/라벨 표시할 수 있고 MainScreen AI/Goal/relay 및 Wellness gauge/legend에서도 미측정값 소비가 남는다. detector/UI 경계 테스트는 확인되지 않았다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_59bb238_2026-11-16.md`.
+- 실기기 상태: Galaxy S23+ (SM-S916N, Android 16/API 36)에 최신 Debug APK 설치 및 MainActivity 실행을 확인했다. 이번 UI dump에서 홈 점수/수치를 독립 확인하지 못했다. 현재 battery 상태가 discharging으로 관찰됐지만 승인된 battery 비교 프로토콜로 시험하지 않았으므로 battery/heat는 NOT RUN. 실제 시청/자세 정확도와 센서 freshness도 NOT RUN. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_59bb238_2026-11-16.md`.
 - 출시 Hold 해제, 내부 테스트 업로드 및 Production 배포는 별도 PM 승인 대상이다.
 
 ## 문서 인덱스
@@ -52,7 +52,8 @@
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_9dd7059_2026-11-15.md` | PM PARTIAL PASS — 잔여 결함 재개방 | Calculator의 UNMEASURED는 확인했으나 위젯/AI/공유/추세의 -1 점수 처리 및 payload 검증 전 freshness 갱신을 기록 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_6d2b718_2026-11-15.md` | PM PARTIAL PASS — 실기기/UI/센서 잔여 결함 재개방 | 61 JVM tests; basic device UI and beta dialog observed; bitmap widget/AI/trend score paths and type-specific payload freshness unresolved |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_d301df4_2026-11-16.md` | 과거 PM PARTIAL PASS | `d301df4`의 당시 상태 기록 |
-| `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_311ab4c_2026-11-16.md` | 최신 PM PARTIAL PASS — Release Hold 유지 | 63 JVM tests; S23+ detection and freshness guards verified; UI unmeasured consumers and detector boundary testing remain |
+| `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_311ab4c_2026-11-16.md` | 과거 PM PARTIAL PASS | `311ab4c` 기준 모델 매핑 및 센서 payload guard 결과 |
+| `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_59bb238_2026-11-16.md` | 최신 PM PARTIAL PASS — Release Hold 유지 | 63 JVM tests; proximity bound accepted; trend/AI/Goal/Wellness unmeasured paths and boundary tests remain |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Device_Smoke_Check_2026-11-15.md` | 제한된 실기기 스모크 완료 | Galaxy S23 Android 16/API 36 앱 실행 및 센서 하드웨어 가용성만 확인; 정확도/이벤트 freshness/배터리는 NOT RUN |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` | 사용자 정의 역할 반영 | QA 책임, 산출물, 출력 형식 및 판정 용어 |
 

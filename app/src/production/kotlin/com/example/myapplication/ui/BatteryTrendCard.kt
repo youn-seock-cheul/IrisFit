@@ -278,67 +278,82 @@ fun DailyStockChartView(sessionModel: GuidedSessionViewModel) {
                 .background(Color(0xFF161F28), RoundedCornerShape(16.dp))
                 .padding(horizontal = 12.dp, vertical = 10.dp)
         ) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                Column(
-                    modifier = Modifier.fillMaxHeight().padding(end = 8.dp),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                    horizontalAlignment = Alignment.End
-                ) {
-                    listOf("100%", "80%", "60%", "40%", "20%").forEach { pct ->
-                        Text(pct, fontSize = 9.sp, color = Color.Gray)
-                    }
-                }
-
+            val isUnmeasured = !sessionModel.eyeBatteryStats.screenTimeMeasured || currentScore < 0
+            if (isUnmeasured) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .fillMaxHeight()
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
-                        val width = size.width
-                        val height = size.height
-                        val stepX = width / (points.size - 1).coerceAtLeast(1)
-
-                        for (i in 0..4) {
-                            val y = height * (i / 4f)
-                            drawLine(
-                                color = Color.DarkGray.copy(alpha = 0.3f),
-                                start = androidx.compose.ui.geometry.Offset(0f, y),
-                                end = androidx.compose.ui.geometry.Offset(width, y),
-                                strokeWidth = 1.dp.toPx()
-                            )
+                    Text(
+                        text = sessionModel.tr("screen_time_unmeasured"),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Gray
+                    )
+                }
+            } else {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    Column(
+                        modifier = Modifier.fillMaxHeight().padding(end = 8.dp),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        listOf("100%", "80%", "60%", "40%", "20%").forEach { pct ->
+                            Text(pct, fontSize = 9.sp, color = Color.Gray)
                         }
+                    }
 
-                        val path = androidx.compose.ui.graphics.Path()
-                        points.forEachIndexed { index, (_, score, _) ->
-                            val x = index * stepX
-                            val normalizedScore = (score - 20f) / 80f
-                            val y = height * (1f - normalizedScore.coerceIn(0f, 1f))
-                            if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
-                        }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                            val width = size.width
+                            val height = size.height
+                            val stepX = width / (points.size - 1).coerceAtLeast(1)
 
-                        drawPath(
-                            path = path,
-                            color = Color(0xFF00E676),
-                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3.dp.toPx(), cap = androidx.compose.ui.graphics.StrokeCap.Round)
-                        )
+                            for (i in 0..4) {
+                                val y = height * (i / 4f)
+                                drawLine(
+                                    color = Color.DarkGray.copy(alpha = 0.3f),
+                                    start = androidx.compose.ui.geometry.Offset(0f, y),
+                                    end = androidx.compose.ui.geometry.Offset(width, y),
+                                    strokeWidth = 1.dp.toPx()
+                                )
+                            }
 
-                        points.forEachIndexed { index, (_, score, isCurrent) ->
-                            val x = index * stepX
-                            val normalizedScore = (score - 20f) / 80f
-                            val y = height * (1f - normalizedScore.coerceIn(0f, 1f))
+                            val path = androidx.compose.ui.graphics.Path()
+                            points.forEachIndexed { index, (_, score, _) ->
+                                val x = index * stepX
+                                val normalizedScore = ((score.coerceAtLeast(20) - 20f) / 80f)
+                                val y = height * (1f - normalizedScore.coerceIn(0f, 1f))
+                                if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                            }
 
-                            drawCircle(
-                                color = Color.White,
-                                radius = if (isCurrent) 6.dp.toPx() else 4.dp.toPx(),
-                                center = androidx.compose.ui.geometry.Offset(x, y)
-                            )
-                            drawCircle(
+                            drawPath(
+                                path = path,
                                 color = Color(0xFF00E676),
-                                radius = if (isCurrent) 4.dp.toPx() else 2.5.dp.toPx(),
-                                center = androidx.compose.ui.geometry.Offset(x, y)
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3.dp.toPx(), cap = androidx.compose.ui.graphics.StrokeCap.Round)
                             )
+
+                            points.forEachIndexed { index, (_, score, isCurrent) ->
+                                val x = index * stepX
+                                val normalizedScore = ((score.coerceAtLeast(20) - 20f) / 80f)
+                                val y = height * (1f - normalizedScore.coerceIn(0f, 1f))
+
+                                drawCircle(
+                                    color = Color.White,
+                                    radius = if (isCurrent) 6.dp.toPx() else 4.dp.toPx(),
+                                    center = androidx.compose.ui.geometry.Offset(x, y)
+                                )
+                                drawCircle(
+                                    color = Color(0xFF00E676),
+                                    radius = if (isCurrent) 4.dp.toPx() else 2.5.dp.toPx(),
+                                    center = androidx.compose.ui.geometry.Offset(x, y)
+                                )
+                            }
                         }
                     }
                 }
@@ -354,7 +369,7 @@ fun DailyStockChartView(sessionModel: GuidedSessionViewModel) {
             } else points
             displayPoints.forEach { (label, score, _) ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("$score%", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E676))
+                    Text(if (score < 0) sessionModel.tr("미측정") else "$score%", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = if (score < 0) Color.Gray else Color(0xFF00E676))
                     Text(label, fontSize = 9.sp, color = Color.Gray)
                 }
             }
