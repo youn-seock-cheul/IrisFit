@@ -105,7 +105,7 @@ fun EyePedometerCard(
         EyeFatigueStatus.CAUTION -> R.drawable.ic_mascot_tired
         EyeFatigueStatus.WARNING -> R.drawable.ic_mascot_tired
         EyeFatigueStatus.DANGER -> R.drawable.ic_mascot_panicked
-        EyeFatigueStatus.UNMEASURED -> R.drawable.ic_mascot_happy
+        EyeFatigueStatus.UNMEASURED -> R.drawable.ic_nav_eye_comfort // Neutral eye comfort icon when unmeasured
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "mascot_pulse")
