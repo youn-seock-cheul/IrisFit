@@ -34,7 +34,7 @@ class ViewingTimeEvaluatorTest {
             hasPermission = false,
             isAppInForeground = true
         )
-        assertTrue("PermissionDenied 상태가 반환되어야 함", result is ViewingTimeStatus.PermissionDenied)
+        assertTrue(result is ViewingTimeStatus.PermissionDenied)
     }
 
     @Test
@@ -44,7 +44,7 @@ class ViewingTimeEvaluatorTest {
             hasPermission = true,
             isAppInForeground = false
         )
-        assertTrue("BackgroundPaused 상태가 반환되어야 함", result is ViewingTimeStatus.BackgroundPaused)
+        assertTrue(result is ViewingTimeStatus.BackgroundPaused)
         val pausedState = result as ViewingTimeStatus.BackgroundPaused
         assertEquals("앱 백그라운드 전환", pausedState.reason)
     }
@@ -57,7 +57,7 @@ class ViewingTimeEvaluatorTest {
             isAppInForeground = true,
             isScreenOn = false
         )
-        assertTrue("ScreenOff 시 BackgroundPaused 반환되어야 함", result is ViewingTimeStatus.BackgroundPaused)
+        assertTrue(result is ViewingTimeStatus.BackgroundPaused)
         val pausedState = result as ViewingTimeStatus.BackgroundPaused
         assertEquals("화면 꺼짐", pausedState.reason)
     }
@@ -73,7 +73,7 @@ class ViewingTimeEvaluatorTest {
             isSensorFresh = false,
             mockUsageMinutes = 45
         )
-        assertTrue("SensorUnavailable 상태가 반환되어야 함", result is ViewingTimeStatus.SensorUnavailable)
+        assertTrue(result is ViewingTimeStatus.SensorUnavailable)
     }
 
     @Test
@@ -87,7 +87,7 @@ class ViewingTimeEvaluatorTest {
             isSensorFresh = true,
             mockUsageMinutes = 0
         )
-        assertTrue("MeasuredZero 상태가 반환되어야 함", result is ViewingTimeStatus.MeasuredZero)
+        assertTrue(result is ViewingTimeStatus.MeasuredZero)
     }
 
     @Test
@@ -98,6 +98,32 @@ class ViewingTimeEvaluatorTest {
             isAppInForeground = true,
             isConfigChanging = true
         )
-        assertTrue("ConfigurationChanging 상태가 반환되어야 함", result is ViewingTimeStatus.ConfigurationChanging)
+        assertTrue(result is ViewingTimeStatus.ConfigurationChanging)
+    }
+
+    @Test
+    fun testEvaluate_QueryException_ReturnsQueryErrorStatus() {
+        val result = ViewingTimeEvaluator.evaluateViewingTime(
+            context = testContext,
+            hasPermission = true,
+            isAppInForeground = true,
+            mockQueryException = RuntimeException("Service Unavailable")
+        )
+        assertTrue(result is ViewingTimeStatus.QueryError)
+        val error = result as ViewingTimeStatus.QueryError
+        assertTrue(error.errorDetail.contains("Service Unavailable"))
+    }
+
+    @Test
+    fun testEvaluate_NegativeMinutes_ReturnsQueryErrorStatus() {
+        val result = ViewingTimeEvaluator.evaluateViewingTime(
+            context = testContext,
+            hasPermission = true,
+            isAppInForeground = true,
+            mockUsageMinutes = -10
+        )
+        assertTrue(result is ViewingTimeStatus.QueryError)
+        val error = result as ViewingTimeStatus.QueryError
+        assertTrue(error.errorDetail.contains("음수 사용시간"))
     }
 }

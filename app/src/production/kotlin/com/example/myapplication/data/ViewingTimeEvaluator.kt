@@ -29,7 +29,7 @@ sealed class ViewingTimeStatus {
     ) : ViewingTimeStatus()
 
     /**
-     * UsageStats 조회 중 오류가 발생하였거나 데이터를 수집할 수 없는 상태
+     * UsageStats 조회 중 오류가 발생하였거나 비정상 데이터(음수 수치 등)가 수집된 상태
      */
     data class QueryError(
         val errorDetail: String
@@ -83,9 +83,6 @@ enum class TargetDeviceModel(val deviceName: String, val isFoldable: Boolean) {
 
 /**
  * 실제 시청시간 평가 및 타당성 분석기 (Android 13+ / API 33+ Target)
- *
- * 주의: 임의의 보정치와 고정 배터리 상수는 실측값이 아닌 이론적 추정치이며,
- * 사용자 UI에는 실측값으로 왜곡 노출되지 않도록 안전 캡슐화되어 있습니다.
  */
 object ViewingTimeEvaluator {
 
@@ -99,6 +96,7 @@ object ViewingTimeEvaluator {
         isMultiWindow: Boolean = false,
         isConfigChanging: Boolean = false,
         mockUsageMinutes: Int? = null,
+        mockQueryException: Exception? = null,
         screenWidthDp: Int = 360,
         screenHeightDp: Int = 800
     ): ViewingTimeStatus {
@@ -119,26 +117,35 @@ object ViewingTimeEvaluator {
             return ViewingTimeStatus.ConfigurationChanging("화면 회전 또는 Fold 폼팩터 전환 중")
         }
 
-        // 4. 사용시간 데이터 수집 (테스트 모크 또는 실제 ScreenTimeManager)
-        val usageMinutes = mockUsageMinutes ?: try {
+        // 4. 예외 수뮬레이션 및 데이터 수집
+        if (mockQueryException != null) {
+            return ViewingTimeStatus.QueryError("UsageStats 조회 예외: ${mockQueryException.message}")
+        }
+
+        val rawMinutes = mockUsageMinutes ?: try {
             ScreenTimeManager.getTodayScreenTimeMinutes(context)
         } catch (e: Exception) {
             return ViewingTimeStatus.QueryError("UsageStats 조회 오류: ${e.message}")
         }
 
-        // 5. 조회 성공했으나 0분인 측정 상태 분기 (0분 사용 시 센서 보정 불필요)
-        if (usageMinutes == 0) {
+        // 5. 비정상 음수 수치 검증
+        if (rawMinutes < 0) {
+            return ViewingTimeStatus.QueryError("비정상 음수 사용시간 데이터: $rawMinutes")
+        }
+
+        // 6. 조회 성공했으나 0분인 측정 상태 분기
+        if (rawMinutes == 0) {
             return ViewingTimeStatus.MeasuredZero()
         }
 
-        // 6. 센서 가용성 및 신선도(freshness) 검증
+        // 7. 센서 가용성 및 신선도(freshness) 검증
         if (poseDetector == null || !isSensorFresh) {
             return ViewingTimeStatus.SensorUnavailable(
                 reason = if (poseDetector == null) "센서 미등록" else "센서 데이터 갱신 중단(Stale)"
             )
         }
 
-        // 7. 기기 식별 및 Z Fold7 펼침/접힘 폼팩터 판별
+        // 8. 기기 식별 및 Z Fold7 펼침/접힘 폼팩터 판별
         val targetDevice = TargetDeviceModel.detectDevice()
         val isUnfolded = targetDevice.isFoldable && (screenWidthDp > 600 || screenHeightDp > 1000)
         val profileName = if (targetDevice.isFoldable) {
@@ -147,7 +154,7 @@ object ViewingTimeEvaluator {
             targetDevice.deviceName
         }
 
-        // 8. 자세 센서 이론적 모델 보정치 (실측 신세시스 시뮬레이션 수치)
+        // 9. 자세 센서 이론적 모델 보정치 (실측 신세시스 시뮬레이션 수치)
         val currentPose = poseDetector.currentPose
         val poseConfidence = when (currentPose) {
             DevicePose.HAND_HELD_ACTIVE -> 95
@@ -156,11 +163,11 @@ object ViewingTimeEvaluator {
             DevicePose.DEVICE_FACE_DOWN -> 0
         }
 
-        val estimatedMinutes = (usageMinutes * (poseConfidence / 100f)).toInt()
+        val estimatedMinutes = (rawMinutes * (poseConfidence / 100f)).toInt()
         val theoreticalBatteryCost = 0.12f
 
         return ViewingTimeStatus.FeasibilityEstimate(
-            baselineUsageMinutes = usageMinutes,
+            baselineUsageMinutes = rawMinutes,
             estimatedViewingMinutes = estimatedMinutes,
             poseConfidencePercent = poseConfidence,
             theoreticalBatteryCostPercentPerHour = theoreticalBatteryCost,
