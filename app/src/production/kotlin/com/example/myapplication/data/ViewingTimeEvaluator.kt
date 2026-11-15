@@ -102,13 +102,14 @@ object ViewingTimeEvaluator {
         screenWidthDp: Int = 360,
         screenHeightDp: Int = 800
     ): ViewingTimeStatus {
+        val isSensorFresh = poseDetector != null && poseDetector.hasRegisteredSensors && poseDetector.isFresh
         return evaluateViewingTimeInternal(
             context = context,
             hasPermission = ScreenTimeManager.hasUsageStatsPermission(context),
             isAppInForeground = isAppInForeground,
             isScreenOn = isScreenOn,
             poseDetector = poseDetector,
-            isSensorFresh = poseDetector != null,
+            isSensorFresh = isSensorFresh,
             isMultiWindow = isMultiWindow,
             isConfigChanging = isConfigChanging,
             mockQueryResult = null,

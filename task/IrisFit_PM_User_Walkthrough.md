@@ -18,7 +18,7 @@
 
 단계를 건너뛰거나 자동 승인하지 않는다. 각 단계가 끝나면 PM이 결과와 다음 선택을 이 파일에 갱신한다. 출시까지 시간이 걸리거나 막히는 항목이 있으면 이유와 필요한 결정을 함께 표시한다.
 
-**현재 로드맵 위치:** 실제 시청시간 목표(Android 13/API 33 이상, 측정 불가 시 `미측정`)는 유지하며 Galaxy S23/Z Fold7은 초기 시험 후보로 정했다. 최신 변경 commit `66aa763`를 확인했고, 전체 단위 테스트 **61 passed / 0 skipped / 0 failed**를 재실행했다. QA 결과는 **PARTIAL PASS**이며, PM도 테스트·정적 코드 범위는 확인했다. 다만 운영 UsageStats 경로에서 조회 불가와 실제 0분 구분, 실기기 센서 freshness, 시청 정확도/전력은 미검증이다. 제품 기능 완료와 Release 진입은 승인하지 않았다.
+**현재 로드맵 위치:** 실제 시청시간 목표(Android 13/API 33 이상, 측정 불가 시 `미측정`)는 유지하며 Galaxy S23/Z Fold7은 초기 시험 후보로 정했다. 최신 Developer commit `5018854` 및 전체 단위 테스트 **61 passed / 0 skipped / 0 failed**를 확인했다. typed UsageStats 결과 계약과 mock 입력 분리는 확인했지만, legacy 정수 API가 실패를 0으로 축약해 위젯·세션·AI 코치에서 사용 중이고 evaluator freshness도 detector 객체 유무로 대체된다. PM은 **부분 수용**, QA 재검수 대기로 판정했다. 실기기 센서 freshness, 시청 정확도/전력은 미검증이며 제품 완료와 Release 진입은 승인하지 않았다.
 
 각 기능의 요구사항 ID, PM 기본설계/QA 협의 승인, Developer 상세설계, 개발 작업, QA 테스트 및 PM 완료 판정은 `IrisFit_PM_Dev_QA_Requirements_Process.md`의 공통 추적 절차를 따른다. 이 안내서는 전체 흐름과 현재 위치를 보여주고, 상세 문서는 요구사항 ID로 연결한다.
 
@@ -28,9 +28,9 @@
 |---|---|---|
 | 1. 현황 감사 | 실제 소스/Release 구성과 위험을 조사하고 QA가 근거를 재검토 | **완료(정적 범위)** — 실제 기기/Play 검증은 미완료 |
 | 2. 제품 범위·기준 승인 | 베타 핵심 범위, 데이터 의미, 예외/정책 및 측정 가능한 완료 기준을 PM이 승인 | **부분 완료** — 베타 MVP 범위와 실제 시청시간 목표, Android 13+ 및 `미측정` 원칙 결정. 정확도·전력 기준/시험 절차 미승인 |
-| 3. 개발 및 자체 검증 | 승인된 요구사항만 구현하고 기준별 증거/잔여 위험을 인계 | **인계 제출** — commit `66aa763`; 전체 단위 테스트 61/0/0 |
-| 4. QA 검증 | PM 완료 기준별 자동/수동 시험을 수행하고 증거와 PASS/FAIL/BLOCKED/NOT RUN 보고 | **PARTIAL PASS** — JVM/정적 범위 일부 확인; 운영 조회 실패 구분 및 실기기 검증은 미완료 |
-| 5. PM 완료·고정 판정 | QA 결과·기기 범위·잔여 위험을 검토해 완료/보류 판정 | **부분 판정** — 단위 테스트/미노출은 확인, 실제 시청시간 기능 완료/고정은 보류 |
+| 3. 개발 및 자체 검증 | 승인된 요구사항만 구현하고 기준별 증거/잔여 위험을 인계 | **수정 인계 제출** — commit `5018854`; 전체 단위 테스트 61/0/0; 운영 호출처/freshness 보완 필요 |
+| 4. QA 검증 | PM 완료 기준별 자동/수동 시험을 수행하고 증거와 PASS/FAIL/BLOCKED/NOT RUN 보고 | **재검수 대기** — 이전 `66aa763`는 PARTIAL PASS; 최신 수정 이후에도 운영 실패-0 변환과 실제 freshness 미해결 |
+| 5. PM 완료·고정 판정 | QA 결과·기기 범위·잔여 위험을 검토해 완료/보류 판정 | **부분 판정** — typed 계약 및 테스트 seam 분리는 확인; 제품 기능 완료/고정은 보류 |
 | 6. 내부 테스트 | Release 패키지 설치 및 핵심 흐름을 실제 테스트, PM/소유자가 트랙 업로드 승인 | **미착수/미승인** — Release Hold 유지 |
 | 7. 제한 베타 | 승인된 테스터와 기간/표본으로 사용성·안정성·피드백 검증 | **미착수** — 내부 테스트 종료 및 PM 승인 필요 |
 | 8. 정식 출시 심의 | 베타 결과, Play 정책/스토어 자료, 운영 위험을 검토하고 공개 여부 별도 승인 | **미착수** — 자동 승인 없음 |
@@ -85,7 +85,7 @@
 
 **단계 종료:** 개발자 인계가 제출되면 해당 작업의 코드를 멈추고 QA 단계로 전환한다.
 
-**현재 상태:** Developer 변경 commit `66aa763` 이후 전체 단위 테스트 61/0/0을 확인했다. PM은 `QueryError`/`MeasuredZero` 운영 경로, 실제 센서 freshness와 실기기 근거가 남은 공백이라고 판정했다. `mockUsageMinutes`/`mockQueryException` 테스트 seam이 production public API에 있는 점도 정리 대상이다. 시청시간 정확도·배터리 실측은 NOT RUN. 상세 QA/PM 판정과 후속 개발 지시: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_66aa763_2026-11-15.md`.
+**현재 상태:** Developer commit `5018854`의 typed `ScreenTimeQueryResult`와 public evaluator에서 mock 입력 제거를 확인했고 전체 단위 테스트 61/0/0을 재실행했다. 그러나 `getTodayScreenTimeMinutes()`가 실패를 0으로 바꾸는 기존 운영 소비처(위젯, 세션, AI 코치)가 남아 있으며 production freshness 판단도 detector 존재만 확인한다. 후속 수정 후 QA 재검수 대기. 시청시간 정확도·배터리 실측은 NOT RUN. 상세 PM 검토/지시: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_5018854_2026-11-15.md`.
 
 ### 4단계 — QA가 확인하고 결함을 돌려보내기
 
@@ -102,7 +102,7 @@
 
 **단계 종료:** 모든 필수 기준이 통과하거나 PM이 잔여 위험을 명시적으로 수용한다.
 
-**현재 상태:** 최신 QA는 **PARTIAL PASS**를 제출했고 PM이 해당 판정을 일부 수용한다. 실제 UsageStats 실패/0분 구분과 하드웨어 센서·전력/시청 정확도는 입증되지 않았다. 상세 판정: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_66aa763_2026-11-15.md`.
+**현재 상태:** 이전 `66aa763` QA 판정은 **PARTIAL PASS**. 최신 `5018854`는 PM 부분 수용 후 재검수 대기다. 일부 formatted API는 오류를 `미측정` 처리하지만 다른 운영 소비처는 여전히 0으로 축약한다. 실제 센서 freshness 및 하드웨어 전력/시청 정확도는 입증되지 않았다. 최신 지시: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_5018854_2026-11-15.md`.
 
 ### 5단계 — 완료된 영역을 고정하기
 
@@ -178,10 +178,10 @@ Developer와 QA는 동일 AI이므로, 역할을 분리한 QA 재검토는 사�
 
 ## 현재 단계 카드
 
-- **현재 단계:** 4–5 — 단위 테스트/정적 UI 범위 부분 확인, 제품 기능 PM 완료 판정 보류
+- **현재 단계:** 3–4 — `5018854` Developer 수정 부분 수용, 운영 호출처/freshness 보완과 QA 재검수 대기
 - **완료된 것:** 저장소 기준점/정적 감사, 감사 QA 재검토, 베타 MVP 범위 기본설계, 사용자가 승인한 실제 시청시간 목표와 Android 13+ 미측정 원칙, 두 Galaxy 기기의 초기 시험 후보, 오늘 화면 사용시간 UI에서 evaluator 추정치 비노출의 정적 확인
-- **부분 완료/미승인:** 최신 Developer commit `66aa763` 및 전체 단위 테스트 61 passed/0 skipped/0 failed를 확인했다. 추정값 비노출은 정적 확인 범위에서 부분 승인. 운영 UsageStats 조회 오류/실제 0 구분 및 실제 센서 freshness/정확도/전력은 미입증 또는 NOT RUN이다.
-- **미완료:** 조회 결과 계약의 후속 정리 여부, 실제 시청시간 타당성 기준 승인 및 실기기 실행, 내부 테스트 빌드/PM 배포 승인
+- **부분 완료/미승인:** Developer commit `5018854` 및 전체 단위 테스트 61 passed/0 skipped/0 failed를 확인했다. typed query contract와 public mock seam 분리는 부분 수용. 단, 여러 운영 호출처가 조회 실패를 0으로 축약하며 센서 freshness는 실제 상태와 연결되지 않았다.
+- **미완료:** 운영 소비처의 typed 결과 처리, 실제 센서 freshness 연결, QA 재검수, 실제 시청시간 타당성 기준 승인 및 실기기 실행, 내부 테스트 빌드/PM 배포 승인
 - **다음 행동:** 필요 시 Developer가 운영 조회 실패와 0분 결과를 분리하고 단위/통합 근거를 제출한다. 별도로 PM 승인 후 실기기 타당성 시험을 진행한다.
 - **배포 승인:** 없음 (Release Hold 유지)
 - **다음 단계 전환 승인자:** PM (QA 판정만으로 자동 이동하지 않음)
@@ -200,6 +200,7 @@ Developer와 QA는 동일 AI이므로, 역할을 분리한 QA 재검토는 사�
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Second_Review_2026-11-15.md` — 개발·QA 통합 PASS에 대한 PM 2차 재검토, 작업 재개방 및 수정 지시서
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_2026-11-15.md` — commit `3218622`와 59개 단위 테스트 결과에 대한 PM 사전 검토 및 QA 확인 항목
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_66aa763_2026-11-15.md` — commit `66aa763` 및 61개 테스트에 대한 QA/PM 판정과 남은 운영 데이터 계약
+- `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_5018854_2026-11-15.md` — 최신 Developer 인계 PM 검토, 운영 호출처/freshness 결함 및 후속 지시
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` — QA 검수 역할, 출력 형식 및 PASS/BLOCKED/NOT RUN 판정 원칙
 - 저장소의 `Walkthrough.md` — 소스 변경 이력/기술 walkthrough. 이 공동 안내서를 대체하지 않음
 - 저장소의 `docs/WALKTHROUGH_P0_LATEST.md` — 개발 변경/검증 이력. 결과 시점과 검증 범위를 확인할 것

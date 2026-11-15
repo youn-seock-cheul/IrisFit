@@ -27,7 +27,13 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
     private val classifier = PoseClassifier()
     private val handler = Handler(Looper.getMainLooper())
     private var listening = false
+    private var registeredSensorsCount = 0
+    private var lastEventTimestampMs = 0L
     private var _observedPose by mutableStateOf(DevicePose.HAND_HELD_ACTIVE)
+
+    val isListening: Boolean get() = listening
+    val hasRegisteredSensors: Boolean get() = registeredSensorsCount > 0
+    val isFresh: Boolean get() = listening && registeredSensorsCount > 0 && (lastEventTimestampMs > 0L && SystemClock.elapsedRealtime() - lastEventTimestampMs < 5000L)
 
     val currentPose: DevicePose
         get() {
@@ -52,9 +58,14 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
         classifier.reset()
         _observedPose = DevicePose.HAND_HELD_ACTIVE
         listening = true
+        registeredSensorsCount = 0
+        lastEventTimestampMs = SystemClock.elapsedRealtime()
+
         for (type in listOf(Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE, Sensor.TYPE_PROXIMITY, Sensor.TYPE_LIGHT)) {
             val sensor = sensorManager?.getDefaultSensor(type) ?: continue
-            if (sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI) != true) {
+            if (sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI) == true) {
+                registeredSensorsCount++
+            } else {
                 Log.w("IrisFitPose", "Sensor registration failed: type=$type")
             }
         }
@@ -63,6 +74,8 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
 
     fun stopListening() {
         listening = false
+        registeredSensorsCount = 0
+        lastEventTimestampMs = 0L
         handler.removeCallbacks(freshnessCheck)
         sensorManager?.unregisterListener(this)
         classifier.reset()
@@ -72,6 +85,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         if (!listening || event == null) return
         val now = SystemClock.elapsedRealtime()
+        lastEventTimestampMs = now
         val sampleTime = event.timestamp / 1_000_000L
         if (sampleTime <= 0L || sampleTime > now) {
             classifier.reset()
