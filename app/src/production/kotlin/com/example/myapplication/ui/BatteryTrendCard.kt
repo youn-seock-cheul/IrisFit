@@ -120,20 +120,10 @@ fun BatteryTrendCard(sessionModel: GuidedSessionViewModel) {
                         1 -> {
                             val past7Days = (6 downTo 0).map { today.minusDays(it.toLong()).toString() }
                             val dailyScores = past7Days.associateWith { date ->
-                                val dayRecords = records.filter { it.completedLocalDate == date }
-                                val rests = dayRecords.count { it.routineId == "screen_rest" }
-                                val miniGames = dayRecords.count { it.routineId == "eye_gym" || it.routineId == "smooth_pursuit" }
                                 if (date == sessionModel.today) {
                                     sessionModel.eyeBatteryStats.eyeHealthScore
-                                } else if (dayRecords.isEmpty()) {
-                                    -1 // 미측정 / 기록 없음
                                 } else {
-                                    com.example.myapplication.session.EyeBatteryCalculator.calculateBattery(
-                                        screenTimeMinutes = 120,
-                                        restCount = rests,
-                                        miniGameCount = miniGames,
-                                        screenTimeMeasured = true
-                                    ).eyeHealthScore
+                                    -1 // 과거 일자는 측정 데이터 소스가 연결되기 전까지 미측정(-1) 처리
                                 }
                             }
 
@@ -182,19 +172,9 @@ fun BatteryTrendCard(sessionModel: GuidedSessionViewModel) {
                         }
                         else -> {
                             val weeklyScores = (3 downTo 0).map { weekIndex ->
-                                val endDay = today.minusDays((weekIndex * 7).toLong())
-                                val startDay = endDay.minusDays(6)
-                                val weekDates = (0..6).map { startDay.plusDays(it.toLong()).toString() }
-
-                                val scores = weekDates.map { dateStr ->
-                                    val dayRecords = records.filter { it.completedLocalDate == dateStr }
-                                    val rests = dayRecords.count { it.routineId == "screen_rest" }
-                                    val miniGames = dayRecords.count { it.routineId == "eye_gym" || it.routineId == "smooth_pursuit" }
-                                    (70 + (rests * 15) + (miniGames * 25)).coerceIn(30, 100)
-                                }
-                                val avgScore = scores.average().toInt()
                                 val label = if (weekIndex == 0) "이번 주" else "${weekIndex}주 전"
-                                label to avgScore
+                                val score = if (weekIndex == 0) sessionModel.eyeBatteryStats.eyeHealthScore else -1
+                                label to score
                             }
 
                             Row(
@@ -203,8 +183,10 @@ fun BatteryTrendCard(sessionModel: GuidedSessionViewModel) {
                                 verticalAlignment = Alignment.Bottom
                             ) {
                                 weeklyScores.forEach { (weekLabel, score) ->
-                                    val heightFraction = (score.toFloat() / 100f).coerceIn(0.2f, 1.0f)
+                                    val isScoreValid = score >= 0
+                                    val heightFraction = if (isScoreValid) (score.toFloat() / 100f).coerceIn(0.2f, 1.0f) else 0.15f
                                     val barColor = when {
+                                        !isScoreValid -> Color(0xFFA0A0A0)
                                         score >= 80 -> Color(0xFF00C853)
                                         score >= 50 -> Color(0xFFFFB300)
                                         else -> Color(0xFFFF5252)
@@ -214,7 +196,7 @@ fun BatteryTrendCard(sessionModel: GuidedSessionViewModel) {
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
-                                        Text("$score%", fontSize = 11.sp, color = barColor, fontWeight = FontWeight.Bold)
+                                        Text(if (isScoreValid) "$score%" else "-", fontSize = 11.sp, color = barColor, fontWeight = FontWeight.Bold)
                                         Box(
                                             modifier = Modifier
                                                 .size(width = 44.dp, height = (60 * heightFraction).dp)
