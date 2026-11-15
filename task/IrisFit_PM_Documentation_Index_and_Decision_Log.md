@@ -23,7 +23,7 @@
 - 진행 순서: **현재 Release 구현 감사 → 베타 범위/수용 기준 승인 → 개발·자체검증 → QA 재검수 → PM 완료 판정 → 내부 테스트 → 제한 베타 → 별도 정식 출시 승인**
 - `AUD-01` Developer 감사 및 `QA-01` 정적 재검토는 완료됐으나 실제 기기/Play 검증은 미완료다. 전체 제품 출시 준비는 **BLOCKED**다.
 - 실제 시청시간 목표는 유지한다. Android 13+ 범용 목표와 측정 불가 시 `미측정`을 승인했고, Galaxy S23/Z Fold7은 초기 시험 후보로만 정했다. 기기별 전력 허용치·정확도 기준·시험 절차는 미승인이다.
-- 현재 단계: **commit `b808392` QA 검토 — PARTIAL PASS, 기능 완료 보류**. 최신 전체 테스트 61 passed/0 skipped/0 failed를 재현했다. 일부 typed 소비처와 첫 센서 이벤트 전 guard는 확인했으나 활성 Widget 1 및 AI 코치에서 조회 실패를 0으로 축약하는 helper가 남아 있다. 미측정 상태에서도 점수 계산/표시가 가능하며 센서 timestamp는 payload 유효성 검사 전 갱신된다. 실기기 센서·배터리·시청 정확도는 NOT RUN이다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md`.
+- 현재 단계: **commit `8a72672` QA 검토 — PARTIAL PASS, 기능 완료 보류**. 전체 테스트 61 passed/0 skipped/0 failed를 재현했다. 활성 Widget 1/AI 코치 typed query와 최초 센서 이벤트 guard는 확인했으나 미측정 score/status가 표시될 수 있고 센서 payload 검증 전 freshness가 갱신된다. 관련 UI/detector 경계 테스트와 실기기 센서·배터리·시청 정확도는 미완료/NOT RUN이다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_8a72672_2026-11-15.md`.
 - 출시 Hold 해제, 내부 테스트 업로드 및 Production 배포는 별도 PM 승인 대상이다.
 
 ## 문서 인덱스
@@ -47,6 +47,7 @@
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_5018854_2026-11-15.md` | PM 부분 수용 — 후속 수정/QA 재검수 대기 | typed 결과 계약 및 61개 테스트 확인; 호출처의 실패-0 변환과 센서 freshness 공백 기록 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md` | QA PARTIAL PASS — PM 완료 보류 | `aad01ee`와 61개 JVM 테스트 재확인; 실패-0 운영 호출처, 첫 이벤트 전 freshness 및 테스트 범위 기록 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md` | QA PARTIAL PASS — PM 완료 보류 | `b808392`와 61개 JVM 테스트 재확인; 활성 Widget 1/AI 코치의 실패-0 경로, 미측정 score, 센서 이벤트 경계 기록 |
+| `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_8a72672_2026-11-15.md` | QA PARTIAL PASS — PM 완료 보류 | `8a72672`와 61개 JVM 테스트 재확인; 미측정 점수/status 노출, 센서 payload 검증 전 freshness 갱신 기록 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` | 사용자 정의 역할 반영 | QA 책임, 산출물, 출력 형식 및 판정 용어 |
 
 저장소 루트 `Walkthrough.md`를 공동 진입점으로 하고, `task/IrisFit_PM_User_Walkthrough.md`에 전체 제품 로드맵과 기존 Walkthrough의 개발 이력을 통합 보관한다. 중복 과거 파일 `docs/WALKTHROUGH_P0_LATEST.md`, `docs/WALKTHROUGH_ROADMAP.md`, `docs/WALKTHROUGH_GOOGLE_PLAY_IRISFIT.md`는 통합 후 삭제했다. 실제 PM 개발 지시 및 추가 검토 보고서는 사용자가 지정한 `C:\Users\youns\AndroidStudioProjects\task`에도 보관한다. 기존 기준·QA 문서는 작업 시 원본 파일과 기준 날짜를 확인한 후 새 감사 보고서의 입력 자료로 등록한다. 과거 보고의 검사 결과는 현재 상태의 증거로 재사용하지 않는다.
@@ -300,6 +301,13 @@
 - **다음:** 활성 Widget 1과 AI 코치 포함 전체 호출처 typed 처리, 미측정 점수 비노출, 유효 센서 이벤트만 freshness 갱신 및 경계 테스트 후 QA 재검수. 실기기 시험 NOT RUN, Release Hold 유지.
 - **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md`.
 
+### DEC-2026-11-15-32 — commit `8a72672` QA PARTIAL PASS
+
+- **상태:** PM 판정 — PARTIAL PASS; 수정 재개방, Release Hold 유지
+- **결정:** HEAD `8a72672` 및 전체 JVM 테스트 61 passed/0 skipped/0 failed를 확인했다. Widget 1/AI 코치 typed query와 첫 이벤트 전 freshness guard는 수용한다. 단, `screenTimeMeasured=false`여도 score/status 계산과 사용자 표시가 이어지고, AI 코치가 QueryError도 permission 상태처럼 취급한다. 센서는 timestamp 범위만 검사한 다음 payload 유효성 검사 전에 freshness 시간을 갱신하며, 해당 경계 자동 테스트도 확인되지 않았다. QA의 모든 운영 소비처 및 유효 이벤트 PASS는 제한된 범위에서만 인정한다.
+- **다음:** 미측정 score/status 노출 방지, QueryError와 PermissionDenied UI 분리, payload 검증 후에만 freshness 갱신 및 요구사항별 테스트를 추가하고 QA 재검수한다. 실기기 정확도/배터리는 NOT RUN, Release Hold 유지.
+- **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_8a72672_2026-11-15.md`.
+
 ## 진행 추적
 
 | ID | 작업 | 상태 | 담당 | 다음 결과 |
@@ -308,8 +316,8 @@
 | AUD-02 | dirty worktree/HEAD 기준점 기록 | 완료 | 개발자 | branch/HEAD, 24 modified, 34 untracked 기록 |
 | QA-01 | 감사 결과 acceptance criteria 재검토 | 완료 — 전체 QA BLOCKED | QA | `IrisFit_Current_State_Audit_QA_Review_2026-11-15.md` |
 | PM-01 | 베타 MVP 범위 및 제품 목표 승인 | 부분 완료 — 실제 시청시간 목표 유지, Android 13+ 및 `미측정` 결정 | PM/사용자 | 정확도·전력 기준 및 시험 절차 결정 |
-| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | 수정 인계 `b808392`; JVM 테스트 61/0/0 | Developer | 활성 소비처 실패-0/미측정 점수 및 센서 이벤트 검증 보완 |
-| QA-03 | DEV-02 재검수 | `b808392` PARTIAL PASS — PM 대조 검토 완료 | QA/PM | 후속 수정 후 모든 활성 호출처, 미측정 UI, 센서 freshness 경계 재검수 |
+| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | 수정 인계 `8a72672`; JVM 테스트 61/0/0 | Developer | 미측정 score/QueryError UX 및 payload freshness 보완 |
+| QA-03 | DEV-02 재검수 | `8a72672` PARTIAL PASS — PM 대조 검토 완료 | QA/PM | 후속 수정 후 score 미측정 UI, 오류 구분, sensor payload 경계 재검수 |
 | TEST-01 | Galaxy S23/Z Fold7 타당성 시험 | 계획 초안 — OS/합격 기준/시험 미승인 | PM/Developer/QA | 사전 승인된 시험 기준과 기기별 결과 |
 | REL-01 | 내부 테스트 진입 및 Play 배포 승인 | 미승인 | PM/소유자 | 별도 명시적 승인 |
 

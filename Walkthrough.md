@@ -5,15 +5,15 @@
 ## 현재 상태 — 2026-11-15
 
 - 실제 시청시간 목표는 유지하되, UsageStats의 앱 사용시간을 실제 시청시간으로 간주하지 않습니다.
-- 최신 검토 기준 commit: `b808392`; `.\gradlew.bat :app:testDebugUnitTest` 재실행 결과 61 passed, 0 skipped, 0 failed.
-- PM 판정: **PARTIAL PASS**. 조회 실패를 0으로 변환하는 운영 호출 경로 및 최초 센서 이벤트 이전 freshness 문제가 남아 있어 수정/QA 재검수를 대기합니다.
+- 최신 검토 기준 commit: `8a72672`; `.\gradlew.bat :app:testDebugUnitTest` 재실행 결과 61 passed, 0 skipped, 0 failed.
+- PM 판정: **PARTIAL PASS**. 활성 query 경로는 typed 처리됐으나 미측정 시 점수/status가 노출될 수 있고, payload 검증 전 센서 freshness가 갱신될 수 있어 수정/QA 재검수를 대기합니다.
 - 시청 정확도, 실기기 센서 및 배터리 시험은 **NOT RUN**. Release Hold 유지; 내부 테스트와 Play 배포 미승인.
 
 ## 통합 Walkthrough
 
 - [PM 로드맵 및 개발 이력 통합본](task/IrisFit_PM_User_Walkthrough.md) — 유일한 현재 상태/제품 로드맵 기준
 - [PM 결정 로그 및 문서 인덱스](task/IrisFit_PM_Documentation_Index_and_Decision_Log.md) — 승인, 작업 상태, 증거 링크
-- [최신 QA 결과/PM 판정](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md)
+- [최신 QA 결과/PM 판정](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_8a72672_2026-11-15.md)
 
 ## 이력 및 재검증 원칙
 

@@ -79,6 +79,7 @@ class IrisFitWidgetProvider : AppWidgetProvider() {
                     EyeFatigueStatus.CAUTION -> R.drawable.ic_mascot_tired
                     EyeFatigueStatus.WARNING -> R.drawable.ic_mascot_tired
                     EyeFatigueStatus.DANGER -> R.drawable.ic_mascot_panicked
+                    EyeFatigueStatus.UNMEASURED -> R.drawable.ic_mascot_happy
                 }
 
                 if (isLargeWidget) {

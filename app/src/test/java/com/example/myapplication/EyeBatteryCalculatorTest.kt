@@ -34,10 +34,11 @@ class EyeBatteryCalculatorTest {
         assertEquals(100, EyeBatteryCalculator.calculateBattery(0, Int.MAX_VALUE, Int.MAX_VALUE).eyeHealthScore)
     }
 
-    @Test fun unmeasuredScreenTimeDoesNotApplyUsageDrain() {
+    @Test fun unmeasuredScreenTimeReturnsUnmeasuredStatusAndNegativeScore() {
         val result = EyeBatteryCalculator.calculateBattery(0, 0, 0, screenTimeMeasured = false)
-        assertEquals(100, result.eyeHealthScore)
+        assertEquals(-1, result.eyeHealthScore)
         assertEquals(false, result.screenTimeMeasured)
+        assertEquals(EyeFatigueStatus.UNMEASURED, result.fatigueStatus)
     }
 
     @Test fun statusUsesCalculatedScoreThresholds() {

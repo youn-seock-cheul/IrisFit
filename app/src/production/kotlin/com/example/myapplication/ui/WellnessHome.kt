@@ -90,12 +90,14 @@ fun EyePedometerCard(
         EyeFatigueStatus.CAUTION -> Color(0xFF382B14) // 🟡 Dark Amber (65~84%)
         EyeFatigueStatus.WARNING -> Color(0xFF3D2513) // 🟠 Dark Orange (45~64%)
         EyeFatigueStatus.DANGER -> Color(0xFF3C1F1F)  // 🔴 Dark Rose Red (10~44%)
+        EyeFatigueStatus.UNMEASURED -> Color(0xFF262626) // ⚪ Neutral Grey
     }
     val statusColor = when (stats.fatigueStatus) {
         EyeFatigueStatus.OPTIMAL -> Color(0xFF00E676) // Bright Green
         EyeFatigueStatus.CAUTION -> Color(0xFFFFC107) // Bright Yellow
         EyeFatigueStatus.WARNING -> Color(0xFFFF9800) // Bright Orange
         EyeFatigueStatus.DANGER -> Color(0xFFFF5252)  // Bright Red
+        EyeFatigueStatus.UNMEASURED -> Color(0xFFA0A0A0) // Neutral Silver/Grey
     }
 
     val mascotRes = when (stats.fatigueStatus) {
@@ -103,6 +105,7 @@ fun EyePedometerCard(
         EyeFatigueStatus.CAUTION -> R.drawable.ic_mascot_tired
         EyeFatigueStatus.WARNING -> R.drawable.ic_mascot_tired
         EyeFatigueStatus.DANGER -> R.drawable.ic_mascot_panicked
+        EyeFatigueStatus.UNMEASURED -> R.drawable.ic_mascot_happy
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "mascot_pulse")
@@ -195,7 +198,7 @@ fun EyePedometerCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "${stats.fatigueStatus.emoji} ${sessionModel.tr(stats.fatigueStatus.labelKey)}",
+                        text = if (stats.fatigueStatus == EyeFatigueStatus.UNMEASURED) "⚪ ${sessionModel.tr("screen_time_unmeasured")}" else "${stats.fatigueStatus.emoji} ${sessionModel.tr(stats.fatigueStatus.labelKey)}",
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
@@ -204,7 +207,7 @@ fun EyePedometerCard(
                 }
 
                 Text(
-                    text = "${stats.eyeHealthScore}%",
+                    text = if (stats.eyeHealthScore < 0) sessionModel.tr("미측정") else "${stats.eyeHealthScore}%",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = statusColor
