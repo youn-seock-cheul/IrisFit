@@ -101,99 +101,114 @@ fun BatteryTrendCard(sessionModel: GuidedSessionViewModel) {
                 modifier = Modifier.fillMaxWidth().height(190.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                when (selectedPeriod) {
-                    0 -> DailyStockChartView(sessionModel)
-                    1 -> {
-                        val past7Days = (6 downTo 0).map { today.minusDays(it.toLong()).toString() }
-                        val dailyScores = past7Days.associateWith { date ->
-                            val dayRecords = records.filter { it.completedLocalDate == date }
-                            val rests = dayRecords.count { it.routineId == "screen_rest" }
-                            val miniGames = dayRecords.count { it.routineId == "eye_gym" || it.routineId == "smooth_pursuit" }
-                            (70 + (rests * 15) + (miniGames * 25)).coerceIn(30, 100)
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            dailyScores.forEach { (dateStr, score) ->
-                                val (monthDay, dayName) = try {
-                                    val parsed = LocalDate.parse(dateStr)
-                                    val md = "${parsed.monthValue}/${parsed.dayOfMonth}"
-                                    val dn = parsed.dayOfWeek.getDisplayName(java.time.format.TextStyle.NARROW, java.util.Locale.KOREAN)
-                                    md to dn
-                                } catch (_: Exception) {
-                                    "" to ""
-                                }
-                                val heightFraction = (score.toFloat() / 100f).coerceIn(0.2f, 1.0f)
-                                val barColor = when {
-                                    score >= 80 -> Color(0xFF00C853)
-                                    score >= 50 -> Color(0xFFFFB300)
-                                    else -> Color(0xFFFF5252)
-                                }
-
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    Text("$score%", fontSize = 10.sp, color = barColor, fontWeight = FontWeight.Bold)
-                                    Box(
-                                        modifier = Modifier
-                                            .size(width = 28.dp, height = (60 * heightFraction).dp)
-                                            .background(
-                                                if (dateStr == sessionModel.today) barColor
-                                                else barColor.copy(alpha = 0.3f),
-                                                RoundedCornerShape(8.dp)
-                                            )
-                                    )
-                                    Text(dayName, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (dateStr == sessionModel.today) MaterialTheme.colorScheme.onSurface else Color.Gray)
-                                    Text(monthDay, fontSize = 9.sp, color = Color.Gray)
-                                }
-                            }
-                        }
+                val isUnmeasured = !sessionModel.eyeBatteryStats.screenTimeMeasured || sessionModel.eyeBatteryStats.eyeHealthScore < 0
+                if (isUnmeasured) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = sessionModel.tr("screen_time_unmeasured"),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Gray
+                        )
                     }
-                    else -> {
-                        val weeklyScores = (3 downTo 0).map { weekIndex ->
-                            val endDay = today.minusDays((weekIndex * 7).toLong())
-                            val startDay = endDay.minusDays(6)
-                            val weekDates = (0..6).map { startDay.plusDays(it.toLong()).toString() }
-
-                            val scores = weekDates.map { dateStr ->
-                                val dayRecords = records.filter { it.completedLocalDate == dateStr }
+                } else {
+                    when (selectedPeriod) {
+                        0 -> DailyStockChartView(sessionModel)
+                        1 -> {
+                            val past7Days = (6 downTo 0).map { today.minusDays(it.toLong()).toString() }
+                            val dailyScores = past7Days.associateWith { date ->
+                                val dayRecords = records.filter { it.completedLocalDate == date }
                                 val rests = dayRecords.count { it.routineId == "screen_rest" }
                                 val miniGames = dayRecords.count { it.routineId == "eye_gym" || it.routineId == "smooth_pursuit" }
                                 (70 + (rests * 15) + (miniGames * 25)).coerceIn(30, 100)
                             }
-                            val avgScore = scores.average().toInt()
-                            val label = if (weekIndex == 0) "이번 주" else "${weekIndex}주 전"
-                            label to avgScore
-                        }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            weeklyScores.forEach { (weekLabel, score) ->
-                                val heightFraction = (score.toFloat() / 100f).coerceIn(0.2f, 1.0f)
-                                val barColor = when {
-                                    score >= 80 -> Color(0xFF00C853)
-                                    score >= 50 -> Color(0xFFFFB300)
-                                    else -> Color(0xFFFF5252)
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                dailyScores.forEach { (dateStr, score) ->
+                                    val (monthDay, dayName) = try {
+                                        val parsed = LocalDate.parse(dateStr)
+                                        val md = "${parsed.monthValue}/${parsed.dayOfMonth}"
+                                        val dn = parsed.dayOfWeek.getDisplayName(java.time.format.TextStyle.NARROW, java.util.Locale.KOREAN)
+                                        md to dn
+                                    } catch (_: Exception) {
+                                        "" to ""
+                                    }
+                                    val heightFraction = (score.toFloat() / 100f).coerceIn(0.2f, 1.0f)
+                                    val barColor = when {
+                                        score >= 80 -> Color(0xFF00C853)
+                                        score >= 50 -> Color(0xFFFFB300)
+                                        else -> Color(0xFFFF5252)
+                                    }
+
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text("$score%", fontSize = 10.sp, color = barColor, fontWeight = FontWeight.Bold)
+                                        Box(
+                                            modifier = Modifier
+                                                .size(width = 28.dp, height = (60 * heightFraction).dp)
+                                                .background(
+                                                    if (dateStr == sessionModel.today) barColor
+                                                    else barColor.copy(alpha = 0.3f),
+                                                    RoundedCornerShape(8.dp)
+                                                )
+                                        )
+                                        Text(dayName, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (dateStr == sessionModel.today) MaterialTheme.colorScheme.onSurface else Color.Gray)
+                                        Text(monthDay, fontSize = 9.sp, color = Color.Gray)
+                                    }
                                 }
+                            }
+                        }
+                        else -> {
+                            val weeklyScores = (3 downTo 0).map { weekIndex ->
+                                val endDay = today.minusDays((weekIndex * 7).toLong())
+                                val startDay = endDay.minusDays(6)
+                                val weekDates = (0..6).map { startDay.plusDays(it.toLong()).toString() }
 
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    Text("$score%", fontSize = 11.sp, color = barColor, fontWeight = FontWeight.Bold)
-                                    Box(
-                                        modifier = Modifier
-                                            .size(width = 44.dp, height = (60 * heightFraction).dp)
-                                            .background(barColor, RoundedCornerShape(8.dp))
-                                    )
-                                    Text(weekLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                val scores = weekDates.map { dateStr ->
+                                    val dayRecords = records.filter { it.completedLocalDate == dateStr }
+                                    val rests = dayRecords.count { it.routineId == "screen_rest" }
+                                    val miniGames = dayRecords.count { it.routineId == "eye_gym" || it.routineId == "smooth_pursuit" }
+                                    (70 + (rests * 15) + (miniGames * 25)).coerceIn(30, 100)
+                                }
+                                val avgScore = scores.average().toInt()
+                                val label = if (weekIndex == 0) "이번 주" else "${weekIndex}주 전"
+                                label to avgScore
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                weeklyScores.forEach { (weekLabel, score) ->
+                                    val heightFraction = (score.toFloat() / 100f).coerceIn(0.2f, 1.0f)
+                                    val barColor = when {
+                                        score >= 80 -> Color(0xFF00C853)
+                                        score >= 50 -> Color(0xFFFFB300)
+                                        else -> Color(0xFFFF5252)
+                                    }
+
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Text("$score%", fontSize = 11.sp, color = barColor, fontWeight = FontWeight.Bold)
+                                        Box(
+                                            modifier = Modifier
+                                                .size(width = 44.dp, height = (60 * heightFraction).dp)
+                                                .background(barColor, RoundedCornerShape(8.dp))
+                                        )
+                                        Text(weekLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    }
                                 }
                             }
                         }
