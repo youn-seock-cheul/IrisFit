@@ -543,8 +543,8 @@ fun CommunityCheerCard(sessionModel: GuidedSessionViewModel) {
                             val isMeasured = sessionModel.eyeBatteryStats.screenTimeMeasured
                             val score = sessionModel.eyeBatteryStats.eyeHealthScore
                             if (!isMeasured || score < 0) {
-                                newRelayTopic = "🤖 [AI 추천] 맑은 눈 유지! 7일 연속 30초 휴식 릴레이"
-                                Toast.makeText(context, "AI 코치가 맑은 눈 유지를 위한 맞춤 릴레이 주제를 추천했습니다! ✨", Toast.LENGTH_SHORT).show()
+                                newRelayTopic = "🤖 [AI 추천] 눈 건강을 위한 30초 휴식 릴레이"
+                                Toast.makeText(context, "AI 코치가 눈 건강을 위한 맞춤 릴레이 주제를 추천했습니다! ✨", Toast.LENGTH_SHORT).show()
                             } else {
                                 newRelayTopic = if (score < 65) {
                                     "🤖 [AI 추천] 눈 피로 위험! 지금 바로 30초 눈 감기 릴레이"

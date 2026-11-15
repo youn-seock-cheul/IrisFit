@@ -8,9 +8,9 @@
 
 | 구분 | 현재까지 / 남은 일 |
 |---|---|
-| **완료** | 현재 구현 정적 감사와 QA 검토; 실제 시청시간 목표·Android 13+·측정 불가 시 `미측정` 원칙 설정; `f05cb53` 기준 JVM 테스트 **63 passed / 0 failed / 0 skipped**; Goal/AiCoach 미측정 분기 코드 개선 |
+| **완료** | 현재 구현 정적 감사와 QA 검토; 실제 시청시간 목표·Android 13+·측정 불가 시 `미측정` 원칙 설정; `23ee202` 기준 JVM 테스트 **63 passed / 0 failed / 0 skipped**; relay/Wellness/Goal/AiCoach 미측정 코드 경로 개선 |
 | **진행 중** | 개발·QA 단계. PM 판정 **PARTIAL PASS**; 작업 재개방 |
-| **우선 보완** | relay 추천의 -1 점수/문구 차단; Wellness gauge/범례 중립 미측정 표시; 모든 소비처 UI와 센서 경계 테스트 |
+| **우선 보완** | relay 미측정 fallback의 눈 상태 단정 문구를 더 중립적으로 정리; UI 렌더링 및 sensor callback/freshness 경계 테스트 |
 | **실기기에서 미검증** | 센서 callback/freshness 정확도, 자세 오탐·미탐, 실제 시청시간 정확도, 배터리/발열 비교. 승인된 시험 프로토콜이 없어 정확도/전력 결과는 **NOT RUN** |
 | **출시** | 내부 테스트·베타·Play 배포 모두 미승인. **Release Hold 유지** |
 
@@ -23,6 +23,7 @@
 - [이전 QA 결과/PM 판정 — 9dd7059](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_9dd7059_2026-11-15.md)
 - [이전 QA 결과/PM 판정 — 6d2b718](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_6d2b718_2026-11-15.md)
 - [최신 QA 결과/PM 판정 — f05cb53](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_f05cb53_2026-11-16.md)
+- [최신 QA 결과/PM 판정 — 23ee202](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_23ee202_2026-11-16.md)
 - [Galaxy S23 실기기 스모크 체크](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Device_Smoke_Check_2026-11-15.md)
 - 상세 로드맵과 결정 이력은 아래 통합 문서를 확인하세요.
 
