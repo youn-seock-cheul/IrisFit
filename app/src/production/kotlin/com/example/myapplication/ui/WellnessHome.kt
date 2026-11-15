@@ -224,12 +224,13 @@ fun EyePedometerCard(
             )
 
             // GAUGE WITH 4-TIER LEGEND (Left 0% -> Right 100% Correct Order)
+            val isGaugeMeasured = stats.fatigueStatus != EyeFatigueStatus.UNMEASURED && stats.eyeHealthScore >= 0
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 LinearProgressIndicator(
-                    progress = { (stats.eyeHealthScore.toFloat() / 100f).coerceIn(0f, 1.0f) },
+                    progress = { if (isGaugeMeasured) (stats.eyeHealthScore.toFloat() / 100f).coerceIn(0f, 1.0f) else 0f },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(12.dp)
@@ -243,10 +244,10 @@ fun EyePedometerCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("🔴 ${sessionModel.tr("legend_danger")}", fontSize = 9.sp, fontWeight = if (stats.eyeHealthScore < 45) FontWeight.Bold else FontWeight.Normal, color = if (stats.eyeHealthScore < 45) Color(0xFFFF5252) else Color.Gray)
-                    Text("🟠 ${sessionModel.tr("legend_warning")}", fontSize = 9.sp, fontWeight = FontWeight.Bold.takeIf { stats.eyeHealthScore in 45..64 } ?: FontWeight.Normal, color = if (stats.eyeHealthScore in 45..64) Color(0xFFFF9800) else Color.Gray)
-                    Text("🟡 ${sessionModel.tr("legend_caution")}", fontSize = 9.sp, fontWeight = FontWeight.Bold.takeIf { stats.eyeHealthScore in 65..84 } ?: FontWeight.Normal, color = if (stats.eyeHealthScore in 65..84) Color(0xFFFFC107) else Color.Gray)
-                    Text("🟢 ${sessionModel.tr("legend_optimal")}", fontSize = 9.sp, fontWeight = if (stats.eyeHealthScore >= 85) FontWeight.Bold else FontWeight.Normal, color = if (stats.eyeHealthScore >= 85) Color(0xFF00E676) else Color.Gray)
+                    Text("🔴 ${sessionModel.tr("legend_danger")}", fontSize = 9.sp, fontWeight = if (isGaugeMeasured && stats.eyeHealthScore < 45) FontWeight.Bold else FontWeight.Normal, color = if (isGaugeMeasured && stats.eyeHealthScore < 45) Color(0xFFFF5252) else Color.Gray)
+                    Text("🟠 ${sessionModel.tr("legend_warning")}", fontSize = 9.sp, fontWeight = if (isGaugeMeasured && stats.eyeHealthScore in 45..64) FontWeight.Bold else FontWeight.Normal, color = if (isGaugeMeasured && stats.eyeHealthScore in 45..64) Color(0xFFFF9800) else Color.Gray)
+                    Text("🟡 ${sessionModel.tr("legend_caution")}", fontSize = 9.sp, fontWeight = if (isGaugeMeasured && stats.eyeHealthScore in 65..84) FontWeight.Bold else FontWeight.Normal, color = if (isGaugeMeasured && stats.eyeHealthScore in 65..84) Color(0xFFFFC107) else Color.Gray)
+                    Text("🟢 ${sessionModel.tr("legend_optimal")}", fontSize = 9.sp, fontWeight = if (isGaugeMeasured && stats.eyeHealthScore >= 85) FontWeight.Bold else FontWeight.Normal, color = if (isGaugeMeasured && stats.eyeHealthScore >= 85) Color(0xFF00E676) else Color.Gray)
                 }
             }
 

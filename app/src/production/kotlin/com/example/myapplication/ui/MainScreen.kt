@@ -540,13 +540,19 @@ fun CommunityCheerCard(sessionModel: GuidedSessionViewModel) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Button(
                         onClick = {
+                            val isMeasured = sessionModel.eyeBatteryStats.screenTimeMeasured
                             val score = sessionModel.eyeBatteryStats.eyeHealthScore
-                            newRelayTopic = if (score < 65) {
-                                "🤖 [AI 추천] 눈 피로 위험! 지금 바로 30초 눈 감기 릴레이"
+                            if (!isMeasured || score < 0) {
+                                newRelayTopic = "🤖 [AI 추천] 맑은 눈 유지! 7일 연속 30초 휴식 릴레이"
+                                Toast.makeText(context, "AI 코치가 맑은 눈 유지를 위한 맞춤 릴레이 주제를 추천했습니다! ✨", Toast.LENGTH_SHORT).show()
                             } else {
-                                "🤖 [AI 추천] 맑은 눈 유지! 7일 연속 30초 휴식 릴레이"
+                                newRelayTopic = if (score < 65) {
+                                    "🤖 [AI 추천] 눈 피로 위험! 지금 바로 30초 눈 감기 릴레이"
+                                } else {
+                                    "🤖 [AI 추천] 맑은 눈 유지! 7일 연속 30초 휴식 릴레이"
+                                }
+                                Toast.makeText(context, "AI 코치가 현재 눈 배터리(${score}%) 상태에 맞는 주제를 자동 생성했습니다! ✨", Toast.LENGTH_SHORT).show()
                             }
-                            Toast.makeText(context, "AI 코치가 현재 눈 배터리(${score}%) 상태에 맞는 주제를 자동 생성했습니다! ✨", Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp)
