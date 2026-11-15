@@ -3,7 +3,7 @@
 - 작성일: 2026-11-15
 - 문서 상태: **사용자 승인 공통 운영 기준**
 - 적용 대상: IrisFit 제품 요구사항, 기본/상세 설계, 구현, 검증 및 변경 요청
-- 기준 문서: `IrisFit_PM_User_Walkthrough.md`
+- 기준 문서: `..\Walkthrough.md` (진입점), 통합 기준 `IrisFit_PM_User_Walkthrough.md`
 
 ## 1. 공통 원칙
 

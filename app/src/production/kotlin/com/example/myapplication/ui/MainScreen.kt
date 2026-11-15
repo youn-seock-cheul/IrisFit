@@ -984,16 +984,16 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
     val scrollState = rememberScrollState()
     var showUsageDisclosureDialog by remember { mutableStateOf(false) }
 
-    var hasPermission by remember { mutableStateOf(ScreenTimeManager.hasUsageStatsPermission(context)) }
-    var realMinutes by remember { mutableIntStateOf(ScreenTimeManager.getTodayScreenTimeMinutes(context)) }
+    val initialQueryResult = ScreenTimeManager.queryTodayScreenTime(context)
+    var hasPermission by remember { mutableStateOf(initialQueryResult is com.example.myapplication.data.ScreenTimeQueryResult.Success) }
+    var realMinutes by remember { mutableIntStateOf((initialQueryResult as? com.example.myapplication.data.ScreenTimeQueryResult.Success)?.minutes ?: 0) }
 
     LaunchedEffect(Unit) {
         while (true) {
-            hasPermission = ScreenTimeManager.hasUsageStatsPermission(context)
-            if (hasPermission) {
-                realMinutes = ScreenTimeManager.getTodayScreenTimeMinutes(context)
-            }
-            delay(1000L)
+            val res = ScreenTimeManager.queryTodayScreenTime(context)
+            hasPermission = res is com.example.myapplication.data.ScreenTimeQueryResult.Success
+            realMinutes = (res as? com.example.myapplication.data.ScreenTimeQueryResult.Success)?.minutes ?: 0
+            delay(60_000L)
         }
     }
 

@@ -23,14 +23,14 @@
 - 진행 순서: **현재 Release 구현 감사 → 베타 범위/수용 기준 승인 → 개발·자체검증 → QA 재검수 → PM 완료 판정 → 내부 테스트 → 제한 베타 → 별도 정식 출시 승인**
 - `AUD-01` Developer 감사 및 `QA-01` 정적 재검토는 완료됐으나 실제 기기/Play 검증은 미완료다. 전체 제품 출시 준비는 **BLOCKED**다.
 - 실제 시청시간 목표는 유지한다. Android 13+ 범용 목표와 측정 불가 시 `미측정`을 승인했고, Galaxy S23/Z Fold7은 초기 시험 후보로만 정했다. 기기별 전력 허용치·정확도 기준·시험 절차는 미승인이다.
-- 현재 단계: **commit `aad01ee` QA 검토 — PARTIAL PASS, 기능 완료 보류**. 최신 전체 테스트 61 passed/0 skipped/0 failed를 재현했다. typed 결과와 센서 freshness 연결은 확인했으나, legacy 정수 API가 조회 실패를 0으로 축약하여 운영 호출처에서 계속 사용된다. detector는 첫 센서 이벤트 전에 freshness를 참으로 볼 수 있고 실제 센서 경계 테스트는 확인되지 않았다. 실기기 센서·배터리·시청 정확도는 NOT RUN이다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md`.
+- 현재 단계: **commit `b808392` QA 검토 — PARTIAL PASS, 기능 완료 보류**. 최신 전체 테스트 61 passed/0 skipped/0 failed를 재현했다. 일부 typed 소비처와 첫 센서 이벤트 전 guard는 확인했으나 활성 Widget 1 및 AI 코치에서 조회 실패를 0으로 축약하는 helper가 남아 있다. 미측정 상태에서도 점수 계산/표시가 가능하며 센서 timestamp는 payload 유효성 검사 전 갱신된다. 실기기 센서·배터리·시청 정확도는 NOT RUN이다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md`.
 - 출시 Hold 해제, 내부 테스트 업로드 및 Production 배포는 별도 PM 승인 대상이다.
 
 ## 문서 인덱스
 
 | 문서 | 상태 | 용도 |
 |---|---|---|
-| `IrisFit_PM_User_Walkthrough.md` | 공동 진행 기준 | 사용자와 PM이 함께 현재 단계, 완료 여부, 결정 및 다음 행동을 확인하는 단일 안내서 |
+| `..\Walkthrough.md` / `IrisFit_PM_User_Walkthrough.md` | 통합 Walkthrough 기준 | 저장소 루트 진입점과 PM 로드맵·개발 이력 통합 본문 |
 | `IrisFit_PM_Dev_QA_Requirements_Process.md` | 사용자 승인 공통 프로세스 | 요구사항 ID, PM 기본설계/QA 협의, Developer 상세설계, QA 검증, 변경관리 및 완료 판정 절차 |
 | `IrisFit_PM_Kickoff_Current_State_Audit_2026-11-15.md` | 지시됨 — 읽기 전용 감사 | 현재 앱 및 Release 구성, 데이터/권한, 결함, 베타 MVP 후보 감사 |
 | `IrisFit_Current_State_Audit_2026-11-15.md` | Developer 감사 완료 | 기준점, 기능/Release 인벤토리, 데이터 흐름, finding, 검증 로그와 베타 후보 |
@@ -46,9 +46,10 @@
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_66aa763_2026-11-15.md` | QA PARTIAL PASS — PM 완료 보류 | `66aa763`, 61개 JVM 단위 테스트 및 운영 데이터/실기기 한계에 대한 PM 판정 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_5018854_2026-11-15.md` | PM 부분 수용 — 후속 수정/QA 재검수 대기 | typed 결과 계약 및 61개 테스트 확인; 호출처의 실패-0 변환과 센서 freshness 공백 기록 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md` | QA PARTIAL PASS — PM 완료 보류 | `aad01ee`와 61개 JVM 테스트 재확인; 실패-0 운영 호출처, 첫 이벤트 전 freshness 및 테스트 범위 기록 |
+| `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md` | QA PARTIAL PASS — PM 완료 보류 | `b808392`와 61개 JVM 테스트 재확인; 활성 Widget 1/AI 코치의 실패-0 경로, 미측정 score, 센서 이벤트 경계 기록 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` | 사용자 정의 역할 반영 | QA 책임, 산출물, 출력 형식 및 판정 용어 |
 
-저장소의 `Walkthrough.md` 및 `docs/WALKTHROUGH_P0_LATEST.md`는 개발 변경/기술 검증 로그로 유지한다. 사용자와 PM의 전체 제품 로드맵/공동 진행 상태는 `C:\Users\youns\AndroidStudioProjects\IrisFit_LabA\task\IrisFit_PM_User_Walkthrough.md`를 기준으로 확인한다. 실제 PM 개발 지시 및 추가 검토 보고서는 사용자가 지정한 `C:\Users\youns\AndroidStudioProjects\task`에도 보관한다. 기존 기준·QA 문서는 작업 시 원본 파일과 기준 날짜를 확인한 후 새 감사 보고서의 입력 자료로 등록한다. 과거 보고의 검사 결과는 현재 상태의 증거로 재사용하지 않는다.
+저장소 루트 `Walkthrough.md`를 공동 진입점으로 하고, `task/IrisFit_PM_User_Walkthrough.md`에 전체 제품 로드맵과 기존 Walkthrough의 개발 이력을 통합 보관한다. 중복 과거 파일 `docs/WALKTHROUGH_P0_LATEST.md`, `docs/WALKTHROUGH_ROADMAP.md`, `docs/WALKTHROUGH_GOOGLE_PLAY_IRISFIT.md`는 통합 후 삭제했다. 실제 PM 개발 지시 및 추가 검토 보고서는 사용자가 지정한 `C:\Users\youns\AndroidStudioProjects\task`에도 보관한다. 기존 기준·QA 문서는 작업 시 원본 파일과 기준 날짜를 확인한 후 새 감사 보고서의 입력 자료로 등록한다. 과거 보고의 검사 결과는 현재 상태의 증거로 재사용하지 않는다.
 
 ## PM 결정 로그
 
@@ -82,9 +83,9 @@
 
 ### DEC-2026-11-15-05 — 사용자와 PM의 공동 진행 안내서
 
-- **상태:** 운영 원칙
-- **결정:** `IrisFit_PM_User_Walkthrough.md`를 제품 진행 단계와 현재 위치를 함께 확인하는 기준 파일로 사용한다. 저장소의 `Walkthrough.md`는 기술 변경 로그로 유지하며 역할을 혼합하지 않는다.
-- **이유:** 사용자가 한 곳에서 전체 흐름과 현재/다음 단계를 볼 수 있도록 하면서 개발 이력과 제품 의사결정을 구분한다.
+- **상태:** 대체됨 — DEC-2026-11-15-29
+- **결정:** 당시에는 `IrisFit_PM_User_Walkthrough.md`를 제품 진행 기준, 루트 `Walkthrough.md`를 기술 변경 로그로 분리했다. 후속 사용자 요청으로 주요 개발 이력을 PM 로드맵에 합치고 루트 파일을 통합 문서 진입점으로 변경했다.
+- **이유:** 제품 상태, 구현 이력, QA 증거와 다음 단계를 한 Walkthrough 체계에서 함께 확인한다.
 - **갱신 책임:** PM은 단계·결정·다음 행동을 갱신하고, 개발자/QA는 요약 및 상세 증거 문서 위치를 제출한다.
 
 ### DEC-2026-11-15-06 — 요구사항 ID 기반 PM·개발·QA 프로세스
@@ -243,12 +244,26 @@
 - **근거:** `IrisFit_PM_Actual_Viewing_Time_Second_Review_2026-11-15.md`.
 - **제약:** 관련 실기기 정확도·배터리 검증은 `NOT RUN`; Release Hold 유지.
 
-### DEC-2026-11-15-24 — 전체 로드맵의 Walkthrough 기준 갱신
+### DEC-2026-11-15-24 — 전체 로드맵의 Walkthrough 기준 갱신 (대체됨)
 
-- **상태:** PM 운영 갱신
-- **결정:** `IrisFit_PM_User_Walkthrough.md`를 감사부터 출시 후 개선까지의 전체 제품 로드맵과 현재 진행 상태의 단일 기준으로 갱신한다. 코드 기술 이력은 저장소 `Walkthrough.md`와 별도로 유지한다.
+- **상태:** 대체됨 — DEC-2026-11-15-29
+- **결정:** 당시에는 `IrisFit_PM_User_Walkthrough.md`를 제품 로드맵 기준으로, 저장소 `Walkthrough.md`를 별도 기술 변경 로그로 유지했다. 사용자의 후속 요청에 따라 양쪽 내용을 통합 Walkthrough로 합쳤다.
 - **현재 위치:** 실제 시청시간 evaluator 개발 수정 인계 및 QA 재검수 대기. 내부 테스트 진입 단계가 아니다.
 - **근거:** 사용자 요청(2026-11-15) 및 DEC-2026-11-15-23.
+
+### DEC-2026-11-15-29 — Walkthrough 통합 및 단일 기준 갱신
+
+- **상태:** 적용 — 중복본 제거까지 완료
+- **결정:** 사용자의 요청에 따라 PM 제품 로드맵과 기존 저장소 `Walkthrough.md`의 개발 이력/검증 한계를 통합한다. 저장소 루트 `Walkthrough.md`는 진입점이며, `task/IrisFit_PM_User_Walkthrough.md`는 로드맵과 개발 이력을 합친 기준 본문이다. 두 문서가 별도 상태를 관리하지 않도록 역할을 명확히 한다.
+- **정리:** 통합에 필요한 과거 이력을 본문에 옮긴 뒤 `docs/WALKTHROUGH_P0_LATEST.md`, `docs/WALKTHROUGH_ROADMAP.md`, `docs/WALKTHROUGH_GOOGLE_PLAY_IRISFIT.md`를 삭제했다. 과거 감사 보고서의 출처 기록은 변경하지 않았다.
+- **근거:** 사용자 요청(2026-11-15); 통합 Walkthrough에 과거 2026-11-12/13 구현 이력 및 현재 `aad01ee` 검토 상태 반영.
+
+### DEC-2026-11-15-30 — 중복 Walkthrough 문서 삭제
+
+- **상태:** 완료
+- **결정:** 사용자 선택에 따라 통합된 과거 중복 문서 세 개를 삭제한다. 루트 `Walkthrough.md` 및 `task/IrisFit_PM_User_Walkthrough.md` 통합 기준 문서는 유지한다.
+- **대상:** `docs/WALKTHROUGH_P0_LATEST.md`, `docs/WALKTHROUGH_ROADMAP.md`, `docs/WALKTHROUGH_GOOGLE_PLAY_IRISFIT.md`.
+- **영향:** 현재 기준 링크는 루트 진입점과 통합 본문으로 단순화한다. 기존 감사 문서의 역사적 출처 참조는 보존한다.
 
 ### DEC-2026-11-15-25 — Developer 재인계 및 QA 재검수 단계
 
@@ -278,6 +293,13 @@
 - **다음:** 모든 소비처의 typed 결과 처리, 센서 첫 이벤트 이후 freshness 적용 및 관련 경계 테스트를 보완한 뒤 QA 재검수한다. 실기기 정확도/배터리는 NOT RUN, Release Hold 유지.
 - **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md`.
 
+### DEC-2026-11-15-31 — commit `b808392` QA PARTIAL PASS
+
+- **상태:** PM 판정 — PARTIAL PASS; 운영 경로 수정 재개방, Release Hold 유지
+- **결정:** HEAD `b808392`와 전체 JVM 테스트 61 passed/0 skipped/0 failed를 확인했다. 최초 센서 이벤트 전 guard 및 일부 typed 처리 변경은 인정한다. 그러나 Manifest 활성 Widget 1은 `BitmapWidgetProvider`를 사용하고 해당 코드에 legacy 실패-0 helper가 남아 있다. `MainScreen.AiCoachTab`도 같은 helper를 사용한다. 미측정일 때 calculator는 score/status를 계속 반환하고, detector는 timestamp/accuracy 검증 전에 freshness timestamp를 갱신한다. QA의 모든 운영 소비처 PASS는 현재 소스와 불일치해 승인하지 않는다.
+- **다음:** 활성 Widget 1과 AI 코치 포함 전체 호출처 typed 처리, 미측정 점수 비노출, 유효 센서 이벤트만 freshness 갱신 및 경계 테스트 후 QA 재검수. 실기기 시험 NOT RUN, Release Hold 유지.
+- **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md`.
+
 ## 진행 추적
 
 | ID | 작업 | 상태 | 담당 | 다음 결과 |
@@ -286,8 +308,8 @@
 | AUD-02 | dirty worktree/HEAD 기준점 기록 | 완료 | 개발자 | branch/HEAD, 24 modified, 34 untracked 기록 |
 | QA-01 | 감사 결과 acceptance criteria 재검토 | 완료 — 전체 QA BLOCKED | QA | `IrisFit_Current_State_Audit_QA_Review_2026-11-15.md` |
 | PM-01 | 베타 MVP 범위 및 제품 목표 승인 | 부분 완료 — 실제 시청시간 목표 유지, Android 13+ 및 `미측정` 결정 | PM/사용자 | 정확도·전력 기준 및 시험 절차 결정 |
-| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | 수정 인계 `aad01ee`; JVM 테스트 61/0/0 | Developer | 운영 소비처 실패-0 변환 및 첫 이벤트 전 freshness 보완 |
-| QA-03 | DEV-02 재검수 | `aad01ee` PARTIAL PASS — 최신 소스 검토 완료 | QA/PM | 후속 수정 후 모든 운영 호출처 및 센서 freshness 경계 재검수 |
+| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | 수정 인계 `b808392`; JVM 테스트 61/0/0 | Developer | 활성 소비처 실패-0/미측정 점수 및 센서 이벤트 검증 보완 |
+| QA-03 | DEV-02 재검수 | `b808392` PARTIAL PASS — PM 대조 검토 완료 | QA/PM | 후속 수정 후 모든 활성 호출처, 미측정 UI, 센서 freshness 경계 재검수 |
 | TEST-01 | Galaxy S23/Z Fold7 타당성 시험 | 계획 초안 — OS/합격 기준/시험 미승인 | PM/Developer/QA | 사전 승인된 시험 기준과 기기별 결과 |
 | REL-01 | 내부 테스트 진입 및 Play 배포 승인 | 미승인 | PM/소유자 | 별도 명시적 승인 |
 

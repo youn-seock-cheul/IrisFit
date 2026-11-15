@@ -72,13 +72,22 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
             val views = RemoteViews(context.packageName, layoutResId)
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-            val screenTime = try { ScreenTimeManager.getTodayScreenTimeMinutes(context) } catch (_: Exception) { 0 }
+            val queryResult = try { ScreenTimeManager.queryTodayScreenTime(context) } catch (_: Exception) { com.example.myapplication.data.ScreenTimeQueryResult.QueryError("Widget Error") }
+            val (screenTime, isMeasured) = when (queryResult) {
+                is com.example.myapplication.data.ScreenTimeQueryResult.Success -> Pair(queryResult.minutes, true)
+                else -> Pair(0, false)
+            }
             val records = try { FileCompletionStorage.repository(context).records() } catch (_: Exception) { emptyList() }
             val today = LocalDate.now().toString()
             val rests = records.count { it.completedLocalDate == today && it.routineId == "screen_rest" }
             val miniGames = records.count { it.completedLocalDate == today && (it.routineId == "eye_gym" || it.routineId == "smooth_pursuit") }
 
-            val stats = EyeBatteryCalculator.calculateBattery(screenTime, rests, miniGames)
+            val stats = EyeBatteryCalculator.calculateBattery(
+                screenTimeMinutes = screenTime,
+                restCount = rests,
+                miniGameCount = miniGames,
+                screenTimeMeasured = isMeasured
+            )
             val selectedLang = LanguageManager.getSelectedLanguage(context)
             val effectiveLang = AppLocalization.resolveEffectiveLang(selectedLang)
 

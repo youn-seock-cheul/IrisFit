@@ -1,16 +1,16 @@
-# IrisFit PM·사용자 공동 진행 안내서
+# IrisFit Walkthrough — PM 로드맵 및 개발 이력 통합본
 
 - 문서 관리자: 수석 PM
-- 기준 파일 위치: `C:\Users\youns\AndroidStudioProjects\IrisFit_LabA\task`
+- 기준 파일 위치: `C:\Users\youns\AndroidStudioProjects\IrisFit_LabA\Walkthrough.md` (저장소 진입점) 및 본 통합 문서
 - 기준일: 2026-11-15
 - 문서 상태: **공동 진행 기준 — 실제 시청시간 검증 작업 재개방, Release Hold**
 - 현재 출시 상태: **Release Hold**
 
-## 이 파일의 목적
+## 이 문서의 목적과 기준
 
-이 파일은 사용자와 PM이 IrisFit의 현재 상태 확인부터 베타와 정식 출시까지 같은 순서와 현재 위치를 함께 확인하는 **공동 기준 안내서**다.
+이 문서는 사용자와 PM이 IrisFit의 제품 로드맵, 현재 상태, 주요 구현 이력, QA 증거, 결정 및 다음 단계를 함께 확인하는 **통합 Walkthrough 기준**이다.
 
-개발자 코드 변경 이력은 저장소의 `Walkthrough.md`와 개발 보고서에서 확인한다. 이 파일은 코드 변경 상세를 대신하지 않고, 제품 의사결정과 다음 단계 안내를 한눈에 보여준다. 상세 결정과 증거 문서는 아래 연결 문서 및 문서 인덱스에서 확인한다.
+저장소 루트 `Walkthrough.md`는 이 통합 문서로 연결되는 진입점이다. 제품 로드맵과 현재 상태는 여기에서, 개발·QA의 자세한 근거는 연결된 작업 보고서 및 문서 인덱스에서 확인한다. 오래된 기술 메모는 이력으로 보존하되 최신 검증 상태와 혼동하지 않는다.
 
 ## 진행 지도
 
@@ -18,7 +18,7 @@
 
 단계를 건너뛰거나 자동 승인하지 않는다. 각 단계가 끝나면 PM이 결과와 다음 선택을 이 파일에 갱신한다. 출시까지 시간이 걸리거나 막히는 항목이 있으면 이유와 필요한 결정을 함께 표시한다.
 
-**현재 로드맵 위치:** 실제 시청시간 목표(Android 13/API 33 이상, 측정 불가 시 `미측정`)는 유지하며 Galaxy S23/Z Fold7은 초기 시험 후보로 정했다. 최신 Developer commit `aad01ee` 및 전체 단위 테스트 **61 passed / 0 skipped / 0 failed**를 확인했다. typed UsageStats 결과와 실제 detector freshness 연결은 추가됐지만, legacy 정수 API가 조회 실패를 0으로 축약해 위젯·세션·AI 코치에서 사용 중이다. 센서 detector는 첫 이벤트 전에 freshness가 참일 수 있다. PM은 **PARTIAL PASS**, 기능 완료 보류로 판정했다. 실기기 센서, 시청 정확도/전력은 미검증이며 Release Hold 유지다.
+**현재 로드맵 위치:** 실제 시청시간 목표(Android 13/API 33 이상, 측정 불가 시 `미측정`)는 유지하며 Galaxy S23/Z Fold7은 초기 시험 후보로 정했다. 최신 Developer commit `b808392` 및 전체 단위 테스트 **61 passed / 0 skipped / 0 failed**를 확인했다. PM은 **PARTIAL PASS**로 판정했다. 세션과 일부 위젯의 typed 처리 및 최초 이벤트 전 freshness guard는 반영됐으나, 활성 Widget 1 경로와 AI 코치 화면에는 실패-0 처리가 남아 있다. 미측정 상태에서도 파생 점수가 표시될 수 있고, 잘못된 센서 이벤트가 freshness 시간을 갱신할 수 있다. 기능 완료 보류, 실기기 시험 미검증, Release Hold 유지다.
 
 각 기능의 요구사항 ID, PM 기본설계/QA 협의 승인, Developer 상세설계, 개발 작업, QA 테스트 및 PM 완료 판정은 `IrisFit_PM_Dev_QA_Requirements_Process.md`의 공통 추적 절차를 따른다. 이 안내서는 전체 흐름과 현재 위치를 보여주고, 상세 문서는 요구사항 ID로 연결한다.
 
@@ -28,8 +28,8 @@
 |---|---|---|
 | 1. 현황 감사 | 실제 소스/Release 구성과 위험을 조사하고 QA가 근거를 재검토 | **완료(정적 범위)** — 실제 기기/Play 검증은 미완료 |
 | 2. 제품 범위·기준 승인 | 베타 핵심 범위, 데이터 의미, 예외/정책 및 측정 가능한 완료 기준을 PM이 승인 | **부분 완료** — 베타 MVP 범위와 실제 시청시간 목표, Android 13+ 및 `미측정` 원칙 결정. 정확도·전력 기준/시험 절차 미승인 |
-| 3. 개발 및 자체 검증 | 승인된 요구사항만 구현하고 기준별 증거/잔여 위험을 인계 | **수정 인계 제출** — commit `aad01ee`; 전체 단위 테스트 61/0/0; 운영 호출처/freshness 보완 필요 |
-| 4. QA 검증 | PM 완료 기준별 자동/수동 시험을 수행하고 증거와 PASS/FAIL/BLOCKED/NOT RUN 보고 | **PARTIAL PASS** — typed query와 freshness 연결 확인; 운영 실패-0 변환 및 첫 이벤트 전 freshness 미해결 |
+| 3. 개발 및 자체 검증 | 승인된 요구사항만 구현하고 기준별 증거/잔여 위험을 인계 | **수정 인계 제출** — commit `b808392`; 전체 단위 테스트 61/0/0; 활성 소비처 및 freshness 검증 보완 필요 |
+| 4. QA 검증 | PM 완료 기준별 자동/수동 시험을 수행하고 증거와 PASS/FAIL/BLOCKED/NOT RUN 보고 | **PARTIAL PASS** — 일부 typed 처리와 최초 이벤트 guard 확인; 활성 Widget 1/AI 화면 실패-0, 미측정 점수 및 센서 경계 미해결 |
 | 5. PM 완료·고정 판정 | QA 결과·기기 범위·잔여 위험을 검토해 완료/보류 판정 | **보류** — 제품 기능 완료/고정 미승인; 후속 수정 후 재검수 필요 |
 | 6. 내부 테스트 | Release 패키지 설치 및 핵심 흐름을 실제 테스트, PM/소유자가 트랙 업로드 승인 | **미착수/미승인** — Release Hold 유지 |
 | 7. 제한 베타 | 승인된 테스터와 기간/표본으로 사용성·안정성·피드백 검증 | **미착수** — 내부 테스트 종료 및 PM 승인 필요 |
@@ -37,6 +37,38 @@
 | 9. 출시 후 개선 | 리뷰·오류·지표를 개인정보 보호 원칙에 따라 분석하고 새 작업으로 관리 | **미착수** |
 
 단계 3–5가 끝나도 실제 시청시간 측정/전력 타당성은 별도 검증 게이트다. 실제 기기 시험 전에는 해당 수치의 정확도·전력 효율을 PASS로 표시하지 않는다.
+
+## 주요 개발 Walkthrough 이력
+
+아래는 기존 저장소 `Walkthrough.md`에 있던 구현 이력과 이후 제품 검토 이력을 이 문서에 합친 요약이다. 상세 코드 경로와 테스트 로그는 연결된 개발 보고서에서 확인한다. 이전 단계의 확인 결과가 현재 HEAD나 현재 Release 상태를 보장하지 않는다.
+
+### 2026-11-12 — 위젯 단일화 및 Release 컴파일 수정 이력
+
+- Widget 1만 유지하도록 Provider/Manifest/리소스와 기록 갱신 경로를 정리했다.
+- 당시 중간 조치로 `BlueLightFilterService`의 컴파일 문제를 수정했으나, 다음 날 서비스 자체를 제거했으므로 해당 수정은 최종 설계가 아니다.
+- 기존 기록에 따르면 이 중간 단계는 정적 확인만 있었고 Release 빌드·단위 테스트·Lint·실기기 검증은 미실행이었다.
+
+### 2026-11-13 — 앱 자체 블루라이트 오버레이 제거 및 온디바이스 코치 기록
+
+- 앱 자체 블루라이트 오버레이를 제거하고 Android 디스플레이 설정 바로가기를 유지했다. 오해를 줄이는 설명으로 수정하고, 눈 운동 오버레이에 필요한 권한은 별도 근거로 유지했다.
+- 기존 인계 기록은 사용자가 직전 수정본 Release 빌드 성공을 확인했다고 적었으나, 이번 변경분의 Release 빌드/테스트/Lint는 별도 실행하지 않았다고 명시했다.
+- Gemini Nano 온디바이스 코치의 기능 및 기기별 지원·다운로드·실기기 확인 필요성을 기록했다. 이전 기록도 해당 ZIP에서 테스트/Lint/Release 빌드를 재실행해야 한다고 제한했다.
+
+### 2026-11-15 — 실제 시청시간 추정 기능 검토 및 재개방
+
+- 목표를 “앱 사용 시간”이 아니라 실제로 손에 들고 화면을 보는 시간으로 정의했다. UsageStats는 앱 전경 사용을 집계할 뿐 실제 시선을 입증하지 않는다는 점을 제품 기준으로 명시했다.
+- API 33 이상을 목표로 하고 측정 불가 시 `미측정`을 표시하기로 했다. Galaxy S23/Z Fold7은 초기 시험 후보이며 전체 Android 호환성의 증거가 아니다.
+- Developer commit `3218622`는 59개 JVM 테스트 통과를 보고했고, 후속 `66aa763`는 61개 테스트를 통과했다. PM 검토에서 시스템 조회 오류와 실제 0분 구분, 센서 freshness 및 하드웨어 증거의 공백을 확인해 PARTIAL PASS 및 작업 재개방으로 기록했다.
+- commit `5018854`는 typed `ScreenTimeQueryResult`를 추가하고 evaluator public API에서 mock 입력을 분리했다. 그러나 정수 helper가 조회 실패를 0으로 바꾸며 운영 호출처에서 사용되는 점을 PM이 지적했다.
+- commit `aad01ee`는 센서 등록/freshness 신호를 evaluator에 연결했고, 61개 JVM 단위 테스트가 통과했다. PM 재검토에서는 실패-0 운영 경로가 남아 있고 최초 센서 이벤트 전에 freshness가 참일 수 있음을 확인했다. 최종 판정은 **PARTIAL PASS**, 관련 수정/QA 재검수 대기다.
+- commit `b808392`는 최초 이벤트 전 timestamp를 0으로 초기화하고 typed 결과 처리를 일부 운영 경로에 확장했다. 전체 61개 JVM 테스트 통과를 확인했으나 PM 재검토에서 Manifest에 등록된 실제 Widget 1 경로와 `MainScreen.AiCoachTab`에 실패-0 API가 잔존함을 확인했다. 미측정 상태에서도 점수가 산출되며, 센서 이벤트 검증 전에 freshness가 갱신될 수 있다. 판정은 **PARTIAL PASS**, 후속 수정/재검수 대기다.
+- 시청 정확도, 실기기 센서 동작 및 배터리 비교는 모두 **NOT RUN**이다. 내부 테스트 배포, Release Hold 해제 및 정식 출시는 승인되지 않았다.
+- 이전 검토 기록: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md`. 최신 검토와 수정 지시: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md`.
+
+### 기존 Walkthrough 중복본 정리
+
+- `docs/WALKTHROUGH_P0_LATEST.md`, `docs/WALKTHROUGH_ROADMAP.md`, `docs/WALKTHROUGH_GOOGLE_PLAY_IRISFIT.md`는 통합 Walkthrough에 필요한 이력을 반영한 뒤 중복 문서로 삭제했다.
+- 감사 보고서의 원본 참조는 당시 검토 기록으로 보존한다. 과거 스냅샷의 테스트 통과나 출시 준비 표현을 현재 Release 승인 또는 실제 시청시간 정확도 증거로 재사용하지 않는다.
 
 ## 처음부터 끝까지 함께 진행하는 순서
 
@@ -85,7 +117,7 @@
 
 **단계 종료:** 개발자 인계가 제출되면 해당 작업의 코드를 멈추고 QA 단계로 전환한다.
 
-**현재 상태:** Developer commit `aad01ee`에서 typed `ScreenTimeQueryResult`, public mock 입력 격리, detector registration/freshness 신호 연결을 확인했다. 다만 `getTodayScreenTimeMinutes()`가 실패를 0으로 바꾸는 운영 소비처가 남아 있고, 첫 센서 이벤트 전 timestamp 초기화로 freshness가 최대 5초 참일 수 있다. 전체 테스트 61/0/0은 통과했으나 센서 경계 및 운영 소비처 오류 동작을 검증하지 않는다. PM 판정은 PARTIAL PASS이며 후속 수정/QA 재검수 대기. 상세 검토/지시: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md`.
+**현재 상태:** 최신 commit `b808392`에서 최초 센서 이벤트 전 guard와 일부 typed 소비처 처리를 확인했다. 그러나 실제 Widget 1 provider 및 `MainScreen.AiCoachTab`은 실패를 0으로 바꾸는 API를 사용한다. 미측정 점수는 여전히 표시될 수 있고, invalid/unreliable 센서 이벤트가 freshness를 갱신할 수 있다. 전체 JVM 테스트 61/0/0 통과는 재현했지만 해당 운영/센서 경계는 커버하지 않는다. PM 판정 PARTIAL PASS. 상세 검토/지시: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md`.
 
 ### 4단계 — QA가 확인하고 결함을 돌려보내기
 
@@ -102,7 +134,7 @@
 
 **단계 종료:** 모든 필수 기준이 통과하거나 PM이 잔여 위험을 명시적으로 수용한다.
 
-**현재 상태:** `aad01ee` QA 판정은 **PARTIAL PASS**. typed API 및 detector 연결은 확인했으나 호출처의 실패-0 변환이 남고, 첫 센서 이벤트 전 freshness 판단이 완전히 안전하지 않다. 하드웨어 전력/시청 정확도는 NOT RUN. PM 검토와 수정 지시: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md`.
+**현재 상태:** `b808392` QA 판정은 **PARTIAL PASS**. 일부 typed 처리와 최초 이벤트 전 guard는 확인했으나 활성 Widget 1 및 AI 코치의 실패-0 변환, 미측정 점수, 센서 이벤트 검증 경계가 남아 있다. 하드웨어 전력/시청 정확도는 NOT RUN. PM 검토와 수정 지시: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md`.
 
 ### 5단계 — 완료된 영역을 고정하기
 
@@ -178,10 +210,10 @@ Developer와 QA는 동일 AI이므로, 역할을 분리한 QA 재검토는 사�
 
 ## 현재 단계 카드
 
-- **현재 단계:** 3–4 — `aad01ee` QA PARTIAL PASS, 운영 호출처/센서 경계 보완 후 QA 재검수 대기
+- **현재 단계:** 3–4 — `b808392` QA PARTIAL PASS, 활성 소비처/센서 freshness 검증 보완 후 QA 재검수 대기
 - **완료된 것:** 저장소 기준점/정적 감사, 감사 QA 재검토, 베타 MVP 범위 기본설계, 사용자가 승인한 실제 시청시간 목표와 Android 13+ 미측정 원칙, 두 Galaxy 기기의 초기 시험 후보, 오늘 화면 사용시간 UI에서 evaluator 추정치 비노출의 정적 확인
-- **부분 완료/미승인:** Developer commit `aad01ee`와 전체 단위 테스트 61 passed/0 skipped/0 failed를 확인했다. typed query 결과와 detector registration/freshness 연결은 부분 수용. 단, 운영 호출처가 실패를 0으로 축약하고 센서 첫 이벤트 전에 freshness가 참이 될 수 있다.
-- **미완료:** 모든 운영 소비처의 typed 결과 처리, 첫 실제 이벤트 이후 freshness 경계, QA 재검수, 실제 시청시간 타당성 기준 승인 및 실기기 실행, 내부 테스트 빌드/PM 배포 승인
+- **부분 완료/미승인:** Developer commit `b808392`와 전체 단위 테스트 61 passed/0 skipped/0 failed를 확인했다. 일부 typed query 처리와 최초 이벤트 guard는 확인. 활성 Widget 1 및 AI 코치의 실패-0 처리, 미측정 score 표시, invalid/unreliable 이벤트 freshness 경계는 미완료.
+- **미완료:** 모든 활성 운영 소비처 typed 결과 처리, 미측정 상태의 점수 UI, 센서 이벤트 freshness 검증 및 경계 테스트, QA 재검수, 실기기 타당성 기준 승인/실행, 내부 테스트 및 배포 승인
 - **다음 행동:** 필요 시 Developer가 운영 조회 실패와 0분 결과를 분리하고 단위/통합 근거를 제출한다. 별도로 PM 승인 후 실기기 타당성 시험을 진행한다.
 - **배포 승인:** 없음 (Release Hold 유지)
 - **다음 단계 전환 승인자:** PM (QA 판정만으로 자동 이동하지 않음)
@@ -202,9 +234,10 @@ Developer와 QA는 동일 AI이므로, 역할을 분리한 QA 재검토는 사�
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_66aa763_2026-11-15.md` — commit `66aa763` 및 61개 테스트에 대한 QA/PM 판정과 남은 운영 데이터 계약
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_5018854_2026-11-15.md` — 최신 Developer 인계 PM 검토, 운영 호출처/freshness 결함 및 후속 지시
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md` — `aad01ee` QA 보고서의 PM 대조 검토, PARTIAL PASS 판정 및 후속 개발 지시
+- `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md` — `b808392` QA 보고서 대조 검토, PARTIAL PASS 및 활성 운영 경로/센서 경계 수정 지시
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` — QA 검수 역할, 출력 형식 및 PASS/BLOCKED/NOT RUN 판정 원칙
-- 저장소의 `Walkthrough.md` — 소스 변경 이력/기술 walkthrough. 이 공동 안내서를 대체하지 않음
-- 저장소의 `docs/WALKTHROUGH_P0_LATEST.md` — 개발 변경/검증 이력. 결과 시점과 검증 범위를 확인할 것
+- 저장소 루트 `Walkthrough.md` — 이 통합 Walkthrough의 진입점
+- 기존 중복 Walkthrough 3개(`docs/WALKTHROUGH_P0_LATEST.md`, `docs/WALKTHROUGH_ROADMAP.md`, `docs/WALKTHROUGH_GOOGLE_PLAY_IRISFIT.md`) — 통합 후 삭제
 
 ---
 
@@ -216,6 +249,6 @@ Developer와 QA는 동일 AI이므로, 역할을 분리한 QA 재검토는 사�
   - 기능 2: 상세 감사·개발·QA 로그는 별도 작업 ID 문서에 보관하고 이 파일에는 짧은 요약과 문서 연결만 기록한다.
   - 기능 3: Developer 작업과 QA 판정의 역할 전환 및 결과를 분리하고, 결함/재검증이 있으면 같은 작업 ID로 이력을 연결한다.
   - 기능 4: 완료된 영역은 증거가 확보된 뒤 완료-고정 상태로 표시하고, 이후 변경에는 영향 분석·PM 승인·회귀 결과를 남긴다.
-* **예외 처리 및 엣지 케이스:** 기존 저장소 Walkthrough와 혼동하지 않도록 공동 PM 진행 안내와 기술 변경 로그의 목적을 분리한다. 미검증 결과, PM 미승인, Release Hold, 사용자에게 필요한 결정을 완료로 표시하지 않는다.
+* **예외 처리 및 엣지 케이스:** 루트 `Walkthrough.md`는 이 문서로 연결되는 진입점으로 유지하고, 이 문서에 제품 로드맵과 주요 기술 이력을 통합한다. 과거 스냅샷, 미검증 결과, PM 미승인 및 Release Hold를 완료로 표시하지 않는다.
 * **Google Play 정책 체크포인트:** 권한·개인정보·건강 표현·SDK/AI·결제 및 배포 승인은 사용자에게 단계별로 알기 쉽게 공유하되, 정책 근거와 검증 한계를 생략하지 않는다.
-* **완료 조건 (Acceptance Criteria):** (1) 사용자가 이 파일만으로 전체 로드맵, 현재 단계·완료/부분 완료/미완료, 다음 행동을 확인할 수 있다. (2) 큰 흐름이 감사부터 출시 후까지 단계별로 정리되어 있다. (3) 상세 이력과 기술 Walkthrough는 링크로 구분된다. (4) 단계 이동, 고정/재개방 및 출시 승인이 실제 PM 결정과 일치한다.
+* **완료 조건 (Acceptance Criteria):** (1) 사용자가 통합 본문에서 전체 로드맵, 현재 단계·완료/부분 완료/미완료, 다음 행동을 확인할 수 있다. (2) 감사부터 출시 후까지 단계별로 정리되어 있다. (3) 구현 요약과 상세 증거 문서가 연결된다. (4) 단계 이동, 고정/재개방 및 출시 승인이 실제 PM 결정과 일치한다.

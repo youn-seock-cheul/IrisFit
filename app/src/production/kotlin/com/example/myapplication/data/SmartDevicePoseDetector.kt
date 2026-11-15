@@ -59,7 +59,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
         _observedPose = DevicePose.HAND_HELD_ACTIVE
         listening = true
         registeredSensorsCount = 0
-        lastEventTimestampMs = 0L // Must receive at least 1 real sensor event to become fresh!
+        lastEventTimestampMs = 0L // Must receive at least 1 validated real sensor event!
 
         for (type in listOf(Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE, Sensor.TYPE_PROXIMITY, Sensor.TYPE_LIGHT)) {
             val sensor = sensorManager?.getDefaultSensor(type) ?: continue
@@ -85,13 +85,13 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         if (!listening || event == null) return
         val now = SystemClock.elapsedRealtime()
-        lastEventTimestampMs = now
         val sampleTime = event.timestamp / 1_000_000L
         if (sampleTime <= 0L || sampleTime > now) {
             classifier.reset()
             updatePose()
-            return
+            return // Reject invalid timestamp events from updating freshness
         }
+        lastEventTimestampMs = now // Only update timestamp after event payload and time check pass!
         when (event.sensor.type) {
             Sensor.TYPE_ACCELEROMETER -> classifier.accelerometer(sampleTime, event.values)
             Sensor.TYPE_GYROSCOPE -> classifier.gyroscope(sampleTime, event.values)
@@ -110,6 +110,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         if (accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) {
             classifier.reset()
+            lastEventTimestampMs = 0L // Invalidate freshness on unreliable sensor status
             _observedPose = DevicePose.HAND_HELD_ACTIVE
         }
     }
