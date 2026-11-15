@@ -123,7 +123,18 @@ fun BatteryTrendCard(sessionModel: GuidedSessionViewModel) {
                                 val dayRecords = records.filter { it.completedLocalDate == date }
                                 val rests = dayRecords.count { it.routineId == "screen_rest" }
                                 val miniGames = dayRecords.count { it.routineId == "eye_gym" || it.routineId == "smooth_pursuit" }
-                                (70 + (rests * 15) + (miniGames * 25)).coerceIn(30, 100)
+                                if (date == sessionModel.today) {
+                                    sessionModel.eyeBatteryStats.eyeHealthScore
+                                } else if (dayRecords.isEmpty()) {
+                                    -1 // 미측정 / 기록 없음
+                                } else {
+                                    com.example.myapplication.session.EyeBatteryCalculator.calculateBattery(
+                                        screenTimeMinutes = 120,
+                                        restCount = rests,
+                                        miniGameCount = miniGames,
+                                        screenTimeMeasured = true
+                                    ).eyeHealthScore
+                                }
                             }
 
                             Row(
@@ -140,8 +151,10 @@ fun BatteryTrendCard(sessionModel: GuidedSessionViewModel) {
                                     } catch (_: Exception) {
                                         "" to ""
                                     }
-                                    val heightFraction = (score.toFloat() / 100f).coerceIn(0.2f, 1.0f)
+                                    val isScoreValid = score >= 0
+                                    val heightFraction = if (isScoreValid) (score.toFloat() / 100f).coerceIn(0.2f, 1.0f) else 0.15f
                                     val barColor = when {
+                                        !isScoreValid -> Color(0xFFA0A0A0)
                                         score >= 80 -> Color(0xFF00C853)
                                         score >= 50 -> Color(0xFFFFB300)
                                         else -> Color(0xFFFF5252)
@@ -151,7 +164,7 @@ fun BatteryTrendCard(sessionModel: GuidedSessionViewModel) {
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
-                                        Text("$score%", fontSize = 10.sp, color = barColor, fontWeight = FontWeight.Bold)
+                                        Text(if (isScoreValid) "$score%" else "-", fontSize = 10.sp, color = barColor, fontWeight = FontWeight.Bold)
                                         Box(
                                             modifier = Modifier
                                                 .size(width = 28.dp, height = (60 * heightFraction).dp)
