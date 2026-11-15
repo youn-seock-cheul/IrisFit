@@ -22,6 +22,13 @@ class ViewingTimeEvaluatorTest {
     }
 
     @Test
+    fun testTargetDeviceDetection_GalaxyS23Plus() {
+        val model = TargetDeviceModel.detectDevice("SM-S916N")
+        assertEquals(TargetDeviceModel.GALAXY_S23, model)
+        assertFalse(model.isFoldable)
+    }
+
+    @Test
     fun testTargetDeviceDetection_GalaxyZFold7() {
         val model = TargetDeviceModel.detectDevice("SM-F966N")
         assertEquals(TargetDeviceModel.GALAXY_Z_FOLD7, model)

@@ -96,12 +96,13 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
             }
         }
 
-        // 2. Validate sensor-type specific payload bounds & array length requirements
-        val isPayloadValid = when (event.sensor.type) {
+        // 2. Validate sensor-type specific payload bounds, array length & range requirements
+        val maxRange = event.sensor?.maximumRange ?: 0f
+        val isPayloadValid = when (event.sensor?.type) {
             Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE -> values.size >= 3
             Sensor.TYPE_LIGHT -> values.size >= 1 && values[0] >= 0f
-            Sensor.TYPE_PROXIMITY -> values.size >= 1 && values[0] >= 0f
-            else -> true
+            Sensor.TYPE_PROXIMITY -> values.size >= 1 && values[0] >= 0f && maxRange > 0f && !maxRange.isNaN() && !maxRange.isInfinite()
+            else -> false // Unknown or unregistered sensor types MUST NOT update freshness!
         }
 
         if (!isPayloadValid) {

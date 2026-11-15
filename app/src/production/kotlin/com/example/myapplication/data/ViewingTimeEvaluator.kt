@@ -74,7 +74,10 @@ enum class TargetDeviceModel(val deviceName: String, val isFoldable: Boolean) {
         fun detectDevice(modelName: String? = try { Build.MODEL } catch (_: Throwable) { null }): TargetDeviceModel {
             val safeModel = modelName ?: "Generic"
             return when {
-                safeModel.contains("S911", ignoreCase = true) || safeModel.contains("S23", ignoreCase = true) -> GALAXY_S23
+                safeModel.contains("S911", ignoreCase = true) ||
+                safeModel.contains("S916", ignoreCase = true) ||
+                safeModel.contains("S918", ignoreCase = true) ||
+                safeModel.contains("S23", ignoreCase = true) -> GALAXY_S23
                 safeModel.contains("F966", ignoreCase = true) || safeModel.contains("Fold7", ignoreCase = true) -> GALAXY_Z_FOLD7
                 else -> GENERIC_ANDROID_13
             }
