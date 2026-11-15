@@ -18,7 +18,7 @@
 
 단계를 건너뛰거나 자동 승인하지 않는다. 각 단계가 끝나면 PM이 결과와 다음 선택을 이 파일에 갱신한다. 출시까지 시간이 걸리거나 막히는 항목이 있으면 이유와 필요한 결정을 함께 표시한다.
 
-**현재 로드맵 위치:** 실제 시청시간 목표(Android 13/API 33 이상, 측정 불가 시 `미측정`)를 유지하며 Galaxy S23/Z Fold7은 초기 시험 후보로 정했다. 최신 commit `25fea7e`와 JVM 테스트 **63 passed / 0 skipped / 0 failed**를 확인했다. 기록 없는 과거 주간 날짜는 `-`/중립 바로 표시되고 활동횟수 기반 점수 수식 일부가 제거됐다. 그러나 기록이 있는 날짜는 120분 고정 가정으로 점수를 생성하고 월간 차트는 기존 활동횟수 공식이 남아 있어 실제 측정 근거가 아니다. MainScreen AI/Goal/relay 및 Wellness gauge/legend 미측정 소비도 남아 있다. UI/sensor 경계 자동 테스트는 확인되지 않았다. PM은 **PARTIAL PASS**, Release Hold 유지로 판정했다.
+**현재 로드맵 위치:** 실제 시청시간 목표(Android 13/API 33 이상, 측정 불가 시 `미측정`)를 유지하며 Galaxy S23/Z Fold7은 초기 시험 후보로 정했다. 최신 commit `44c1606`와 JVM 테스트 **63 passed / 0 skipped / 0 failed**를 확인했다. 주간/월간의 activity-count 임의 점수 수식은 제거됐고, 과거 구간은 아직 측정 데이터 source가 없어 미측정 placeholder로 처리된다. MainScreen AI/Goal/relay 및 Wellness gauge/legend 미측정 소비는 남아 있다. UI/sensor 경계 자동 테스트는 확인되지 않았다. PM은 **PARTIAL PASS**, Release Hold 유지로 판정했다.
 
 ## 한눈에 보는 진행 현황 — 2026-11-16
 
@@ -26,9 +26,9 @@
 |---|---|---|
 | 제품 목표 | **결정됨** | 목표는 실제로 손에 들고 보는 시간. Android 13+ 대상, 측정할 수 없으면 `미측정`; UsageStats는 실제 시청시간의 대체값이 아님 |
 | 현황 감사 | **완료 — 정적 범위** | 소스/권한/데이터 경로를 확인하고 QA가 재검토. 정책/Play 및 전체 기기 검증은 미완료 |
-| 코드 및 자동 테스트 | **부분 완료** | `25fea7e`; JVM **63 passed, 0 failed, 0 skipped**. 기록 없는 과거 주간 날짜 placeholder 추가. 과거 120분 가정, 월간 임의 점수, 다른 consumer 누출 및 경계 테스트 잔여 |
+| 코드 및 자동 테스트 | **부분 완료** | `44c1606`; JVM **63 passed, 0 failed, 0 skipped**. 주간/월간 임의 수식 제거, 과거 데이터는 미측정 placeholder. 다른 consumer 누출 및 경계 테스트 잔여 |
 | 실기기 기본 확인 | **제한 완료** | Galaxy S23+ `SM-S916N`, Android 16/API 36에서 Debug 설치·실행 및 기본 UI 확인. 자세 배지와 UsageStats 숫자는 표시 확인이지 정확도 측정이 아님 |
-| 미측정 처리 | **미완료** | 기록 없는 주간 날짜 placeholder 개선. 기록 있는 날짜의 120분 가정 및 월간 활동기록 점수화, AI Coach/Goal/gauge/legend sentinel 소비 잔여 |
+| 미측정 처리 | **미완료** | 과거 trend는 placeholder. AI Coach/Goal/relay 및 Wellness gauge/legend sentinel 소비 잔여 |
 | 센서 freshness | **부분 완료** | payload 유한성·축 길이·unknown type·양수 finite `maximumRange` 및 proximity 값 상한을 검사한 뒤 freshness 갱신. 실제 listener 경계 테스트 필요 |
 | 기기 프로필 | **코드 확인 완료** | `SM-S916N`/S916 계열이 `GALAXY_S23`으로 분류됨; 모델 단위 테스트 1건 통과 |
 | 시청 정확도/배터리 | **NOT RUN** | 정답 라벨 기반 정확도와 배터리 비교 미실시. 허용 기준/시험 절차도 사전 승인 필요 |
@@ -44,8 +44,8 @@
 |---|---|---|
 | 1. 현황 감사 | 실제 소스/Release 구성과 위험을 조사하고 QA가 근거를 재검토 | **완료(정적 범위)** — 실제 기기/Play 검증은 미완료 |
 | 2. 제품 범위·기준 승인 | 베타 핵심 범위, 데이터 의미, 예외/정책 및 측정 가능한 완료 기준을 PM이 승인 | **부분 완료** — 베타 MVP 범위와 실제 시청시간 목표, Android 13+ 및 `미측정` 원칙 결정. 정확도·전력 기준/시험 절차 미승인 |
-| 3. 개발 및 자체 검증 | 승인된 요구사항만 구현하고 기준별 증거/잔여 위험을 인계 | **수정 인계 제출** — commit `25fea7e`; 전체 단위 테스트 63/0/0; 과거의 120분 가정/월간 수식 및 다른 미측정 consumer 제거와 경계 테스트 필요 |
-| 4. QA 검증 | PM 완료 기준별 자동/수동 시험을 수행하고 증거와 PASS/FAIL/BLOCKED/NOT RUN 보고 | **PARTIAL PASS** — 일부 과거 날짜 placeholder 코드 확인; 실제 기간별 측정 의미, 월간 차트, UI/sensor boundary 및 정확도/전력 검증 잔여 |
+| 3. 개발 및 자체 검증 | 승인된 요구사항만 구현하고 기준별 증거/잔여 위험을 인계 | **수정 인계 제출** — commit `44c1606`; 전체 단위 테스트 63/0/0; 실제 과거 측정 데이터는 미지원, 다른 미측정 consumer 및 경계 테스트 필요 |
+| 4. QA 검증 | PM 완료 기준별 자동/수동 시험을 수행하고 증거와 PASS/FAIL/BLOCKED/NOT RUN 보고 | **PARTIAL PASS** — 주간/월간 임의 산식 제거 확인; UI/sensor boundary 테스트, 기타 consumer, 정확도/전력 검증 잔여 |
 | 5. PM 완료·고정 판정 | QA 결과·기기 범위·잔여 위험을 검토해 완료/보류 판정 | **보류** — 제품 기능 완료/고정 미승인; 후속 수정 후 재검수 필요 |
 | 6. 내부 테스트 | Release 패키지 설치 및 핵심 흐름을 실제 테스트, PM/소유자가 트랙 업로드 승인 | **미착수/미승인** — Release Hold 유지 |
 | 7. 제한 베타 | 승인된 테스터와 기간/표본으로 사용성·안정성·피드백 검증 | **미착수** — 내부 테스트 종료 및 PM 승인 필요 |
@@ -88,6 +88,7 @@
 - commit `efcd86b`를 검토하고 JVM XML **63/0/0**을 확인했다. 일간 `DailyStockChartView`에 미측정 placeholder와 음수 하단 라벨 처리가 추가되어 해당 코드 경로의 개선은 수용한다. 그러나 주간/월간 차트가 휴식/운동 기록만으로 임의 점수를 생성하고, MainScreen AI/Goal/relay 및 Wellness gauge/legend에도 미측정 소비가 남아 전체 trend/UI 처리는 미완료다. 커밋에 UI/sensor 경계 테스트는 추가되지 않았으며 QA 렌더링 PASS를 자동 테스트 증거로 확인하지 못했다. Debug 설치/Activity 실행은 확인, 실제 viewing/posture accuracy와 battery/heat는 **NOT RUN**. PM 판정 **PARTIAL PASS**, Release Hold 유지. 상세: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_efcd86b_2026-11-16.md`.
 - commit `ce6d320`를 검토하고 JVM XML **63/0/0**을 재확인했다. 모든 trend 기간의 본문에 전역 미측정 placeholder가 적용되어, 현재 score 자체가 미측정이면 임의 bar/line은 숨겨진다. 하지만 현재 전역 measured 상태가 주간/월간 각 구간의 실제 측정을 의미하지 않으며, 해당 구간은 휴식/운동 기록으로 만든 가짜 점수가 계속 표시된다. MainScreen AI/Goal/relay 및 Wellness gauge/legend의 미측정 소비도 남았다. UI/sensor 경계 테스트가 없어 QA의 화면별 PASS는 독립 검증되지 않았다. 시청/자세 정확도와 배터리 **NOT RUN**. PM 판정 **PARTIAL PASS**, Release Hold 유지. 상세: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_ce6d320_2026-11-16.md`.
 - commit `25fea7e`를 검토하고 JVM XML **63/0/0**을 확인했다. 기록이 없는 과거 주간 날짜는 `-` 및 중립 바로 표시되지만, 기록이 있는 날짜는 `screenTimeMinutes=120` 가정을 사용해 계산한다. 월간 탭에는 `70 + rests*15 + miniGames*25` 임의 점수 공식이 남았다. MainScreen AI/Goal/relay 및 Wellness gauge/legend 미측정 consumer와 UI/sensor 경계 테스트도 미완료다. QA의 월간 공식 제거 주장은 소스와 일치하지 않는다. 실제 accuracy/battery는 **NOT RUN**. PM 판정 **PARTIAL PASS**, Release Hold 유지. 상세: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_25fea7e_2026-11-16.md`.
+- commit `44c1606`를 검토하고 JVM XML **63/0/0**을 재확인했다. 주간/월간 activity-count 임의 산식은 제거됐으며 현재/이번 주가 아닌 과거 구간은 `-1` placeholder로 처리된다. 즉 과거 측정 데이터 source가 아직 없어 실제 추세값은 제공되지 않는다. MainScreen AI/Goal/relay와 Wellness gauge/legend의 미측정 소비 및 UI/sensor 경계 테스트가 남는다. viewing/posture accuracy와 battery/heat는 **NOT RUN**. PM 판정 **PARTIAL PASS**, Release Hold 유지. 상세: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_44c1606_2026-11-16.md`.
 - 센서 이벤트 freshness/payload 검증, 실제 시청 정확도 및 배터리 비교는 **NOT RUN**이다. 기기 센서 하드웨어 가용성과 짧은 앱 UI/베타 안내 스모크만 제한 확인했다. 내부 테스트 배포, Release Hold 해제 및 정식 출시는 승인되지 않았다.
 - 이전 검토 기록: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md`. 최신 검토와 수정 지시: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md`.
 
@@ -236,9 +237,9 @@ Developer와 QA는 동일 AI이므로, 역할을 분리한 QA 재검토는 사�
 
 ## 현재 단계 카드
 
-- **현재 단계:** 3–4 — `25fea7e` PM PARTIAL PASS, 과거 측정 데이터 source 및 모든 미측정 consumer와 sensor/UI 경계 보완 후 QA 재검수 대기
+- **현재 단계:** 3–4 — `44c1606` PM PARTIAL PASS, 미측정 consumer 및 sensor/UI 경계 보완 후 QA 재검수 대기. 과거 trend data source는 현재 미지원으로 `미측정` 유지
 - **완료된 것:** 저장소 기준점/정적 감사, 감사 QA 재검토, 베타 MVP 범위 기본설계, 사용자가 승인한 실제 시청시간 목표와 Android 13+ 미측정 원칙, 두 Galaxy 기기의 초기 시험 후보, 오늘 화면 사용시간 UI에서 evaluator 추정치 비노출의 정적 확인
-- **부분 완료/미승인:** Developer commit `25fea7e`와 전체 단위 테스트 63 passed/0 skipped/0 failed를 확인했다. 기록 없는 과거 주간 날짜 placeholder는 개선됐으나 고정 120분 가정 및 월간 임의 수식 점수와 AI/Goal/relay/Wellness 미측정 누출, sensor/UI 경계 테스트가 남았다. 실제 viewing/posture accuracy 및 battery 측정은 **NOT RUN**이다.
+- **부분 완료/미승인:** Developer commit `44c1606`와 전체 단위 테스트 63 passed/0 skipped/0 failed를 확인했다. 주간/월간 임의 산식은 제거됐으며 과거 데이터는 미측정으로 표시된다. AI/Goal/relay/Wellness 미측정 소비 및 sensor/UI 경계 테스트가 남았다. 실제 viewing/posture accuracy 및 battery 측정은 **NOT RUN**이다.
 - **미완료:** 모든 consumer의 미측정 상태 표시 및 파생 계산 차단, sensor type별 payload 선검증, `SM-S916N` 기기 모델 매핑, UI/센서 경계 테스트, QA 재검수, 실기기 정확도/배터리 타당성 기준 승인 및 실행, 내부 테스트 및 배포 승인
 - **다음 행동:** Developer가 미측정 상태를 모든 점수 소비처에서 명시적으로 처리하고 유효 payload에서만 freshness를 갱신한 뒤 자동 테스트 근거를 제출한다. 별도로 PM 승인 후 실기기 타당성 시험을 진행한다.
 - **배포 승인:** 없음 (Release Hold 유지)
@@ -271,6 +272,7 @@ Developer와 QA는 동일 AI이므로, 역할을 분리한 QA 재검토는 사�
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_efcd86b_2026-11-16.md` — `efcd86b`/63개 테스트/일간 trend 처리 및 주간·월간 임의 점수 재검토, PARTIAL PASS 및 개발 지시
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_ce6d320_2026-11-16.md` — `ce6d320`/63개 테스트/전 trend 탭 상태 및 구간별 임의 점수 재검토, PARTIAL PASS 및 개발 지시
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_25fea7e_2026-11-16.md` — `25fea7e`/63개 테스트/주간 가정치 및 월간 수식 점수 재검토, PARTIAL PASS 및 개발 지시
+- `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_44c1606_2026-11-16.md` — `44c1606`/63개 테스트/주간·월간 임의 점수 제거 및 잔여 미측정 consumer 검토, PARTIAL PASS 개발 지시
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` — QA 검수 역할, 출력 형식 및 PASS/BLOCKED/NOT RUN 판정 원칙
 - 저장소 루트 `Walkthrough.md` — 이 통합 Walkthrough의 진입점
 - 기존 중복 Walkthrough 3개(`docs/WALKTHROUGH_P0_LATEST.md`, `docs/WALKTHROUGH_ROADMAP.md`, `docs/WALKTHROUGH_GOOGLE_PLAY_IRISFIT.md`) — 통합 후 삭제

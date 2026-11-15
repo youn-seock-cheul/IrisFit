@@ -723,8 +723,9 @@ fun CommunityCheerCard(sessionModel: GuidedSessionViewModel) {
 @Composable
 fun GoalAchievementCard(sessionModel: GuidedSessionViewModel) {
     val restCount = sessionModel.todayRestCount
+    val isMeasured = sessionModel.eyeBatteryStats.screenTimeMeasured
     val batteryScore = sessionModel.eyeBatteryStats.eyeHealthScore
-    val isGoal1Reached = batteryScore >= 85
+    val isGoal1Reached = isMeasured && batteryScore >= 85
     val isGoal2Reached = restCount >= 3
     val isGoal3Reached = true
 
@@ -771,7 +772,7 @@ fun GoalAchievementCard(sessionModel: GuidedSessionViewModel) {
                             Icon(painter = painterResource(id = R.drawable.ic_goal_battery), contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(22.dp))
                             Column {
                                 Text(sessionModel.tr("goal_1"), fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                Text("현재 잔량: ${batteryScore}%", fontSize = 11.sp, color = Color.Gray)
+                                Text(if (isMeasured && batteryScore >= 0) "현재 잔량: ${batteryScore}%" else "현재 잔량: 미측정", fontSize = 11.sp, color = Color.Gray)
                             }
                         }
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -1050,7 +1051,12 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(sessionModel.tr("ai_battery_remain"), color = Color.Gray)
-                    Text("${batteryScore}% (${sessionModel.tr(sessionModel.eyeBatteryStats.fatigueStatus.labelKey)})", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    val batteryScoreText = if (hasPermission && batteryScore >= 0) {
+                        "${batteryScore}% (${sessionModel.tr(sessionModel.eyeBatteryStats.fatigueStatus.labelKey)})"
+                    } else {
+                        sessionModel.tr("screen_time_unmeasured")
+                    }
+                    Text(batteryScoreText, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(sessionModel.tr("ai_compliance"), color = Color.Gray)
