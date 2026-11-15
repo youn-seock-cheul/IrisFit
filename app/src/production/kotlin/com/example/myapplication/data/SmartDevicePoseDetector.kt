@@ -96,12 +96,12 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
             }
         }
 
-        // 2. Validate sensor-type specific payload bounds, array length & range requirements
+        // 2. Validate sensor-type specific payload bounds, array length & maximumRange requirements
         val maxRange = event.sensor?.maximumRange ?: 0f
         val isPayloadValid = when (event.sensor?.type) {
             Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE -> values.size >= 3
             Sensor.TYPE_LIGHT -> values.size >= 1 && values[0] >= 0f
-            Sensor.TYPE_PROXIMITY -> values.size >= 1 && values[0] >= 0f && maxRange > 0f && !maxRange.isNaN() && !maxRange.isInfinite()
+            Sensor.TYPE_PROXIMITY -> values.size >= 1 && values[0] >= 0f && maxRange > 0f && !maxRange.isNaN() && !maxRange.isInfinite() && values[0] <= maxRange
             else -> false // Unknown or unregistered sensor types MUST NOT update freshness!
         }
 
@@ -120,14 +120,14 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
             return // Reject invalid timestamp events
         }
 
-        // Freshness timestamp updated ONLY after payload length, value bounds, and timestamp verification pass
+        // Freshness timestamp updated ONLY after payload length, value bounds, maximumRange, and timestamp verification pass
         lastEventTimestampMs = now
 
         when (event.sensor.type) {
             Sensor.TYPE_ACCELEROMETER -> classifier.accelerometer(sampleTime, values)
             Sensor.TYPE_GYROSCOPE -> classifier.gyroscope(sampleTime, values)
             Sensor.TYPE_LIGHT -> classifier.light(sampleTime, values[0])
-            Sensor.TYPE_PROXIMITY -> classifier.proximity(sampleTime, values[0], event.sensor.maximumRange)
+            Sensor.TYPE_PROXIMITY -> classifier.proximity(sampleTime, values[0], maxRange)
         }
         updatePose()
     }

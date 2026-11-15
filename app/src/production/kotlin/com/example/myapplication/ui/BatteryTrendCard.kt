@@ -246,7 +246,8 @@ fun DailyStockChartView(sessionModel: GuidedSessionViewModel) {
             val statsAtHour = com.example.myapplication.session.EyeBatteryCalculator.calculateBattery(
                 screenTimeMinutes = cumulativeScreenTime,
                 restCount = cumulativeRests,
-                miniGameCount = cumulativeGames
+                miniGameCount = cumulativeGames,
+                screenTimeMeasured = sessionModel.eyeBatteryStats.screenTimeMeasured
             )
 
             val finalScore = if (h == currentHour) currentScore else statsAtHour.eyeHealthScore
