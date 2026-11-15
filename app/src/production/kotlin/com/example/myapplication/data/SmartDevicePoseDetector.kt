@@ -59,7 +59,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
         _observedPose = DevicePose.HAND_HELD_ACTIVE
         listening = true
         registeredSensorsCount = 0
-        lastEventTimestampMs = SystemClock.elapsedRealtime()
+        lastEventTimestampMs = 0L // Must receive at least 1 real sensor event to become fresh!
 
         for (type in listOf(Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE, Sensor.TYPE_PROXIMITY, Sensor.TYPE_LIGHT)) {
             val sensor = sensorManager?.getDefaultSensor(type) ?: continue

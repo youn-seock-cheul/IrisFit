@@ -23,7 +23,7 @@
 - 진행 순서: **현재 Release 구현 감사 → 베타 범위/수용 기준 승인 → 개발·자체검증 → QA 재검수 → PM 완료 판정 → 내부 테스트 → 제한 베타 → 별도 정식 출시 승인**
 - `AUD-01` Developer 감사 및 `QA-01` 정적 재검토는 완료됐으나 실제 기기/Play 검증은 미완료다. 전체 제품 출시 준비는 **BLOCKED**다.
 - 실제 시청시간 목표는 유지한다. Android 13+ 범용 목표와 측정 불가 시 `미측정`을 승인했고, Galaxy S23/Z Fold7은 초기 시험 후보로만 정했다. 기기별 전력 허용치·정확도 기준·시험 절차는 미승인이다.
-- 현재 단계: **commit `5018854` Developer 수정 제출 — PM 부분 수용, QA 재검수 대기**. 전체 단위 테스트 61 passed/0 skipped/0 failed를 재실행했다. typed UsageStats 결과 및 mock API 분리는 확인했지만, legacy 정수 API가 조회 실패를 0으로 축약하며 위젯/세션/AI 코치 경로에서 사용 중이다. evaluator freshness도 detector 존재 여부로 대체된다. 실기기 센서·배터리·시청 정확도는 NOT RUN이다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_5018854_2026-11-15.md`.
+- 현재 단계: **commit `aad01ee` QA 검토 — PARTIAL PASS, 기능 완료 보류**. 최신 전체 테스트 61 passed/0 skipped/0 failed를 재현했다. typed 결과와 센서 freshness 연결은 확인했으나, legacy 정수 API가 조회 실패를 0으로 축약하여 운영 호출처에서 계속 사용된다. detector는 첫 센서 이벤트 전에 freshness를 참으로 볼 수 있고 실제 센서 경계 테스트는 확인되지 않았다. 실기기 센서·배터리·시청 정확도는 NOT RUN이다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md`.
 - 출시 Hold 해제, 내부 테스트 업로드 및 Production 배포는 별도 PM 승인 대상이다.
 
 ## 문서 인덱스
@@ -45,6 +45,7 @@
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_2026-11-15.md` | PM 사전 검토 완료 — QA 대기 | 최신 Developer 인계/commit 및 테스트 결과 확인, QA 검수 초점 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_66aa763_2026-11-15.md` | QA PARTIAL PASS — PM 완료 보류 | `66aa763`, 61개 JVM 단위 테스트 및 운영 데이터/실기기 한계에 대한 PM 판정 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_5018854_2026-11-15.md` | PM 부분 수용 — 후속 수정/QA 재검수 대기 | typed 결과 계약 및 61개 테스트 확인; 호출처의 실패-0 변환과 센서 freshness 공백 기록 |
+| `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md` | QA PARTIAL PASS — PM 완료 보류 | `aad01ee`와 61개 JVM 테스트 재확인; 실패-0 운영 호출처, 첫 이벤트 전 freshness 및 테스트 범위 기록 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` | 사용자 정의 역할 반영 | QA 책임, 산출물, 출력 형식 및 판정 용어 |
 
 저장소의 `Walkthrough.md` 및 `docs/WALKTHROUGH_P0_LATEST.md`는 개발 변경/기술 검증 로그로 유지한다. 사용자와 PM의 전체 제품 로드맵/공동 진행 상태는 `C:\Users\youns\AndroidStudioProjects\IrisFit_LabA\task\IrisFit_PM_User_Walkthrough.md`를 기준으로 확인한다. 실제 PM 개발 지시 및 추가 검토 보고서는 사용자가 지정한 `C:\Users\youns\AndroidStudioProjects\task`에도 보관한다. 기존 기준·QA 문서는 작업 시 원본 파일과 기준 날짜를 확인한 후 새 감사 보고서의 입력 자료로 등록한다. 과거 보고의 검사 결과는 현재 상태의 증거로 재사용하지 않는다.
@@ -270,6 +271,13 @@
 - **다음:** 모든 운영 소비처에서 typed 상태를 처리하고, 실제 센서 registration/freshness 기준으로 fail-closed 처리한 뒤 QA 재검수한다. 실기기 정확도·배터리 시험 `NOT RUN`; Release Hold 유지.
 - **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_5018854_2026-11-15.md`.
 
+### DEC-2026-11-15-28 — commit `aad01ee` QA PARTIAL PASS
+
+- **상태:** PM 판정 — PARTIAL PASS; 개발 작업 재개방, Release Hold 유지
+- **결정:** HEAD `aad01ee` 및 전체 JVM 테스트 61 passed/0 skipped/0 failed를 확인했다. typed query API와 실제 detector freshness 연결은 진전으로 수용한다. 그러나 `getTodayScreenTimeMinutes()`는 오류를 계속 0으로 바꾸며 위젯/세션/AI 코치에서 사용된다. 센서 freshness는 첫 이벤트 전 초기화 시각으로 최대 5초간 참일 수 있고, 제출된 테스트는 실제 detector freshness 경계를 검증하지 않는다. QA의 조회 실패 축약 방지 PASS 주장은 승인하지 않는다.
+- **다음:** 모든 소비처의 typed 결과 처리, 센서 첫 이벤트 이후 freshness 적용 및 관련 경계 테스트를 보완한 뒤 QA 재검수한다. 실기기 정확도/배터리는 NOT RUN, Release Hold 유지.
+- **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md`.
+
 ## 진행 추적
 
 | ID | 작업 | 상태 | 담당 | 다음 결과 |
@@ -278,8 +286,8 @@
 | AUD-02 | dirty worktree/HEAD 기준점 기록 | 완료 | 개발자 | branch/HEAD, 24 modified, 34 untracked 기록 |
 | QA-01 | 감사 결과 acceptance criteria 재검토 | 완료 — 전체 QA BLOCKED | QA | `IrisFit_Current_State_Audit_QA_Review_2026-11-15.md` |
 | PM-01 | 베타 MVP 범위 및 제품 목표 승인 | 부분 완료 — 실제 시청시간 목표 유지, Android 13+ 및 `미측정` 결정 | PM/사용자 | 정확도·전력 기준 및 시험 절차 결정 |
-| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | Developer 수정 제출 — commit `5018854`; JVM 테스트 61/0/0 | Developer | PM 부분 수용; 운영 소비처 실패-0 변환 및 센서 freshness 보완 |
-| QA-03 | DEV-02 재검수 | 재검수 대기 — 이전 `66aa763` QA PARTIAL PASS; 최신 `5018854` 확인 필요 | QA | 호출처 typed 상태, 센서 등록/freshness 및 관련 회귀 테스트 확인 |
+| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | 수정 인계 `aad01ee`; JVM 테스트 61/0/0 | Developer | 운영 소비처 실패-0 변환 및 첫 이벤트 전 freshness 보완 |
+| QA-03 | DEV-02 재검수 | `aad01ee` PARTIAL PASS — 최신 소스 검토 완료 | QA/PM | 후속 수정 후 모든 운영 호출처 및 센서 freshness 경계 재검수 |
 | TEST-01 | Galaxy S23/Z Fold7 타당성 시험 | 계획 초안 — OS/합격 기준/시험 미승인 | PM/Developer/QA | 사전 승인된 시험 기준과 기기별 결과 |
 | REL-01 | 내부 테스트 진입 및 Play 배포 승인 | 미승인 | PM/소유자 | 별도 명시적 승인 |
 

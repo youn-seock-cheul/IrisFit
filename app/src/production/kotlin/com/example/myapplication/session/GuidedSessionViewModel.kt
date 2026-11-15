@@ -76,11 +76,10 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
 
     val eyeBatteryStats: EyeBatteryStats
         get() {
-            val hasUsagePermission = com.example.myapplication.data.ScreenTimeManager.hasUsageStatsPermission(getApplication())
-            val screenMinutes = if (hasUsagePermission) {
-                com.example.myapplication.data.ScreenTimeManager.getTodayScreenTimeMinutes(getApplication())
-            } else {
-                0
+            val queryResult = com.example.myapplication.data.ScreenTimeManager.queryTodayScreenTime(getApplication())
+            val (screenMinutes, isMeasured) = when (queryResult) {
+                is com.example.myapplication.data.ScreenTimeQueryResult.Success -> Pair(queryResult.minutes, true)
+                else -> Pair(0, false)
             }
             val rests = records.count { it.completedLocalDate == today && it.routineId == "screen_rest" }
             val miniGames = records.count { it.completedLocalDate == today && (it.routineId == "eye_gym" || it.routineId == "smooth_pursuit") }
@@ -89,7 +88,7 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
                 screenTimeMinutes = screenMinutes,
                 restCount = rests,
                 miniGameCount = miniGames,
-                screenTimeMeasured = hasUsagePermission
+                screenTimeMeasured = isMeasured
             )
 
             // Check status change for notification
