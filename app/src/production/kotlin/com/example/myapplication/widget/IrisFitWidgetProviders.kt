@@ -131,8 +131,9 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 paint.textAlign = Paint.Align.RIGHT
                 canvas.drawText(greeting, width - 42f, 62f, paint)
 
-                // 4-Tier Dynamic Color depending on Eye Health Battery Score
+                // 4-Tier Dynamic Color depending on Eye Health Battery Score (or Neutral Grey if unmeasured)
                 val statusColor = when {
+                    score < 0 -> Color.parseColor("#A0A0A0")   // Neutral Grey (Unmeasured)
                     score >= 85 -> Color.parseColor("#00E676") // Bright Green (Optimal 85~100%)
                     score >= 65 -> Color.parseColor("#FFC107") // Yellow (Caution 65~84%)
                     score >= 45 -> Color.parseColor("#FF9800") // Orange (Warning 45~64%)
@@ -152,14 +153,17 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 canvas.drawArc(ringRect, -90f, 360f, false, paint)
 
                 paint.color = statusColor
-                canvas.drawArc(ringRect, -90f, score.coerceIn(0, 100) * 3.6f, false, paint)
+                if (score >= 0) {
+                    canvas.drawArc(ringRect, -90f, score.coerceIn(0, 100) * 3.6f, false, paint)
+                }
 
                 paint.style = Paint.Style.FILL
                 paint.textAlign = Paint.Align.CENTER
                 paint.color = Color.WHITE
-                paint.textSize = 48f
+                paint.textSize = if (score < 0) 32f else 48f
                 paint.typeface = Typeface.DEFAULT_BOLD
-                canvas.drawText("${score}%", cx, cy + 12f, paint)
+                val scoreText = if (score < 0) AppLocalization.get(lang, "screen_time_unmeasured") else "${score}%"
+                canvas.drawText(scoreText, cx, cy + 12f, paint)
 
                 paint.color = Color.parseColor("#B0BEC5")
                 paint.textSize = 20f

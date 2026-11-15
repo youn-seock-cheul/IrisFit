@@ -127,4 +127,21 @@ class ViewingTimeEvaluatorTest {
         val error = result as ViewingTimeStatus.QueryError
         assertTrue(error.errorDetail.contains("음수 사용시간"))
     }
+
+    @Test
+    fun testEvaluate_ValidInputs_ReturnsFeasibilityEstimateStatus() {
+        val result = ViewingTimeEvaluator.evaluateViewingTimeInternal(
+            context = testContext,
+            hasPermission = true,
+            isAppInForeground = true,
+            isScreenOn = true,
+            poseDetector = null,
+            isSensorFresh = true,
+            mockQueryResult = ScreenTimeQueryResult.Success(120)
+        )
+        assertTrue(result is ViewingTimeStatus.FeasibilityEstimate)
+        val estimate = result as ViewingTimeStatus.FeasibilityEstimate
+        assertEquals(120, estimate.baselineUsageMinutes)
+        assertTrue(estimate.disclaimer.contains("이론적 추정 모델"))
+    }
 }

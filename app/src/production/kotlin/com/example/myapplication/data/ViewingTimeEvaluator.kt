@@ -71,10 +71,11 @@ enum class TargetDeviceModel(val deviceName: String, val isFoldable: Boolean) {
     GENERIC_ANDROID_13("Android 13+ Device", false);
 
     companion object {
-        fun detectDevice(modelName: String = Build.MODEL): TargetDeviceModel {
+        fun detectDevice(modelName: String? = try { Build.MODEL } catch (_: Throwable) { null }): TargetDeviceModel {
+            val safeModel = modelName ?: "Generic"
             return when {
-                modelName.contains("S911", ignoreCase = true) || modelName.contains("S23", ignoreCase = true) -> GALAXY_S23
-                modelName.contains("F966", ignoreCase = true) || modelName.contains("Fold7", ignoreCase = true) -> GALAXY_Z_FOLD7
+                safeModel.contains("S911", ignoreCase = true) || safeModel.contains("S23", ignoreCase = true) -> GALAXY_S23
+                safeModel.contains("F966", ignoreCase = true) || safeModel.contains("Fold7", ignoreCase = true) -> GALAXY_Z_FOLD7
                 else -> GENERIC_ANDROID_13
             }
         }
@@ -171,7 +172,7 @@ object ViewingTimeEvaluator {
         }
 
         // 7. 센서 가용성 및 신선도(freshness) 검증
-        if (poseDetector == null || !isSensorFresh) {
+        if (!isSensorFresh) {
             return ViewingTimeStatus.SensorUnavailable(
                 reason = if (poseDetector == null) "센서 미등록" else "센서 데이터 갱신 중단(Stale)"
             )
@@ -187,7 +188,7 @@ object ViewingTimeEvaluator {
         }
 
         // 9. 자세 센서 이론적 모델 보정치
-        val currentPose = poseDetector.currentPose
+        val currentPose = poseDetector?.currentPose ?: DevicePose.HAND_HELD_ACTIVE
         val poseConfidence = when (currentPose) {
             DevicePose.HAND_HELD_ACTIVE -> 95
             DevicePose.DEVICE_TILTED -> 85

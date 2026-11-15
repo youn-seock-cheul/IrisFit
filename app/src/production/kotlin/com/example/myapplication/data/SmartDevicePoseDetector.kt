@@ -87,7 +87,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
         val values = event.values ?: return
         if (values.isEmpty()) return
 
-        // Validate payload finiteness (Reject NaN, Infinite or empty sensor arrays)
+        // 1. Validate payload finiteness (Reject NaN, Infinite or empty sensor arrays)
         for (v in values) {
             if (v.isNaN() || v.isInfinite()) {
                 classifier.reset()
@@ -96,6 +96,21 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
             }
         }
 
+        // 2. Validate sensor-type specific payload bounds & array length requirements
+        val isPayloadValid = when (event.sensor.type) {
+            Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE -> values.size >= 3
+            Sensor.TYPE_LIGHT -> values.size >= 1 && values[0] >= 0f
+            Sensor.TYPE_PROXIMITY -> values.size >= 1 && values[0] >= 0f
+            else -> true
+        }
+
+        if (!isPayloadValid) {
+            classifier.reset()
+            updatePose()
+            return
+        }
+
+        // 3. Validate timestamp range
         val now = SystemClock.elapsedRealtime()
         val sampleTime = event.timestamp / 1_000_000L
         if (sampleTime <= 0L || sampleTime > now) {
@@ -104,7 +119,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
             return // Reject invalid timestamp events
         }
 
-        // Freshness timestamp updated ONLY after payload and timestamp verification pass
+        // Freshness timestamp updated ONLY after payload length, value bounds, and timestamp verification pass
         lastEventTimestampMs = now
 
         when (event.sensor.type) {
