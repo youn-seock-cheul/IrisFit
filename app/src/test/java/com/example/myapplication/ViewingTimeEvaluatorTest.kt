@@ -2,9 +2,12 @@ package com.example.myapplication
 
 import android.content.ContextWrapper
 import com.example.myapplication.data.ScreenTimeQueryResult
+import com.example.myapplication.data.SmartDevicePoseDetector
 import com.example.myapplication.data.TargetDeviceModel
 import com.example.myapplication.data.ViewingTimeEvaluator
 import com.example.myapplication.data.ViewingTimeStatus
+import com.example.myapplication.session.EyeBatteryCalculator
+import com.example.myapplication.session.EyeFatigueStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -150,5 +153,25 @@ class ViewingTimeEvaluatorTest {
         val estimate = result as ViewingTimeStatus.FeasibilityEstimate
         assertEquals(120, estimate.baselineUsageMinutes)
         assertTrue(estimate.disclaimer.contains("이론적 추정 모델"))
+    }
+
+    @Test
+    fun testPoseDetectorInitialState_NotFreshBeforeStartListening() {
+        val detector = SmartDevicePoseDetector(testContext)
+        assertFalse("시작 전 detector는 listening 및 isFresh가 false이어야 함", detector.isListening)
+        assertFalse("시작 전 detector는 isFresh가 false이어야 함", detector.isFresh)
+    }
+
+    @Test
+    fun testEyeBatteryCalculator_UnmeasuredStateReturnsUnmeasuredStatus() {
+        val stats = EyeBatteryCalculator.calculateBattery(
+            screenTimeMinutes = 0,
+            restCount = 0,
+            miniGameCount = 0,
+            screenTimeMeasured = false
+        )
+        assertEquals(-1, stats.eyeHealthScore)
+        assertEquals(EyeFatigueStatus.UNMEASURED, stats.fatigueStatus)
+        assertFalse(stats.screenTimeMeasured)
     }
 }

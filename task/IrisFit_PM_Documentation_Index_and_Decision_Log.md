@@ -23,8 +23,8 @@
 - 진행 순서: **현재 Release 구현 감사 → 베타 범위/수용 기준 승인 → 개발·자체검증 → QA 재검수 → PM 완료 판정 → 내부 테스트 → 제한 베타 → 별도 정식 출시 승인**
 - `AUD-01` Developer 감사 및 `QA-01` 정적 재검토는 완료됐으나 실제 기기/Play 검증은 미완료다. 전체 제품 출시 준비는 **BLOCKED**다.
 - 실제 시청시간 목표는 유지한다. Android 13+ 범용 목표와 측정 불가 시 `미측정`을 승인했고, Galaxy S23/Z Fold7은 초기 시험 후보로만 정했다. 기기별 전력 허용치·정확도 기준·시험 절차는 미승인이다.
-- 현재 단계: **commit `ce8ac49` PM 검토 — PARTIAL PASS, 기능 완료 보류**. Gradle XML 63 passed/0 skipped/0 failed. Relay 제목의 미측정 중립 문구와 Wellness gauge/legend의 중립 경로를 코드에서 확인했다. Relay Toast의 “맞춤” 표현과 Wellness happy mascot은 미측정 상태에서 오해를 줄 수 있어 정리가 필요하다. UI 렌더링 및 sensor callback/freshness 경계 자동 테스트는 확인되지 않았다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_ce8ac49_2026-11-16.md`.
-- 실기기 상태: 이번 검토에서 relay/Wellness UI 렌더링 및 sensor freshness를 실기기에서 확인하지 않았다. 실제 viewing/posture accuracy와 battery/heat는 NOT RUN. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_ce8ac49_2026-11-16.md`.
+- 현재 단계: **commit `f7a8d2d` PM 검토 — PARTIAL PASS, 기능 완료 보류**. Gradle XML 63 passed/0 skipped/0 failed. Relay Toast 및 Wellness 미측정 아이콘의 중립 변경을 소스에서 확인했다. 전용 UI 렌더링 및 sensor callback/freshness 경계 테스트는 확인되지 않았다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_f7a8d2d_2026-11-16.md`.
+- 실기기 상태: 이번 검토에서 relay/Wellness UI 렌더링 및 sensor freshness를 실기기에서 확인하지 않았다. 실제 viewing/posture accuracy와 battery/heat는 NOT RUN. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_f7a8d2d_2026-11-16.md`.
 - 출시 Hold 해제, 내부 테스트 업로드 및 Production 배포는 별도 PM 승인 대상이다.
 
 ## 문서 인덱스
@@ -61,6 +61,7 @@
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_f05cb53_2026-11-16.md` | 이전 PM PARTIAL PASS | `f05cb53` 당시 Goal/AiCoach guard 확인, relay/Wellness 미측정 처리 잔여 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_23ee202_2026-11-16.md` | 최신 PM PARTIAL PASS — Release Hold 유지 | 63 JVM tests; relay/Wellness/Goal/AiCoach 미측정 code path 확인; UI/sensor boundary tests 및 relay 중립 문구 검토 잔여 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_ce8ac49_2026-11-16.md` | 최신 PM PARTIAL PASS — Release Hold 유지 | 63 JVM tests; relay 제목 중립화 확인, Toast 개인화 표현/Wellness happy mascot 및 UI/sensor boundary tests 잔여 |
+| `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_f7a8d2d_2026-11-16.md` | 최신 PM PARTIAL PASS — Release Hold 유지 | 63 JVM tests; relay Toast와 Wellness 중립 아이콘 코드 확인; UI/sensor boundary tests 및 실기기 검증 잔여 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Device_Smoke_Check_2026-11-15.md` | 제한된 실기기 스모크 완료 | Galaxy S23 Android 16/API 36 앱 실행 및 센서 하드웨어 가용성만 확인; 정확도/이벤트 freshness/배터리는 NOT RUN |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` | 사용자 정의 역할 반영 | QA 책임, 산출물, 출력 형식 및 판정 용어 |
 
@@ -414,6 +415,13 @@
 - **다음:** Toast와 Wellness 미측정 표시를 정리하고 UI/sensor boundary tests 제출 후 QA 재검수한다. 실기기 정확도/전력은 NOT RUN; 기준/프로토콜 미승인.
 - **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_ce8ac49_2026-11-16.md`.
 
+### DEC-2026-11-16-46 — commit `f7a8d2d` PM 재검토
+
+- **상태:** PM 판정 — PARTIAL PASS; UI/sensor 경계 검증 재개방, Release Hold 유지
+- **결정:** 미측정 relay Toast에서 “맞춤” 표현을 없앤 점과 Wellness UNMEASURED mascot에 중립 아이콘을 연결한 점을 소스에서 확인해 수용한다. Gradle JVM XML은 63/0/0이다. 다만 commit은 전용 UI 테스트를 추가하지 않았으므로 화면 렌더링 PASS 주장은 입증되지 않았다. sensor callback/freshness 테스트와 실기기 accuracy/battery/heat도 미실시다.
+- **다음:** UI 소비처와 sensor freshness 경계 테스트를 자동화하고 QA 재검수한다. 정확도 및 전력 기준/프로토콜은 미승인, Release Hold 유지.
+- **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_f7a8d2d_2026-11-16.md`.
+
 ## 진행 추적
 
 | ID | 작업 | 상태 | 담당 | 다음 결과 |
@@ -422,8 +430,8 @@
 | AUD-02 | dirty worktree/HEAD 기준점 기록 | 완료 | 개발자 | branch/HEAD, 24 modified, 34 untracked 기록 |
 | QA-01 | 감사 결과 acceptance criteria 재검토 | 완료 — 전체 QA BLOCKED | QA | `IrisFit_Current_State_Audit_QA_Review_2026-11-15.md` |
 | PM-01 | 베타 MVP 범위 및 제품 목표 승인 | 부분 완료 — 실제 시청시간 목표 유지, Android 13+ 및 `미측정` 결정 | PM/사용자 | 정확도·전력 기준 및 시험 절차 결정 |
-| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | 수정 인계 `ce8ac49`; JVM 테스트 63/0/0 | Developer | relay Toast/Wellness 미측정 표현 및 UI/sensor 경계 테스트 보완 |
-| QA-03 | DEV-02 재검수 | `ce8ac49` PARTIAL PASS — PM 대조 검토 완료 | QA/PM | 후속 수정 후 모든 consumer/UI/sensor 경계 재검수 |
+| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | 수정 인계 `f7a8d2d`; JVM 테스트 63/0/0 | Developer | UI/sensor 경계 테스트 보완 |
+| QA-03 | DEV-02 재검수 | `f7a8d2d` PARTIAL PASS — PM 대조 검토 완료 | QA/PM | 후속 수정 후 모든 consumer/UI/sensor 경계 재검수 |
 | TEST-01 | Galaxy S23/Z Fold7 타당성 시험 | Galaxy S23+ 기본 UI 스모크 완료; 정확도/전력 기준·시험 미승인 | PM/Developer/QA | 승인된 시험 기준, 센서 이벤트·시청 정확도 및 충전 해제 후 기기별 배터리 결과 |
 | REL-01 | 내부 테스트 진입 및 Play 배포 승인 | 미승인 | PM/소유자 | 별도 명시적 승인 |
 

@@ -23,9 +23,13 @@ enum class DevicePose(val labelKey: String, val iconRes: Int) {
 }
 
 class SmartDevicePoseDetector(context: Context) : SensorEventListener {
-    private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+    private val sensorManager = try {
+        context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+    } catch (_: Throwable) {
+        null
+    }
     private val classifier = PoseClassifier()
-    private val handler = Handler(Looper.getMainLooper())
+    private val handler by lazy { try { Handler(Looper.getMainLooper()) } catch (_: Throwable) { null } }
     private var listening = false
     private var registeredSensorsCount = 0
     private var lastEventTimestampMs = 0L
@@ -49,7 +53,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
         override fun run() {
             if (!listening) return
             updatePose()
-            handler.postDelayed(this, 500L)
+            handler?.postDelayed(this, 500L)
         }
     }
 
@@ -69,14 +73,14 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
                 Log.w("IrisFitPose", "Sensor registration failed: type=$type")
             }
         }
-        handler.post(freshnessCheck)
+        handler?.post(freshnessCheck)
     }
 
     fun stopListening() {
         listening = false
         registeredSensorsCount = 0
         lastEventTimestampMs = 0L
-        handler.removeCallbacks(freshnessCheck)
+        handler?.removeCallbacks(freshnessCheck)
         sensorManager?.unregisterListener(this)
         classifier.reset()
         _observedPose = DevicePose.HAND_HELD_ACTIVE
