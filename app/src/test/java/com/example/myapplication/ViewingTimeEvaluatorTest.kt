@@ -229,4 +229,40 @@ class ViewingTimeEvaluatorTest {
         assertTrue("유효한 가속도계 파이로드는 승인되어야 함", accepted)
         assertTrue("유효 파이로드 수신 후 isFresh는 true이어야 함", detector.isFresh)
     }
+
+    @Test
+    fun testPoseDetectorClockFailure_ReturnsFailClosedNotFresh() {
+        val detector = SmartDevicePoseDetector(testContext)
+        detector.monotonicClockMsProvider = { 0L } // Simulate clock failure
+        detector.setTestRegisteredSensorsCount(1)
+
+        val validAccelerometerPayload = floatArrayOf(0f, 0f, 9.8f)
+        val accepted = detector.processSensorSample(
+            sensorType = Sensor.TYPE_ACCELEROMETER,
+            values = validAccelerometerPayload,
+            timestampNs = 1000L * 1_000_000L,
+            maxRange = 100f
+        )
+        assertFalse("시계 실패 시 샘플은 거부(Fail-Closed)되어야 함", accepted)
+        assertFalse("시계 실패 시 isFresh는 false이어야 함", detector.isFresh)
+    }
+
+    @Test
+    fun testPoseDetectorFutureTimestamp_RejectsSampleAndNotFresh() {
+        val detector = SmartDevicePoseDetector(testContext)
+        val currentMonotonicTimeMs = 1000L
+        detector.monotonicClockMsProvider = { currentMonotonicTimeMs }
+        detector.setTestRegisteredSensorsCount(1)
+
+        val futureTimestampNs = (currentMonotonicTimeMs + 5000L) * 1_000_000L // 5 seconds in future!
+        val validAccelerometerPayload = floatArrayOf(0f, 0f, 9.8f)
+        val accepted = detector.processSensorSample(
+            sensorType = Sensor.TYPE_ACCELEROMETER,
+            values = validAccelerometerPayload,
+            timestampNs = futureTimestampNs,
+            maxRange = 100f
+        )
+        assertFalse("미래 타임스탬프 샘플은 거부되어야 함", accepted)
+        assertFalse("미래 타임스탬프 수신 후 isFresh는 false이어야 함", detector.isFresh)
+    }
 }
