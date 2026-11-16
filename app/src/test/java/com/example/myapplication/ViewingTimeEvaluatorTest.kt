@@ -1,6 +1,8 @@
 package com.example.myapplication
 
 import android.content.ContextWrapper
+import android.hardware.Sensor
+import android.os.SystemClock
 import com.example.myapplication.data.ScreenTimeQueryResult
 import com.example.myapplication.data.SmartDevicePoseDetector
 import com.example.myapplication.data.TargetDeviceModel
@@ -158,7 +160,7 @@ class ViewingTimeEvaluatorTest {
     @Test
     fun testPoseDetectorInitialState_NotFreshBeforeStartListening() {
         val detector = SmartDevicePoseDetector(testContext)
-        assertFalse("시작 전 detector는 listening 및 isFresh가 false이어야 함", detector.isListening)
+        assertFalse("시작 전 detector는 listening이 false이어야 함", detector.isListening)
         assertFalse("시작 전 detector는 isFresh가 false이어야 함", detector.isFresh)
     }
 
@@ -173,5 +175,53 @@ class ViewingTimeEvaluatorTest {
         assertEquals(-1, stats.eyeHealthScore)
         assertEquals(EyeFatigueStatus.UNMEASURED, stats.fatigueStatus)
         assertFalse(stats.screenTimeMeasured)
+    }
+
+    @Test
+    fun testPoseDetectorPayloadValidation_NaNValueRejection() {
+        val detector = SmartDevicePoseDetector(testContext)
+        detector.setTestRegisteredSensorsCount(1)
+
+        val nanPayload = floatArrayOf(Float.NaN, 0f, 9.8f)
+        val accepted = detector.processSensorSample(
+            sensorType = Sensor.TYPE_ACCELEROMETER,
+            values = nanPayload,
+            timestampNs = System.currentTimeMillis() * 1_000_000L,
+            maxRange = 100f
+        )
+        assertFalse("NaN 파이로드는 거부되어야 함", accepted)
+        assertFalse("NaN 파이로드 수신 후 isFresh는 false이어야 함", detector.isFresh)
+    }
+
+    @Test
+    fun testPoseDetectorPayloadValidation_ProximityExceedsMaxRangeRejection() {
+        val detector = SmartDevicePoseDetector(testContext)
+        detector.setTestRegisteredSensorsCount(1)
+
+        val outOfBoundsProximity = floatArrayOf(15f) // > maxRange (5f)
+        val accepted = detector.processSensorSample(
+            sensorType = Sensor.TYPE_PROXIMITY,
+            values = outOfBoundsProximity,
+            timestampNs = System.currentTimeMillis() * 1_000_000L,
+            maxRange = 5f
+        )
+        assertFalse("maxRange 초과 근접 센서 데이터는 거부되어야 함", accepted)
+        assertFalse("maxRange 초과 수신 후 isFresh는 false이어야 함", detector.isFresh)
+    }
+
+    @Test
+    fun testPoseDetectorPayloadValidation_ValidSampleUpdatesFreshness() {
+        val detector = SmartDevicePoseDetector(testContext)
+        detector.setTestRegisteredSensorsCount(1)
+
+        val validAccelerometerPayload = floatArrayOf(0f, 0f, 9.8f)
+        val accepted = detector.processSensorSample(
+            sensorType = Sensor.TYPE_ACCELEROMETER,
+            values = validAccelerometerPayload,
+            timestampNs = System.currentTimeMillis() * 1_000_000L,
+            maxRange = 100f
+        )
+        assertTrue("유효한 가속도계 파이로드는 승인되어야 함", accepted)
+        assertTrue("유효 파이로드 수신 후 isFresh는 true이어야 함", detector.isFresh)
     }
 }
