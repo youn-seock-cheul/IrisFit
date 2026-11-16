@@ -68,7 +68,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
     val isListening: Boolean get() = listening
     val hasRegisteredSensors: Boolean get() = registeredSensorsCount > 0
     val isFresh: Boolean get() {
-        val nowMs = monotonicClockMsProvider()
+        val nowMs = try { monotonicClockMsProvider() } catch (_: Throwable) { 0L }
         return listening && registeredSensorsCount > 0 && lastEventTimestampMs > 0L && nowMs > 0L && (nowMs - lastEventTimestampMs < 5000L)
     }
 
@@ -168,8 +168,8 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
             return false
         }
 
-        // 3. Validate monotonic timestamp range (Strict elapsedRealtime domain; Fail-closed if clock is 0L)
-        val nowMs = monotonicClockMsProvider()
+        // 3. Validate monotonic timestamp range (Strict elapsedRealtime domain; Fail-closed if clock is 0L or throws)
+        val nowMs = try { monotonicClockMsProvider() } catch (_: Throwable) { 0L }
         if (nowMs <= 0L) {
             classifier.reset()
             updatePose()
@@ -197,7 +197,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
     }
 
     private fun updatePose() {
-        val nowMs = monotonicClockMsProvider()
+        val nowMs = try { monotonicClockMsProvider() } catch (_: Throwable) { 0L }
         _observedPose = classifier.pose(if (nowMs > 0L) nowMs else 0L)
     }
 
