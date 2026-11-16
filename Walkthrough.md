@@ -8,9 +8,9 @@
 
 | 구분 | 현재까지 / 남은 일 |
 |---|---|
-| **완료** | 현재 구현 정적 감사와 QA 검토; 실제 시청시간 목표·Android 13+·측정 불가 시 `미측정` 원칙 설정; `67c4dd4` 기준 JVM 테스트 **65 passed / 0 failed / 0 skipped**; 미측정 계산기와 detector 초기 상태 테스트 추가 |
+| **완료** | 현재 구현 정적 감사와 QA 검토; 실제 시청시간 목표·Android 13+·측정 불가 시 `미측정` 원칙 설정; `53f1efa` 기준 JVM 테스트 **68 passed / 0 failed / 0 skipped**; NaN/proximity payload 경계 테스트 추가 |
 | **진행 중** | 개발·QA 단계. PM 판정 **PARTIAL PASS**; 작업 재개방 |
-| **우선 보완** | sensor callback/freshness 경계 테스트 및 `SmartDevicePoseDetector`의 `Throwable` 삼킴 오류 처리 수정 |
+| **우선 보완** | sensor time을 동일 monotonic clock domain으로 검증하고 wall-clock fallback 제거; 추가 callback 경계 테스트 |
 | **실기기에서 미검증** | 센서 callback/freshness 정확도, 자세 오탐·미탐, 실제 시청시간 정확도, 배터리/발열 비교. 승인된 시험 프로토콜이 없어 정확도/전력 결과는 **NOT RUN** |
 | **출시** | 내부 테스트·베타·Play 배포 모두 미승인. **Release Hold 유지** |
 
@@ -20,6 +20,7 @@
 
 - [PM 로드맵 및 개발 이력 통합본](task/IrisFit_PM_User_Walkthrough.md) — 유일한 현재 상태/제품 로드맵 기준
 - [PM 결정 로그 및 문서 인덱스](task/IrisFit_PM_Documentation_Index_and_Decision_Log.md) — 승인, 작업 상태, 증거 링크
+- [제품 개선 아이디어 백로그 — 다국어/마일리지](task/IrisFit_PM_Product_Ideas_Backlog_2026-11-16.md) — PM 검토 대기; 아직 범위/정책 승인 아님
 - [이전 QA 결과/PM 판정 — 9dd7059](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_9dd7059_2026-11-15.md)
 - [이전 QA 결과/PM 판정 — 6d2b718](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_6d2b718_2026-11-15.md)
 - [최신 QA 결과/PM 판정 — f05cb53](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_f05cb53_2026-11-16.md)
@@ -27,6 +28,7 @@
 - [최신 QA 결과/PM 판정 — ce8ac49](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_ce8ac49_2026-11-16.md)
 - [최신 QA 결과/PM 판정 — f7a8d2d](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Actual_Viewing_Time_QA_Review_f7a8d2d_2026-11-16.md)
 - [최신 배치 QA 결과/PM 판정 — BATCH-UNMEASURED-01](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_2026-11-16.md)
+- [배치 재검토 R2 — 53f1efa](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R2_53f1efa_2026-11-16.md)
 - [Galaxy S23 실기기 스모크 체크](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Device_Smoke_Check_2026-11-15.md)
 - 상세 로드맵과 결정 이력은 아래 통합 문서를 확인하세요.
 

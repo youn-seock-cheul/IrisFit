@@ -50,6 +50,16 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
             null
         }
     }
+
+    // Monotonic clock provider (elapsedRealtime domain only; no wall clock mixing)
+    internal var monotonicClockMsProvider: () -> Long = {
+        try {
+            SystemClock.elapsedRealtime()
+        } catch (_: Throwable) {
+            0L // Fail-closed when Android SystemClock is not available (e.g. JVM unit test without clock provider)
+        }
+    }
+
     private var listening = false
     private var registeredSensorsCount = 0
     private var lastEventTimestampMs = 0L
@@ -57,12 +67,16 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
 
     val isListening: Boolean get() = listening
     val hasRegisteredSensors: Boolean get() = registeredSensorsCount > 0
-    val isFresh: Boolean get() = listening && registeredSensorsCount > 0 && (lastEventTimestampMs > 0L && ((try { SystemClock.elapsedRealtime() } catch (_: Throwable) { System.currentTimeMillis() }) - lastEventTimestampMs) < 5000L)
+    val isFresh: Boolean get() {
+        val nowMs = monotonicClockMsProvider()
+        return listening && registeredSensorsCount > 0 && lastEventTimestampMs > 0L && nowMs > 0L && (nowMs - lastEventTimestampMs < 5000L)
+    }
 
     val currentPose: DevicePose
         get() {
             if (!listening) return DevicePose.HAND_HELD_ACTIVE
-            val evaluated = classifier.pose(SystemClock.elapsedRealtime())
+            val nowMs = monotonicClockMsProvider()
+            val evaluated = classifier.pose(if (nowMs > 0L) nowMs else 0L)
             if (_observedPose != evaluated) {
                 _observedPose = evaluated
             }
@@ -121,7 +135,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
     }
 
     /**
-     * Sensor Payload 및 Timestamp 유효성 검증 + Freshness 갱신 핵심 로직
+     * Sensor Payload 및 Monotonic Timestamp 유효성 검증 + Freshness 갱신 핵심 로직
      */
     internal fun processSensorSample(
         sensorType: Int,
@@ -154,17 +168,23 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
             return false
         }
 
-        // 3. Validate timestamp range
-        val now = try { SystemClock.elapsedRealtime() } catch (_: Throwable) { System.currentTimeMillis() }
-        val sampleTime = timestampNs / 1_000_000L
-        if (sampleTime <= 0L || sampleTime > now) {
+        // 3. Validate monotonic timestamp range (Strict elapsedRealtime domain; Fail-closed if clock is 0L)
+        val nowMs = monotonicClockMsProvider()
+        if (nowMs <= 0L) {
             classifier.reset()
             updatePose()
-            return false // Reject invalid timestamp events
+            return false // Fail-closed on clock domain error
+        }
+
+        val sampleTime = timestampNs / 1_000_000L
+        if (sampleTime <= 0L || sampleTime > nowMs) {
+            classifier.reset()
+            updatePose()
+            return false // Reject invalid or future timestamp events
         }
 
         // Freshness timestamp updated ONLY after payload length, value bounds, maximumRange, and timestamp verification pass
-        lastEventTimestampMs = now
+        lastEventTimestampMs = nowMs
 
         when (sensorType) {
             Sensor.TYPE_ACCELEROMETER -> classifier.accelerometer(sampleTime, values)
@@ -177,8 +197,8 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
     }
 
     private fun updatePose() {
-        val nowMs = try { SystemClock.elapsedRealtime() } catch (_: Throwable) { System.currentTimeMillis() }
-        _observedPose = classifier.pose(nowMs)
+        val nowMs = monotonicClockMsProvider()
+        _observedPose = classifier.pose(if (nowMs > 0L) nowMs else 0L)
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -189,7 +209,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
         }
     }
 
-    // Test-helper for simulate sensor registration in JVM unit tests
+    // Test-helpers for deterministic simulation in JVM unit tests
     internal fun setTestRegisteredSensorsCount(count: Int) {
         registeredSensorsCount = count
         listening = count > 0

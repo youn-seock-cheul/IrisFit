@@ -23,8 +23,8 @@
 - 진행 순서: **현재 Release 구현 감사 → 베타 범위/수용 기준 승인 → 개발·자체검증 → QA 재검수 → PM 완료 판정 → 내부 테스트 → 제한 베타 → 별도 정식 출시 승인**
 - `AUD-01` Developer 감사 및 `QA-01` 정적 재검토는 완료됐으나 실제 기기/Play 검증은 미완료다. 전체 제품 출시 준비는 **BLOCKED**다.
 - 실제 시청시간 목표는 유지한다. Android 13+ 범용 목표와 측정 불가 시 `미측정`을 승인했고, Galaxy S23/Z Fold7은 초기 시험 후보로만 정했다. 기기별 전력 허용치·정확도 기준·시험 절차는 미승인이다.
-- 현재 단계: **`BATCH-UNMEASURED-01`, final `67c4dd4` PM 검토 — PARTIAL PASS, 센서 재작업 대기**. Gradle XML 65 passed/0 skipped/0 failed. 미측정 calculator 및 detector 생성 직후 `isFresh=false` 테스트를 확인했으나 callback freshness 경계는 테스트되지 않았다. `SmartDevicePoseDetector`가 `Throwable`을 포착해 조용히 null fallback하는 처리는 진단 불가/기능 저하 우려로 수정이 필요하다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_2026-11-16.md`.
-- 실기기 상태: 이번 PM 검토에서 callback freshness, 실제 viewing/posture accuracy 및 battery/heat를 실행하지 않았다. 모두 NOT RUN. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_2026-11-16.md`.
+- 현재 단계: **`BATCH-UNMEASURED-01` R2, final `53f1efa` PM 검토 — PARTIAL PASS, monotonic clock 보완 대기**. Gradle XML 68 passed/0 skipped/0 failed. NaN/proximity-invalid 및 유효 payload 테스트가 있으나 테스트 timestamp와 production fallback이 wall clock 기반으로 Android SensorEvent monotonic clock domain을 입증하지 못한다. 추가 invalid/lifecycle callback 테스트가 필요하다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R2_53f1efa_2026-11-16.md`.
+- 실기기 상태: 이번 PM 검토에서 callback freshness, 실제 viewing/posture accuracy 및 battery/heat를 실행하지 않았다. 모두 NOT RUN. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R2_53f1efa_2026-11-16.md`.
 - 출시 Hold 해제, 내부 테스트 업로드 및 Production 배포는 별도 PM 승인 대상이다.
 
 ## 문서 인덱스
@@ -41,6 +41,7 @@
 | `IrisFit_PM_Beta_MVP_Basic_Design_QA_Review_2026-11-15.md` | QA 협의 진행 중 — 기본설계 BLOCKED | 요구사항별 테스트 가능성 및 실제 시청시간/전력 증거 대기 |
 | `IrisFit_PM_TopDown_Modular_Workplan_2026-11-15.md` | 운영안 | Top-Down 전체 목차, 작은 독립 작업, 담당자별 간결 브리프, 완료 영역 고정 및 동일 AI의 개발/QA 역할 분리 절차 |
 | `IrisFit_PM_Documentation_Index_and_Decision_Log.md` | 현재 문서 | 인덱스, 기록 규칙, PM 결정 및 다음 단계 추적 |
+| `IrisFit_PM_Product_Ideas_Backlog_2026-11-16.md` | PM 검토 대기 — 범위/정책 미승인 | 다국어 전수 검사 및 미지원 locale 처리(P1 제안), 마일리지 등급·보상(P2 제안); 권장 검토 시점 포함 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Feasibility_Test_Plan_2026-11-15.md` | 계획 초안 — 기준 미승인/실기기 미실시 | 기기별 기준선 비교와 실제 시청 정확도 타당성 시험 제안 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Second_Review_2026-11-15.md` | PM 판정 — PARTIAL PASS/재개방 | 개발·QA 제출 결과의 코드/테스트 증거 검토 및 수정 지시 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_Developer_Handoff_Review_2026-11-15.md` | PM 사전 검토 완료 — QA 대기 | 최신 Developer 인계/commit 및 테스트 결과 확인, QA 검수 초점 |
@@ -63,6 +64,7 @@
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_ce8ac49_2026-11-16.md` | 최신 PM PARTIAL PASS — Release Hold 유지 | 63 JVM tests; relay 제목 중립화 확인, Toast 개인화 표현/Wellness happy mascot 및 UI/sensor boundary tests 잔여 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_f7a8d2d_2026-11-16.md` | 최신 PM PARTIAL PASS — Release Hold 유지 | 63 JVM tests; relay Toast와 Wellness 중립 아이콘 코드 확인; UI/sensor boundary tests 및 실기기 검증 잔여 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_2026-11-16.md` | 최신 배치 PM PARTIAL PASS — 재작업 필요 | 65 JVM tests; calculator/초기 freshness 테스트 확인; callback boundary tests 및 `Throwable` 조용한 fallback 수정 필요 |
+| `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R2_53f1efa_2026-11-16.md` | 최신 배치 R2 PM PARTIAL PASS — monotonic clock 보완 필요 | 68 JVM tests; NaN/proximity/유효 payload 경로 확인; wall-clock timestamp fallback과 추가 callback 경계 테스트 잔여 |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Device_Smoke_Check_2026-11-15.md` | 제한된 실기기 스모크 완료 | Galaxy S23 Android 16/API 36 앱 실행 및 센서 하드웨어 가용성만 확인; 정확도/이벤트 freshness/배터리는 NOT RUN |
 | `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` | 사용자 정의 역할 반영 | QA 책임, 산출물, 출력 형식 및 판정 용어 |
 
@@ -430,6 +432,13 @@
 - **다음:** 예상 가능한 예외를 명시적으로 처리/로깅하고 detector availability/freshness 상태를 fail-closed하게 만들며 callback 유효·무효 경계 테스트를 추가한다. 정확도/전력은 NOT RUN; Release Hold 유지.
 - **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_2026-11-16.md`.
 
+### DEC-2026-11-16-48 — `BATCH-UNMEASURED-01` R2, commit `53f1efa`
+
+- **상태:** PM 판정 — PARTIAL PASS; monotonic clock 및 추가 sensor event 경계 재작업, Release Hold 유지
+- **결정:** 68 JVM 테스트 성공을 독립 확인했다. NaN 및 proximity maximumRange 초과 거부 테스트, 정상 payload freshness 경로 테스트는 개선이다. 다만 테스트가 `System.currentTimeMillis()`로 timestamp를 만들고 production sensor timestamp는 elapsed-realtime domain이어야 한다. `SystemClock.elapsedRealtime()` 오류 시 `System.currentTimeMillis()`로 fallback하는 동작은 서로 다른 clock domain을 혼합할 수 있어 안전한 검증 근거가 아니다. 해당 fallback 제거와 deterministic monotonic clock 테스트가 필요하다.
+- **다음:** injected/fake monotonic clock 또는 명시적 clock source로 sample/freshness 검증을 일관되게 수행하고 invalid timestamp, Infinity, unknown type, stop/unreliable lifecycle 테스트 추가 후 QA 재검수. 정확도/전력은 NOT RUN.
+- **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R2_53f1efa_2026-11-16.md`.
+
 ## 진행 추적
 
 | ID | 작업 | 상태 | 담당 | 다음 결과 |
@@ -438,8 +447,8 @@
 | AUD-02 | dirty worktree/HEAD 기준점 기록 | 완료 | 개발자 | branch/HEAD, 24 modified, 34 untracked 기록 |
 | QA-01 | 감사 결과 acceptance criteria 재검토 | 완료 — 전체 QA BLOCKED | QA | `IrisFit_Current_State_Audit_QA_Review_2026-11-15.md` |
 | PM-01 | 베타 MVP 범위 및 제품 목표 승인 | 부분 완료 — 실제 시청시간 목표 유지, Android 13+ 및 `미측정` 결정 | PM/사용자 | 정확도·전력 기준 및 시험 절차 결정 |
-| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | `BATCH-UNMEASURED-01`, `67c4dd4`; JVM 테스트 65/0/0 | Developer | sensor init 오류 처리 및 callback freshness 경계 테스트 재작업 |
-| QA-03 | DEV-02 재검수 | 배치 `BATCH-UNMEASURED-01` PARTIAL PASS — PM 대조 검토 완료 | QA/PM | 재작업 후 callback/UI boundary와 회귀 재검수 |
+| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | `BATCH-UNMEASURED-01` R2, `53f1efa`; JVM 68/0/0 | Developer | monotonic clock 일관성 및 invalid/lifecycle callback 테스트 재작업 |
+| QA-03 | DEV-02 재검수 | 배치 R2 PARTIAL PASS — PM 대조 검토 완료 | QA/PM | 재작업 후 clock contract/callback/UI boundary와 회귀 재검수 |
 | TEST-01 | Galaxy S23/Z Fold7 타당성 시험 | Galaxy S23+ 기본 UI 스모크 완료; 정확도/전력 기준·시험 미승인 | PM/Developer/QA | 승인된 시험 기준, 센서 이벤트·시청 정확도 및 충전 해제 후 기기별 배터리 결과 |
 | REL-01 | 내부 테스트 진입 및 Play 배포 승인 | 미승인 | PM/소유자 | 별도 명시적 승인 |
 

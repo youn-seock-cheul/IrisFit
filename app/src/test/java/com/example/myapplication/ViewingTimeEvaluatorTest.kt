@@ -2,7 +2,6 @@ package com.example.myapplication
 
 import android.content.ContextWrapper
 import android.hardware.Sensor
-import android.os.SystemClock
 import com.example.myapplication.data.ScreenTimeQueryResult
 import com.example.myapplication.data.SmartDevicePoseDetector
 import com.example.myapplication.data.TargetDeviceModel
@@ -180,13 +179,15 @@ class ViewingTimeEvaluatorTest {
     @Test
     fun testPoseDetectorPayloadValidation_NaNValueRejection() {
         val detector = SmartDevicePoseDetector(testContext)
+        val currentMonotonicTimeMs = 1000L
+        detector.monotonicClockMsProvider = { currentMonotonicTimeMs }
         detector.setTestRegisteredSensorsCount(1)
 
         val nanPayload = floatArrayOf(Float.NaN, 0f, 9.8f)
         val accepted = detector.processSensorSample(
             sensorType = Sensor.TYPE_ACCELEROMETER,
             values = nanPayload,
-            timestampNs = System.currentTimeMillis() * 1_000_000L,
+            timestampNs = currentMonotonicTimeMs * 1_000_000L,
             maxRange = 100f
         )
         assertFalse("NaN 파이로드는 거부되어야 함", accepted)
@@ -196,13 +197,15 @@ class ViewingTimeEvaluatorTest {
     @Test
     fun testPoseDetectorPayloadValidation_ProximityExceedsMaxRangeRejection() {
         val detector = SmartDevicePoseDetector(testContext)
+        val currentMonotonicTimeMs = 1000L
+        detector.monotonicClockMsProvider = { currentMonotonicTimeMs }
         detector.setTestRegisteredSensorsCount(1)
 
         val outOfBoundsProximity = floatArrayOf(15f) // > maxRange (5f)
         val accepted = detector.processSensorSample(
             sensorType = Sensor.TYPE_PROXIMITY,
             values = outOfBoundsProximity,
-            timestampNs = System.currentTimeMillis() * 1_000_000L,
+            timestampNs = currentMonotonicTimeMs * 1_000_000L,
             maxRange = 5f
         )
         assertFalse("maxRange 초과 근접 센서 데이터는 거부되어야 함", accepted)
@@ -212,13 +215,15 @@ class ViewingTimeEvaluatorTest {
     @Test
     fun testPoseDetectorPayloadValidation_ValidSampleUpdatesFreshness() {
         val detector = SmartDevicePoseDetector(testContext)
+        val currentMonotonicTimeMs = 1000L
+        detector.monotonicClockMsProvider = { currentMonotonicTimeMs }
         detector.setTestRegisteredSensorsCount(1)
 
         val validAccelerometerPayload = floatArrayOf(0f, 0f, 9.8f)
         val accepted = detector.processSensorSample(
             sensorType = Sensor.TYPE_ACCELEROMETER,
             values = validAccelerometerPayload,
-            timestampNs = System.currentTimeMillis() * 1_000_000L,
+            timestampNs = currentMonotonicTimeMs * 1_000_000L,
             maxRange = 100f
         )
         assertTrue("유효한 가속도계 파이로드는 승인되어야 함", accepted)
