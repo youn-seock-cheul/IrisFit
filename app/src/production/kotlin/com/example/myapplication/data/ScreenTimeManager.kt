@@ -79,10 +79,11 @@ object ScreenTimeManager {
         return ScreenTimeQueryResult.Success(cappedMinutes)
     }
 
+    @Deprecated("Use queryTodayScreenTime(context) to handle ScreenTimeQueryResult sealed class directly and avoid unmeasured 0-minute confusion.")
     fun getTodayScreenTimeMinutes(context: Context): Int {
         return when (val result = queryTodayScreenTime(context)) {
             is ScreenTimeQueryResult.Success -> result.minutes
-            else -> 0
+            else -> -1
         }
     }
 

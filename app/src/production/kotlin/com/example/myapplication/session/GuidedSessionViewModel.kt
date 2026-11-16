@@ -201,7 +201,7 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
     var isMarker by mutableStateOf(false)
         private set
     fun prepareMarker() {
-        if (busy || !recordsReady) return
+        if (busy || !recordsReady || activeWorkoutRoutineId != null) return
         pendingRecord = null
         error = null
         isMarker = true
@@ -210,7 +210,7 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun prepare() {
-        if (busy || !recordsReady) return
+        if (busy || !recordsReady || activeWorkoutRoutineId != null) return
         pendingRecord = null
         error = null
         isMarker = false
@@ -301,12 +301,21 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
         private set
     var activityVisible by mutableStateOf(false)
         private set
+    var activeWorkoutRoutineId by mutableStateOf<String?>(null)
+        private set
 
     fun prepareWorkoutSession(routineId: String): String {
         check(!busy && recordsReady) { "Records are not ready." }
+        check(state.phase == SessionPhase.HOME || state.phase == SessionPhase.READY) { "휴식 세션 진행 중에는 미니게임을 시작할 수 없습니다." }
+        check(activeWorkoutRoutineId == null) { "이미 진행 중인 미니게임 세션이 있습니다." }
         workoutSaved = false
         error = null
+        activeWorkoutRoutineId = routineId
         return workoutCompletion.start(routineId)
+    }
+
+    fun cancelWorkoutSession() {
+        activeWorkoutRoutineId = null
     }
 
     fun completeWorkout(sessionId: String, routineId: String, onSuccess: () -> Unit) {
@@ -319,6 +328,7 @@ class GuidedSessionViewModel(application: Application) : AndroidViewModel(applic
                 }
                 records = result.records
                 workoutSaved = true
+                activeWorkoutRoutineId = null
                 error = null
                 if (result.newlySaved) onSuccess()
                 com.example.myapplication.widget.BitmapWidgetProvider.updateWidget1(getApplication())

@@ -167,75 +167,33 @@ fun MainScreen(
 @Composable
 fun CommunityCheerCard(sessionModel: GuidedSessionViewModel) {
     val context = LocalContext.current
-    var cheerCount by remember { mutableIntStateOf(42) }
-    var userCheered by remember { mutableStateOf(false) }
-    var userNickname by remember { mutableStateOf("맑은눈토끼") }
-    var userEmoji by remember { mutableStateOf("🐰") }
-    var userOneLineGoal by remember { mutableStateOf("하루 3회 30초 눈 휴식 완오! 🔥") }
+    var showBetaNoticeDialog by remember { mutableStateOf(false) }
 
-    var isPublicChallengeJoined by remember { mutableStateOf(false) }
-    var publicChallengeParticipants by remember { mutableIntStateOf(3420) }
-
-    var showProfileDialog by remember { mutableStateOf(false) }
-    var showRelayDialog by remember { mutableStateOf(false) }
-    var showCreateRelayDialog by remember { mutableStateOf(false) }
-    var showBatonPassDialog by remember { mutableStateOf(false) }
-    var showFullGuestBookDialog by remember { mutableStateOf(false) }
-
-    var newRelayTopic by remember { mutableStateOf("") }
-    var selectedFirstFriend by remember { mutableStateOf("🍓 체리공주") }
-    var batonMessage by remember { mutableStateOf("") }
-    var selectedSticker by remember { mutableStateOf("❤️ 파이팅") }
-
-    val mascotEmojis = remember {
-        listOf("🐰", "🐱", "🐻", "🦄", "🌸", "🧸", "🎀", "💖", "🍓", "🍒", "🌷", "🐥", "🐬", "🦊", "🐶", "🐼", "✨", "👑", "🔮", "🥑")
-    }
-
-    val friendsList = listOf("🍓 체리공주", "🌸 벚꽃요정", "🧸 곰돌이버디", "🦊 민트여우")
-    val stickersList = listOf("❤️ 파이팅", "✨ 수고했어", "🎉 우승예감", "🍀 행운")
-
-    var activeRelays by remember {
-        mutableStateOf(
-            listOf(
-                Triple("🏆 [주간공식] 7일 연속 눈 휴식 스트릭 릴레이", listOf("🐰 맑은눈토끼", "🍓 체리공주", "🌸 벚꽃요정"), "진행 중 (+200P)"),
-                Triple("👁️ [주간공식] 1시간 사용 후 30초 눈 감기 릴레이", listOf("🦊 민트여우", "🧸 곰돌이버디"), "진행 중 (+300P)")
-            )
-        )
-    }
-
-    var guestBookCards by remember {
-        mutableStateOf(
-            listOf(
-                "🍓 체리공주: “오늘도 맑은 눈 피로 싹 날리고 함께 파이팅! 💖” [❤️ 파이팅]",
-                "🌸 벚꽃요정: “작은 30초 휴식이 눈 건강을 지켜줘요 🌷” [✨ 수고했어]",
-                "🧸 곰돌이버디: “눈동자 굴리기 미니게임 진짜 시원해요! 💪” [🎉 우승예감]",
-                "🦊 민트여우: “휴식 릴레이 바통 넘겨받고 눈 휴식 완료! ✨” [🍀 행운]"
-            )
-        )
-    }
-
-    // 3.5s AUTO-SLIDING ROLLING INDEX
-    var rollingIndex by remember { mutableIntStateOf(0) }
-    LaunchedEffect(guestBookCards.size) {
-        while (true) {
-            delay(3500L)
-            if (guestBookCards.isNotEmpty()) {
-                rollingIndex = (rollingIndex + 1) % guestBookCards.size
+    if (showBetaNoticeDialog) {
+        AlertDialog(
+            onDismissRequest = { showBetaNoticeDialog = false },
+            title = { Text(text = "알림", fontWeight = FontWeight.Bold) },
+            text = { Text(text = "베타 준비 중입니다.") },
+            confirmButton = {
+                TextButton(onClick = { showBetaNoticeDialog = false }) {
+                    Text("확인")
+                }
             }
-        }
+        )
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { showBetaNoticeDialog = true },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // LAYER 1: MY PROFILE HEADER
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -244,485 +202,45 @@ fun CommunityCheerCard(sessionModel: GuidedSessionViewModel) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
-                            .background(Color(0xFFFF5252).copy(alpha = 0.2f), CircleShape),
+                            .size(36.dp)
+                            .background(Color(0xFFFF9800).copy(alpha = 0.2f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(userEmoji, fontSize = 24.sp)
+                        Text("🚩", fontSize = 18.sp)
                     }
                     Column {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(userNickname, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Icon(painter = painterResource(id = R.drawable.ic_card_trophy), contentDescription = "프로필 수정", modifier = Modifier.size(14.dp).clickable { showProfileDialog = true }, tint = Color.Gray)
-                        }
-                        Text(userOneLineGoal, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        Text("눈 건강 응원 릴레이 & 커뮤니티", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("친구들과 함께 이어가는 눈 휴식 릴레이", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                     }
                 }
-
                 Surface(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                    shape = RoundedCornerShape(10.dp)
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("❤️ ${cheerCount}개", modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        text = "[베타 준비 중]",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
 
-            // FRONT ACTIVE RELAY CARD (PROMINENT FEATURED)
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "🚩 진행 중인 릴레이 (${activeRelays.size}개)",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFF9800)
-                        )
-                        Text(
-                            text = "탐색/생성 ➔",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.clickable { showRelayDialog = true }
-                        )
-                    }
+            Text(
+                text = "릴레이 탐색, 바통 인계 및 소셜 방명록 기능은 현재 정식 베타 출시를 위해 준비 중입니다.",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
 
-                    if (activeRelays.isNotEmpty()) {
-                        val (topTopic, topRunners, _) = activeRelays.first()
-                        Text(topTopic, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "🏃 바통: ${topRunners.joinToString(" ➔ ")}",
-                                fontSize = 11.sp,
-                                color = Color.Gray,
-                                modifier = Modifier.weight(1f).padding(end = 8.dp),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Button(
-                                onClick = { showBatonPassDialog = true },
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Icon(painter = painterResource(id = R.drawable.ic_relay_baton), contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
-                                    Text("1초 바통 터치", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // GUESTBOOK 3.5s AUTO-SLIDING ROLLING BANNER
-            Row(
+            Button(
+                onClick = { showBetaNoticeDialog = true },
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                shape = RoundedCornerShape(10.dp)
             ) {
-                Text("💌 친구 응원 방명록 (실시간 롤링)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
-                Text(
-                    text = "전체보기 (${guestBookCards.size}개) ➔",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { showFullGuestBookDialog = true }
-                )
-            }
-
-            if (guestBookCards.isNotEmpty()) {
-                val currentRollingText = guestBookCards[rollingIndex % guestBookCards.size]
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = currentRollingText,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Button(
-                            onClick = {
-                                cheerCount++
-                                userCheered = true
-                                val newCard = "🐰 $userNickname: “오늘도 눈 건강 배터리 100% 충전 파이팅! ✨” [❤️ 파이팅]"
-                                guestBookCards = listOf(newCard) + guestBookCards
-                                Toast.makeText(context, "응원 보드에 응원 메시지를 남겼습니다! ❤️ (+10P)", Toast.LENGTH_SHORT).show()
-                            },
-                            enabled = !userCheered,
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text(if (userCheered) sessionModel.tr("cheer_done") else "❤️ 응원", fontSize = 11.sp)
-                        }
-                    }
-                }
+                Text("베타 알림 확인하기", fontWeight = FontWeight.Bold)
             }
         }
-    }
-
-    // FULL GUESTBOOK DIALOG
-    if (showFullGuestBookDialog) {
-        AlertDialog(
-            onDismissRequest = { showFullGuestBookDialog = false },
-            title = { Text("💌 전체 응원 방명록 Board (${guestBookCards.size}개)") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    guestBookCards.forEach { cardText ->
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(cardText, modifier = Modifier.padding(12.dp), fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(onClick = { showFullGuestBookDialog = false }) { Text("닫기") }
-            }
-        )
-    }
-
-    // LAYER 2: RELAY EXPLORER & CREATOR DIALOG
-    if (showRelayDialog) {
-        AlertDialog(
-            onDismissRequest = { showRelayDialog = false },
-            title = { Text("🏃 친구 응원 릴레이 탐색 & 생성") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    // Cold-Start 3-Step Solvers
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Button(
-                            onClick = {
-                                Toast.makeText(context, "📇 연락처 동기화 완료! 가입된 친구 3명을 찾았습니다.", Toast.LENGTH_LONG).show()
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("연락처 동기화", fontSize = 11.sp)
-                        }
-                        Button(
-                            onClick = {
-                                val sendIntent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    putExtra(Intent.EXTRA_TEXT, "👁️ IrisFit 눈 건강 응원 릴레이에 초대합니다! '오늘도 맑은 눈 파이팅!' 함께 바통을 이어주세요 🏃✨\n\n다운로드: https://play.google.com/store/apps/details?id=com.eyeoverlay.app")
-                                    type = "text/plain"
-                                }
-                                val shareIntent = Intent.createChooser(sendIntent, "친구에게 릴레이 초대하기")
-                                context.startActivity(shareIntent)
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("📤 릴레이 링크 공유", fontSize = 11.sp)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text("🌍 공개 글로벌 릴레이 (공용 공간)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    
-                    // INTERACTIVE PUBLIC CHALLENGE CARD WITH REAL COUNTER & STATUS
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isPublicChallengeJoined) Color(0xFF00E676).copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth().clickable {
-                            if (!isPublicChallengeJoined) {
-                                isPublicChallengeJoined = true
-                                publicChallengeParticipants++
-                                Toast.makeText(context, "🎉 #오늘도30초휴식 공개 챌린지에 정식 참여했습니다! (+50 눈 걸음 적립)", Toast.LENGTH_SHORT).show()
-                            } else {
-                                isPublicChallengeJoined = false
-                                publicChallengeParticipants--
-                                Toast.makeText(context, "공개 챌린지 참여를 취소했습니다.", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("#오늘도30초휴식 공개 챌린지 🌍", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                Surface(
-                                    color = if (isPublicChallengeJoined) Color(0xFF00E676) else MaterialTheme.colorScheme.primary,
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Text(
-                                        text = if (isPublicChallengeJoined) "🟢 참여 완료" else "➕ 참여하기",
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                }
-                            }
-                            Text(
-                                text = "참여자 ${publicChallengeParticipants}명 참여 중 • " + if (isPublicChallengeJoined) "나의 기여: 눈 휴식 4회 완료 (달성률 80%)" else "탭하여 즉시 동참 및 보상 받기",
-                                fontSize = 11.sp,
-                                color = Color.Gray
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("주간 공식 & 친구 릴레이 목록 (최대 3개):", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        TextButton(onClick = { showCreateRelayDialog = true }) {
-                            Text("➕ 새 릴레이 만들기", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    activeRelays.forEach { (topic, runners, status) ->
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text(topic, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                                    Text(status, fontSize = 11.sp, color = Color(0xFF00E676), fontWeight = FontWeight.Bold)
-                                }
-                                Text("🏃 순서: ${runners.joinToString(" ➔ ")}", fontSize = 11.sp, color = Color.Gray)
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(onClick = { showRelayDialog = false }) {
-                    Text("닫기")
-                }
-            }
-        )
-    }
-
-    // CREATE NEW RELAY DIALOG (AI & CATEGORY TEMPLATES & MAX 3 CAP)
-    if (showCreateRelayDialog) {
-        val templates = listOf(
-            "👁️ [안구 휴식] 1시간 모니터 사용 후 30초 눈 감기",
-            "🎮 [눈 운동] Focus & Shift 원근 스트레칭 20초 완오",
-            "🔥 [스트릭] 7일 연속 눈 배터리 85% 유지 챌린지"
-        )
-
-        AlertDialog(
-            onDismissRequest = { showCreateRelayDialog = false },
-            title = { Text("✨ 새 응원 릴레이 만들기 (AI & 템플릿)") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Button(
-                        onClick = {
-                            val isMeasured = sessionModel.eyeBatteryStats.screenTimeMeasured
-                            val score = sessionModel.eyeBatteryStats.eyeHealthScore
-                            if (!isMeasured || score < 0) {
-                                newRelayTopic = "🤖 [AI 추천] 눈 건강을 위한 30초 휴식 릴레이"
-                                Toast.makeText(context, "AI 코치가 눈 건강 휴식 릴레이 주제를 추천했습니다! ✨", Toast.LENGTH_SHORT).show()
-                            } else {
-                                newRelayTopic = if (score < 65) {
-                                    "🤖 [AI 추천] 눈 피로 위험! 지금 바로 30초 눈 감기 릴레이"
-                                } else {
-                                    "🤖 [AI 추천] 맑은 눈 유지! 7일 연속 30초 휴식 릴레이"
-                                }
-                                Toast.makeText(context, "AI 코치가 현재 눈 배터리(${score}%) 상태에 맞는 주제를 자동 생성했습니다! ✨", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Icon(painter = painterResource(id = R.drawable.ic_relay_ai), contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                            Text("✨ AI 맞춤 주제 자동 생성하기", fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    Text("검증된 카테고리 템플릿 선택:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    templates.forEach { tmpl ->
-                        Surface(
-                            color = if (newRelayTopic == tmpl) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth().clickable { newRelayTopic = tmpl }
-                        ) {
-                            Text(tmpl, modifier = Modifier.padding(10.dp), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                        }
-                    }
-
-                    OutlinedTextField(
-                        value = newRelayTopic,
-                        onValueChange = { newRelayTopic = it },
-                        label = { Text("릴레이 주제 직접 입력/수정") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-
-                    Text("첫 번째 바통 주자 선택:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    friendsList.forEach { friend ->
-                        Surface(
-                            color = if (selectedFirstFriend == friend) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth().clickable { selectedFirstFriend = friend }
-                        ) {
-                            Text(friend, modifier = Modifier.padding(8.dp), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    if (activeRelays.size >= 3) {
-                        Toast.makeText(context, "릴레이 집중을 위해 참여는 최대 3개로 제한됩니다. 기존 릴레이를 완성해 주세요!", Toast.LENGTH_LONG).show()
-                    } else if (newRelayTopic.isNotEmpty()) {
-                        activeRelays = activeRelays + Triple(newRelayTopic, listOf("🐰 $userNickname", selectedFirstFriend), "진행 중 (+100P)")
-                        showCreateRelayDialog = false
-                        Toast.makeText(context, "'$newRelayTopic' 릴레이를 시작했습니다! $selectedFirstFriend 님에게 바통 알림이 발송되었습니다 🏃", Toast.LENGTH_SHORT).show()
-                    }
-                }) {
-                    Text("릴레이 시작하기")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showCreateRelayDialog = false }) { Text("취소") }
-            }
-        )
-    }
-
-    // LAYER 3: BATON PASS DIALOG
-    if (showBatonPassDialog) {
-        AlertDialog(
-            onDismissRequest = { showBatonPassDialog = false },
-            title = { Text("🏃 응원 바통 터치 (인계)") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("응원 한마디와 스티커를 남기고 다음 주자에게 바통을 넘기세요:", fontSize = 12.sp, color = Color.Gray)
-
-                    OutlinedTextField(
-                        value = batonMessage,
-                        onValueChange = { batonMessage = it },
-                        label = { Text("응원 한마디 (예: 30초 휴식 완료! 너도 가자!)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-
-                    Text("응원 스티커 선택:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        stickersList.forEach { sticker ->
-                            Surface(
-                                color = if (selectedSticker == sticker) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.clickable { selectedSticker = sticker }
-                            ) {
-                                Text(sticker, modifier = Modifier.padding(8.dp), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-
-                    Text("다음 바통 주자 지목:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    friendsList.forEach { friend ->
-                        Surface(
-                            color = if (selectedFirstFriend == friend) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.fillMaxWidth().clickable { selectedFirstFriend = friend }
-                        ) {
-                            Text(friend, modifier = Modifier.padding(10.dp), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    showBatonPassDialog = false
-                    val newCard = "🐰 $userNickname: “${batonMessage.ifEmpty { "오늘도 함께 눈 건강 지켜요!" }}” [$selectedSticker]"
-                    guestBookCards = listOf(newCard) + guestBookCards.take(2)
-                    Toast.makeText(context, "$selectedFirstFriend 님에게 바통을 성공적으로 전달했습니다! 🏃✨", Toast.LENGTH_SHORT).show()
-                }) {
-                    Text("바통 터치 완료")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showBatonPassDialog = false }) { Text("취소") }
-            }
-        )
-    }
-
-    // LAYER 1: EDIT PROFILE DIALOG
-    if (showProfileDialog) {
-        AlertDialog(
-            onDismissRequest = { showProfileDialog = false },
-            title = { Text("🎀 마이 프로필 설정 & 캐릭터 선택") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("마스코트 캐릭터 선택 (20종):", fontSize = 12.sp, color = Color.Gray)
-
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(5),
-                        modifier = Modifier.fillMaxWidth().height(160.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        items(mascotEmojis.size) { idx ->
-                            val emoji = mascotEmojis[idx]
-                            Surface(
-                                color = if (userEmoji == emoji) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                                shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.clickable { userEmoji = emoji }
-                            ) {
-                                Box(modifier = Modifier.padding(6.dp), contentAlignment = Alignment.Center) {
-                                    Text(emoji, fontSize = 20.sp)
-                                }
-                            }
-                        }
-                    }
-
-                    OutlinedTextField(
-                        value = userNickname,
-                        onValueChange = { userNickname = it },
-                        label = { Text("닉네임 입력") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-
-                    OutlinedTextField(
-                        value = userOneLineGoal,
-                        onValueChange = { userOneLineGoal = it },
-                        label = { Text("한 줄 목표 / 관심사 설정") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-            },
-            confirmButton = {
-                Button(onClick = { showProfileDialog = false }) {
-                    Text("프로필 저장")
-                }
-            }
-        )
     }
 }
 
@@ -1338,8 +856,6 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
         )
     }
 
-
-
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -1375,8 +891,8 @@ fun WellnessHomeTab(
         EyePedometerCard(sessionModel, onNavigateToGym, onNavigateToPursuit)
         BatteryTrendCard(sessionModel)
         GoalAchievementCard(sessionModel)               // 1) 오늘의 눈 건강 목표
-        CommunityCheerWidget(sessionModel)              // 2) 친구들과 릴레이
-        PublicGlobalChallengeCard(sessionModel)         // 3) 공개 글로벌 릴레이
+        CommunityCheerCard(sessionModel)                // 2) 친구들과 릴레이 (베타 준비 알림 카드)
+        PublicGlobalChallengeCard(sessionModel)         // 3) 공개 글로벌 릴레이 (베타 준비 알림 카드)
     }
 
     if (sessionModel.state.phase != com.example.myapplication.session.SessionPhase.HOME) {

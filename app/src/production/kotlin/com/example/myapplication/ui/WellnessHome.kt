@@ -82,6 +82,14 @@ fun EyePedometerCard(
     onNavigateToPursuit: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    var refreshTicker by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(60_000L)
+            refreshTicker++
+            sessionModel.refreshDate()
+        }
+    }
     val stats = sessionModel.eyeBatteryStats
 
     // 4-Tier Container Colors

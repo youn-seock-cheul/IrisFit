@@ -36,8 +36,8 @@ fun SmoothPursuitGameScreen(
     var gameState by rememberSaveable { mutableStateOf("READY") }
     var remainingSeconds by rememberSaveable { mutableIntStateOf(20) }
     var workoutId by rememberSaveable { mutableStateOf<String?>(null) }
-    var angle by remember { mutableFloatStateOf(0f) }
-    var selectedMode by remember { mutableIntStateOf(if (initialMode in 0..3) initialMode else 0) }
+    var angle by rememberSaveable { mutableFloatStateOf(0f) }
+    var selectedMode by rememberSaveable { mutableIntStateOf(if (initialMode in 0..3) initialMode else 0) }
     LaunchedEffect(sessionModel.activityVisible) {
         if (!sessionModel.activityVisible && gameState == "PLAYING") {
             gameState = "PAUSED"
@@ -254,7 +254,10 @@ fun SmoothPursuitGameScreen(
                             Button(onClick = { gameState = "PLAYING" }) {
                                 Text(sessionModel.tr("workout_resume"))
                             }
-                            TextButton(onClick = { gameState = "READY" }) {
+                            TextButton(onClick = {
+                                sessionModel.cancelWorkoutSession()
+                                gameState = "READY"
+                            }) {
                                 Text(sessionModel.tr("workout_cancel"))
                             }
                         }

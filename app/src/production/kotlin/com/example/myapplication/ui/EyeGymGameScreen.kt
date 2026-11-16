@@ -239,7 +239,10 @@ fun EyeGymGameScreen(
                             Button(onClick = { gameState = "PLAYING" }) {
                                 Text(sessionModel.tr("workout_resume"))
                             }
-                            TextButton(onClick = { gameState = "READY" }) {
+                            TextButton(onClick = {
+                                sessionModel.cancelWorkoutSession()
+                                gameState = "READY"
+                            }) {
                                 Text(sessionModel.tr("workout_cancel"))
                             }
                         }
