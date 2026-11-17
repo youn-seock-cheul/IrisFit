@@ -78,32 +78,32 @@ class IrisFitBetaMvpQaTest {
         val novDateStr = "2026-11-15"
         val octDateStr = "2026-10-15"
 
-        // 10월 기록 500건 저장 (휴식 300건 + 안구운동 200건)
+        // 10월 기록 500건 저장 (휴식 300건 + eye_gym 100건 + smooth_pursuit 100건)
         for (i in 1..300) {
             val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "screen_rest"))
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "screen_rest", plannedDurationSeconds = 30))
         }
         for (i in 1..100) {
             val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "eye_gym"))
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "eye_gym", plannedDurationSeconds = 20))
         }
         for (i in 1..100) {
             val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "smooth_pursuit"))
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "smooth_pursuit", plannedDurationSeconds = 20))
         }
 
-        // 11월 기록 1,005건 저장 (한 달 1,001건 초과! / 휴식 605건 + 안구운동 400건)
+        // 11월 기록 1,005건 저장 (한 달 1,001건 초과! / 휴식 605건 + eye_gym 200건 + smooth_pursuit 200건)
         for (i in 1..605) {
             val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "screen_rest"))
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "screen_rest", plannedDurationSeconds = 30))
         }
         for (i in 1..200) {
             val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "eye_gym"))
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "eye_gym", plannedDurationSeconds = 20))
         }
         for (i in 1..200) {
             val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "smooth_pursuit"))
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "smooth_pursuit", plannedDurationSeconds = 20))
         }
 
         // 앱 재시작 상황 시뮬레이션: 동일 디스크 파일에서 새 TestFileStorage 및 새 CompletionRepository 인스턴스로 로드
@@ -112,12 +112,27 @@ class IrisFitBetaMvpQaTest {
         val loadedRecords = newFileRepo.records()
         assertEquals(1505, loadedRecords.size)
 
-        // 모든 필드 구조 검증 (샘플 레코드 필드 정합성)
-        val sampleRecord = loadedRecords.first()
-        assertEquals("screen_rest", sampleRecord.routineId)
-        assertEquals(1, sampleRecord.routineVersion)
-        assertEquals(30, sampleRecord.plannedDurationSeconds)
-        assertEquals("user_confirmed", sampleRecord.confirmation)
+        // 1,505건 전량 개별 필드 정합성 및 고유 ID 유효성 검증
+        val uniqueSessionIds = loadedRecords.map { it.sessionId }.toSet()
+        assertEquals(1505, uniqueSessionIds.size) // 모든 세션 ID 고유성 보장
+
+        for (record in loadedRecords) {
+            assertTrue(record.sessionId.isNotEmpty())
+            assertTrue(record.completedAtEpochMillis > 0L)
+            assertEquals(1, record.routineVersion)
+            assertEquals("user_confirmed", record.confirmation)
+            assertTrue(record.plannedDurationSeconds == 30 || record.plannedDurationSeconds == 20)
+        }
+
+        // 개별 루틴 ID별 실측 건수 정밀 검증
+        val totalRests = loadedRecords.count { it.routineId == "screen_rest" }
+        val totalEyeGyms = loadedRecords.count { it.routineId == "eye_gym" }
+        val totalSmoothPursuits = loadedRecords.count { it.routineId == "smooth_pursuit" }
+
+        assertEquals(905, totalRests)
+        assertEquals(300, totalEyeGyms)
+        assertEquals(300, totalSmoothPursuits)
+        assertEquals(600, totalEyeGyms + totalSmoothPursuits)
 
         // 월별/종류별(휴식/운동) 집계 정확성 실측 검증
         val novStats = com.example.myapplication.session.RestHistory.month(
