@@ -81,8 +81,8 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
             val records = recordsResult.first
             val recordsSuccess = recordsResult.second
 
-            val (screenTime, isMeasured) = when (queryResult) {
-                is com.example.myapplication.data.ScreenTimeQueryResult.Success -> Pair(queryResult.minutes, recordsSuccess)
+            val (screenTime, isScreenTimeMeasured) = when (queryResult) {
+                is com.example.myapplication.data.ScreenTimeQueryResult.Success -> Pair(queryResult.minutes, true)
                 else -> Pair(0, false)
             }
             val today = LocalDate.now().toString()
@@ -93,7 +93,7 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 screenTimeMinutes = screenTime,
                 restCount = rests,
                 miniGameCount = miniGames,
-                screenTimeMeasured = isMeasured
+                screenTimeMeasured = isScreenTimeMeasured
             )
             val selectedLang = LanguageManager.getSelectedLanguage(context)
             val effectiveLang = AppLocalization.resolveEffectiveLang(selectedLang)
