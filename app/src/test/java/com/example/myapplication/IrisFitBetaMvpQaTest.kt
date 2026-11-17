@@ -69,17 +69,43 @@ class IrisFitBetaMvpQaTest {
         assertEquals(1, secondSave.records.size)
     }
 
-    // 3. 완료 기록이 100건 또는 1000건을 넘어도 유저 삭제 전까지 전량 보관되는지 검증 (개인정보 정책 준수)
+    // 3. 완료 기록이 1,001건 이상 누적되어도 절삭 없이 전량 보관되며 새 저장소 인스턴스에서 월별 집계가 정확한지 검증
     @Test
-    fun repositoryPreservesAllRecordsUntilUserDeletes() {
-        val todayStr = LocalDate.now().toString()
-        for (i in 1..105) {
+    fun repositoryExceeding1001RecordsAcrossMonths_preservesExactCountsInNewInstance() {
+        val novDateStr = "2026-11-15"
+        val octDateStr = "2026-10-15"
+
+        // 10월 기록 500건 저장
+        for (i in 1..500) {
             val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), todayStr, "screen_rest"))
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "screen_rest"))
         }
 
-        val records = repository.records()
-        assertEquals(105, records.size)
+        // 11월 기록 1,005건 저장 (한 달 1,001건 초과!)
+        for (i in 1..1005) {
+            val uuid = java.util.UUID.randomUUID().toString()
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "screen_rest"))
+        }
+
+        // 새 저장소 인스턴스로 동기화 로드
+        val newRepo = CompletionRepository(storage)
+        val loadedRecords = newRepo.records()
+        assertEquals(1505, loadedRecords.size)
+
+        // 월별 집계 정확성 실측 검증
+        val novStats = com.example.myapplication.session.RestHistory.month(
+            loadedRecords,
+            java.time.YearMonth.of(2026, 11),
+            LocalDate.parse("2026-11-30")
+        )
+        val octStats = com.example.myapplication.session.RestHistory.month(
+            loadedRecords,
+            java.time.YearMonth.of(2026, 10),
+            LocalDate.parse("2026-10-31")
+        )
+
+        assertEquals(1005, novStats.rests)
+        assertEquals(500, octStats.rests)
     }
 
     // 4. 세션 ID 형식이 유효한 UUID인지 검증
