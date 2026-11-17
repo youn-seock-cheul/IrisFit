@@ -72,38 +72,45 @@ class IrisFitBetaMvpQaTest {
         assertEquals(1, secondSave.records.size)
     }
 
-    // 3. 디스크 레저 파일을 통해 1,505건 혼합(휴식 905건 + 운동 600건) 데이터를 영구 저장 후 새 저장소 및 새 Repository 인스턴스에서 재로드 시 필드 정합성과 월별/종류별 집계가 정확한지 검증
+    // 3. 디스크 레저 파일을 통해 1,505건 혼합(휴식 905건 + 운동 600건) 데이터를 영구 저장 후 새 저장소 및 새 Repository 인스턴스에서 재로드 시 필드 1:1 동등성과 월별/종류별 집계가 정확한지 검증
     @Test
     fun repositoryExceeding1001RecordsAcrossMonths_preservesExactCountsInNewInstance() {
         val novDateStr = "2026-11-15"
         val octDateStr = "2026-10-15"
+        val originalRecords = mutableListOf<CompletionRecord>()
 
         // 10월 기록 500건 저장 (휴식 300건 + eye_gym 100건 + smooth_pursuit 100건)
         for (i in 1..300) {
-            val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "screen_rest", plannedDurationSeconds = 30))
+            val rec = CompletionRecord(java.util.UUID.randomUUID().toString(), System.currentTimeMillis(), octDateStr, "screen_rest", plannedDurationSeconds = 30)
+            originalRecords.add(rec)
+            repository.save(rec)
         }
         for (i in 1..100) {
-            val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "eye_gym", plannedDurationSeconds = 20))
+            val rec = CompletionRecord(java.util.UUID.randomUUID().toString(), System.currentTimeMillis(), octDateStr, "eye_gym", plannedDurationSeconds = 20)
+            originalRecords.add(rec)
+            repository.save(rec)
         }
         for (i in 1..100) {
-            val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "smooth_pursuit", plannedDurationSeconds = 20))
+            val rec = CompletionRecord(java.util.UUID.randomUUID().toString(), System.currentTimeMillis(), octDateStr, "smooth_pursuit", plannedDurationSeconds = 20)
+            originalRecords.add(rec)
+            repository.save(rec)
         }
 
         // 11월 기록 1,005건 저장 (한 달 1,001건 초과! / 휴식 605건 + eye_gym 200건 + smooth_pursuit 200건)
         for (i in 1..605) {
-            val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "screen_rest", plannedDurationSeconds = 30))
+            val rec = CompletionRecord(java.util.UUID.randomUUID().toString(), System.currentTimeMillis(), novDateStr, "screen_rest", plannedDurationSeconds = 30)
+            originalRecords.add(rec)
+            repository.save(rec)
         }
         for (i in 1..200) {
-            val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "eye_gym", plannedDurationSeconds = 20))
+            val rec = CompletionRecord(java.util.UUID.randomUUID().toString(), System.currentTimeMillis(), novDateStr, "eye_gym", plannedDurationSeconds = 20)
+            originalRecords.add(rec)
+            repository.save(rec)
         }
         for (i in 1..200) {
-            val uuid = java.util.UUID.randomUUID().toString()
-            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "smooth_pursuit", plannedDurationSeconds = 20))
+            val rec = CompletionRecord(java.util.UUID.randomUUID().toString(), System.currentTimeMillis(), novDateStr, "smooth_pursuit", plannedDurationSeconds = 20)
+            originalRecords.add(rec)
+            repository.save(rec)
         }
 
         // 앱 재시작 상황 시뮬레이션: 동일 디스크 파일에서 새 TestFileStorage 및 새 CompletionRepository 인스턴스로 로드
@@ -112,16 +119,18 @@ class IrisFitBetaMvpQaTest {
         val loadedRecords = newFileRepo.records()
         assertEquals(1505, loadedRecords.size)
 
-        // 1,505건 전량 개별 필드 정합성 및 고유 ID 유효성 검증
-        val uniqueSessionIds = loadedRecords.map { it.sessionId }.toSet()
-        assertEquals(1505, uniqueSessionIds.size) // 모든 세션 ID 고유성 보장
-
-        for (record in loadedRecords) {
-            assertTrue(record.sessionId.isNotEmpty())
-            assertTrue(record.completedAtEpochMillis > 0L)
-            assertEquals(1, record.routineVersion)
-            assertEquals("user_confirmed", record.confirmation)
-            assertTrue(record.plannedDurationSeconds == 30 || record.plannedDurationSeconds == 20)
+        // 1,505건 전량 원본 레코드와 1:1 개별 필드 구조 동등성 검증 (Field-by-Field Exact Equality Check)
+        for (idx in originalRecords.indices) {
+            val expected = originalRecords[idx]
+            val actual = loadedRecords[idx]
+            assertEquals(expected.sessionId, actual.sessionId)
+            assertEquals(expected.completedAtEpochMillis, actual.completedAtEpochMillis)
+            assertEquals(expected.completedLocalDate, actual.completedLocalDate)
+            assertEquals(expected.routineId, actual.routineId)
+            assertEquals(expected.routineVersion, actual.routineVersion)
+            assertEquals(expected.plannedDurationSeconds, actual.plannedDurationSeconds)
+            assertEquals(expected.confirmation, actual.confirmation)
+            assertEquals(expected, actual) // Data class equals check
         }
 
         // 개별 루틴 ID별 실측 건수 정밀 검증
