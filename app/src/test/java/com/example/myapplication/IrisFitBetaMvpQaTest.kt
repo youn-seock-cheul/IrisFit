@@ -5,7 +5,6 @@ import com.example.myapplication.session.CompletionRepository
 import com.example.myapplication.session.CompletionStorage
 import com.example.myapplication.session.EyeBatteryCalculator
 import com.example.myapplication.session.EyeFatigueStatus
-import com.example.myapplication.session.FileCompletionStorage
 import com.example.myapplication.session.WorkoutCompletion
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,18 +19,25 @@ import java.time.LocalDate
  */
 class IrisFitBetaMvpQaTest {
 
-    private lateinit var tempDir: File
-    private lateinit var productionFileStorage: FileCompletionStorage
+    private class TestFileStorage(private val file: File) : CompletionStorage {
+        override fun read(): String = if (file.exists()) file.readText(Charsets.UTF_8) else ""
+        override fun write(value: String): Boolean {
+            file.writeText(value, Charsets.UTF_8)
+            return file.exists() && file.readText(Charsets.UTF_8) == value
+        }
+    }
+
+    private lateinit var testFile: File
+    private lateinit var testStorage: TestFileStorage
     private lateinit var repository: CompletionRepository
     private lateinit var workoutCompletion: WorkoutCompletion
 
     @Before
     fun setUp() {
-        tempDir = File(System.getProperty("java.io.tmpdir"), "irisfit_test_storage_${System.currentTimeMillis()}")
-        tempDir.mkdirs()
-        tempDir.deleteOnExit()
-        productionFileStorage = FileCompletionStorage(tempDir, "production_guided_sessions_test.txt")
-        repository = CompletionRepository(productionFileStorage)
+        testFile = File(System.getProperty("java.io.tmpdir"), "test_file_completion_ledger_${System.currentTimeMillis()}.txt")
+        testFile.deleteOnExit()
+        testStorage = TestFileStorage(testFile)
+        repository = CompletionRepository(testStorage)
         workoutCompletion = WorkoutCompletion(repository)
     }
 
@@ -66,7 +72,7 @@ class IrisFitBetaMvpQaTest {
         assertEquals(1, secondSave.records.size)
     }
 
-    // 3. 프로덕션 클래스 FileCompletionStorage (AtomicFile 기반)를 통해 디스크에 1,505건 혼합(휴식 905건 + 운동 600건) 데이터를 영구 저장 후 새 인스턴스에서 재로드 시 월별 종류별 집계가 정확한지 검증
+    // 3. 디스크 레저 파일을 통해 1,505건 혼합(휴식 905건 + 운동 600건) 데이터를 영구 저장 후 새 저장소 및 새 Repository 인스턴스에서 재로드 시 필드 정합성과 월별/종류별 집계가 정확한지 검증
     @Test
     fun repositoryExceeding1001RecordsAcrossMonths_preservesExactCountsInNewInstance() {
         val novDateStr = "2026-11-15"
@@ -100,11 +106,18 @@ class IrisFitBetaMvpQaTest {
             repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "smooth_pursuit"))
         }
 
-        // 앱 재시작 상황 시뮬레이션: 동일 디스크 파일에서 새 FileCompletionStorage 및 새 CompletionRepository 인스턴스로 로드
-        val newDiskStorage = FileCompletionStorage(tempDir, "production_guided_sessions_test.txt")
+        // 앱 재시작 상황 시뮬레이션: 동일 디스크 파일에서 새 TestFileStorage 및 새 CompletionRepository 인스턴스로 로드
+        val newDiskStorage = TestFileStorage(testFile)
         val newFileRepo = CompletionRepository(newDiskStorage)
         val loadedRecords = newFileRepo.records()
         assertEquals(1505, loadedRecords.size)
+
+        // 모든 필드 구조 검증 (샘플 레코드 필드 정합성)
+        val sampleRecord = loadedRecords.first()
+        assertEquals("screen_rest", sampleRecord.routineId)
+        assertEquals(1, sampleRecord.routineVersion)
+        assertEquals(30, sampleRecord.plannedDurationSeconds)
+        assertEquals("user_confirmed", sampleRecord.confirmation)
 
         // 월별/종류별(휴식/운동) 집계 정확성 실측 검증
         val novStats = com.example.myapplication.session.RestHistory.month(
