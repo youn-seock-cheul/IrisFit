@@ -98,7 +98,7 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
             val selectedLang = LanguageManager.getSelectedLanguage(context)
             val effectiveLang = AppLocalization.resolveEffectiveLang(selectedLang)
 
-            val bitmap = renderMasterpieceWidgetBitmap(context, widgetIndex, stats.eyeHealthScore, rests, miniGames, effectiveLang)
+            val bitmap = renderMasterpieceWidgetBitmap(context, widgetIndex, stats.eyeHealthScore, rests, miniGames, effectiveLang, recordsSuccess)
             views.setImageViewBitmap(R.id.widget_image, bitmap)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
@@ -107,7 +107,7 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
         }
     }
 
-    private fun renderMasterpieceWidgetBitmap(context: Context, index: Int, score: Int, rests: Int, games: Int, lang: String): Bitmap {
+    private fun renderMasterpieceWidgetBitmap(context: Context, index: Int, score: Int, rests: Int, games: Int, lang: String, recordsSuccess: Boolean = true): Bitmap {
         val width = 800
         val height = if (index in listOf(1, 2, 3, 4)) 380 else 180
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -134,7 +134,12 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 paint.color = Color.parseColor("#B0BEC5")
                 paint.textSize = 23f
                 paint.typeface = Typeface.DEFAULT
-                val greeting = if (lang == "en") "Good work today!" else "오늘도 수고했어요!"
+                val greeting = when (lang) {
+                    "en" -> "Good work today!"
+                    "ja" -> "今日も一日お疲れ様でした！"
+                    "es" -> "¡Buen trabajo 오늘!"
+                    else -> "오늘도 수고했어요!"
+                }
                 paint.textAlign = Paint.Align.RIGHT
                 canvas.drawText(greeting, width - 42f, 62f, paint)
 
@@ -169,40 +174,46 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 paint.color = Color.WHITE
                 paint.textSize = if (score < 0) 32f else 48f
                 paint.typeface = Typeface.DEFAULT_BOLD
-                val scoreText = if (score < 0) AppLocalization.get(lang, "screen_time_unmeasured") else "${score}%"
+                val scoreText = if (score < 0) AppLocalization.get(lang, "미측정") else "${score}%"
                 canvas.drawText(scoreText, cx, cy + 12f, paint)
 
                 paint.color = Color.parseColor("#B0BEC5")
                 paint.textSize = 20f
                 paint.typeface = Typeface.DEFAULT
-                val batteryLabel = if (lang == "en") "Eye battery" else "눈 건강 배터리"
+                val batteryLabel = when (lang) {
+                    "en" -> "Eye battery"
+                    "ja" -> "目のバッテリー"
+                    "es" -> "Batería ocular"
+                    else -> "눈 건강 배터리"
+                }
                 canvas.drawText(batteryLabel, cx, cy + 48f, paint)
 
                 // Divider
                 paint.color = Color.parseColor("#344253")
                 canvas.drawRect(310f, 100f, 312f, 335f, paint)
 
-                // Real completion rate from today's rest/exercise goals (or Unmeasured when storage/query error)
-                val isMeasured = score >= 0
-                val unmeasuredText = AppLocalization.get(lang, "screen_time_unmeasured")
-                val restProgress = if (isMeasured) (rests.coerceAtLeast(0).coerceAtMost(5) / 5f) else 0f
-                val gameProgress = if (isMeasured) (games.coerceAtLeast(0).coerceAtMost(3) / 3f) else 0f
-                val completionRate = if (isMeasured) (((restProgress + gameProgress) / 2f) * 100f).toInt() else -1
+                // Real completion rate from today's rest/exercise goals (Independent from ScreenTime query failure)
+                val unmeasuredText = AppLocalization.get(lang, "미측정")
+                val restProgress = (rests.coerceAtLeast(0).coerceAtMost(5) / 5f)
+                val gameProgress = (games.coerceAtLeast(0).coerceAtMost(3) / 3f)
+                val completionRate = (((restProgress + gameProgress) / 2f) * 100f).toInt()
 
                 val labelX = 355f
                 val valueX = 748f
                 val rowYs = listOf(155f, 225f, 295f)
-                val labels = if (lang == "en") {
-                    listOf("Rest completed", "Eye exercise", "Daily completion")
-                } else {
-                    listOf("휴식 완료", "눈 운동 완료", "오늘 목표 달성률")
+                val labels = when (lang) {
+                    "en" -> listOf("Rest completed", "Eye exercise", "Daily completion")
+                    "ja" -> listOf("休憩完了", "目の運動", "今日の達成率")
+                    "es" -> listOf("Descanso completado", "Ejercicio ocular", "Meta diaria")
+                    else -> listOf("휴식 완료", "눈 운동 완료", "오늘 목표 달성률")
                 }
-                val values = if (!isMeasured) {
+                val values = if (!recordsSuccess) {
                     listOf(unmeasuredText, unmeasuredText, unmeasuredText)
-                } else if (lang == "en") {
-                    listOf("$rests / 5", "$games / 3", "$completionRate%")
-                } else {
-                    listOf("$rests / 5회", "$games / 3회", "$completionRate%")
+                } else when (lang) {
+                    "en" -> listOf("$rests / 5", "$games / 3", "$completionRate%")
+                    "ja" -> listOf("$rests / 5回", "$games / 3回", "$completionRate%")
+                    "es" -> listOf("$rests / 5", "$games / 3", "$completionRate%")
+                    else -> listOf("$rests / 5회", "$games / 3회", "$completionRate%")
                 }
 
                 labels.forEachIndexed { i, label ->
