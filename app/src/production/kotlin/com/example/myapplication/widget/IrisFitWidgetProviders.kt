@@ -182,10 +182,12 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 paint.color = Color.parseColor("#344253")
                 canvas.drawRect(310f, 100f, 312f, 335f, paint)
 
-                // Real completion rate from today's rest/exercise goals.
-                val restProgress = (rests.coerceAtLeast(0).coerceAtMost(5) / 5f)
-                val gameProgress = (games.coerceAtLeast(0).coerceAtMost(3) / 3f)
-                val completionRate = (((restProgress + gameProgress) / 2f) * 100f).toInt()
+                // Real completion rate from today's rest/exercise goals (or Unmeasured when storage/query error)
+                val isMeasured = score >= 0
+                val unmeasuredText = AppLocalization.get(lang, "screen_time_unmeasured")
+                val restProgress = if (isMeasured) (rests.coerceAtLeast(0).coerceAtMost(5) / 5f) else 0f
+                val gameProgress = if (isMeasured) (games.coerceAtLeast(0).coerceAtMost(3) / 3f) else 0f
+                val completionRate = if (isMeasured) (((restProgress + gameProgress) / 2f) * 100f).toInt() else -1
 
                 val labelX = 355f
                 val valueX = 748f
@@ -195,7 +197,9 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 } else {
                     listOf("휴식 완료", "눈 운동 완료", "오늘 목표 달성률")
                 }
-                val values = if (lang == "en") {
+                val values = if (!isMeasured) {
+                    listOf(unmeasuredText, unmeasuredText, unmeasuredText)
+                } else if (lang == "en") {
                     listOf("$rests / 5", "$games / 3", "$completionRate%")
                 } else {
                     listOf("$rests / 5회", "$games / 3회", "$completionRate%")
