@@ -18,7 +18,7 @@ interface CompletionStorage {
     fun write(value: String): Boolean
 }
 
-/** One bounded ledger; counts are derived, never maintained separately. IO runs off the UI thread. */
+/** Counts are derived from the ledger. IO runs off the UI thread. */
 class CompletionRepository(private val storage: CompletionStorage) {
     private var cached: List<CompletionRecord>? = null
 
@@ -34,7 +34,7 @@ class CompletionRepository(private val storage: CompletionStorage) {
                 CompletionRecord(parts[0], parts[1].toLong(), parts[2], parts[3],
                     parts[4].toInt(), parts[5].toInt(), parts[6]).also(::validate)
             }.also { rows ->
-                require(rows.size <= 100 && rows.map { it.sessionId }.distinct().size == rows.size)
+                require(rows.map { it.sessionId }.distinct().size == rows.size)
             }
         }
         return records.toList().also { cached = it }
@@ -44,7 +44,7 @@ class CompletionRepository(private val storage: CompletionStorage) {
         validate(record)
         val current = records()
         if (current.any { it.sessionId == record.sessionId }) return current
-        val updated = (current + record).takeLast(100)
+        val updated = current + record
         check(storage.write(encode(updated))) { "Completion record was not saved" }
         cached = updated
         return updated

@@ -69,9 +69,9 @@ class IrisFitBetaMvpQaTest {
         assertEquals(1, secondSave.records.size)
     }
 
-    // 3. 미니게임 및 휴식 완료 기록이 최대 100건을 초과할 때 바운디드 레저(Bounded Ledger) 동작 검증
+    // 3. 완료 기록이 100건 또는 1000건을 넘어도 유저 삭제 전까지 전량 보관되는지 검증 (개인정보 정책 준수)
     @Test
-    fun repositoryExceeding100Records_maintainsMax100Limit() {
+    fun repositoryPreservesAllRecordsUntilUserDeletes() {
         val todayStr = LocalDate.now().toString()
         for (i in 1..105) {
             val uuid = java.util.UUID.randomUUID().toString()
@@ -79,7 +79,7 @@ class IrisFitBetaMvpQaTest {
         }
 
         val records = repository.records()
-        assertEquals(100, records.size)
+        assertEquals(105, records.size)
     }
 
     // 4. 세션 ID 형식이 유효한 UUID인지 검증

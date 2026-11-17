@@ -18,7 +18,7 @@
 
 단계를 건너뛰거나 자동 승인하지 않는다. 각 단계가 끝나면 PM이 결과와 다음 선택을 이 파일에 갱신한다. 출시까지 시간이 걸리거나 막히는 항목이 있으면 이유와 필요한 결정을 함께 표시한다.
 
-**현재 로드맵 위치:** 실제 시청시간 목표(Android 13/API 33 이상, 측정 불가 시 `미측정`)를 유지하며 Galaxy S23/Z Fold7은 초기 시험 후보로 정했다. 최신 배치 후보 `869a842`에서 JVM 테스트 **70 passed / 0 skipped / 0 failed**를 확인했다. clock provider `0L` fail-closed 및 미래 timestamp 테스트가 추가됐다. 실제 clock exception, 기타 payload 경계와 stop/unreliable lifecycle 검증은 남아 있다. PM은 배치 **PARTIAL PASS**, Release Hold 유지로 판정했다.
+**현재 로드맵 위치:** 실제 시청시간 목표(Android 13/API 33 이상, 측정 불가 시 `미측정`)를 유지하며 Galaxy S23/Z Fold7은 초기 시험 후보로 정했다. 최신 센서 테스트 후보 `aec48fd`에서 JVM 테스트 **82 passed / 0 skipped / 0 failed**를 확인했다. Clock exception, timestamp/payload 경계 및 stop/unreliable 상태 테스트가 추가됐다. 다만 센서 미등록/등록 실패와 stop 이후 늦은 callback은 검증되지 않았고, 테스트는 실제 SensorManager/Event lifecycle을 구동하지 않는다. HEAD에 포함된 별도 `ea23d44` beta MVP/UI 변경은 별도 QA가 필요하다. PM은 **PARTIAL PASS**, Release Hold 유지로 판정했다.
 
 ## 한눈에 보는 진행 현황 — 2026-11-16
 
@@ -26,10 +26,10 @@
 |---|---|---|
 | 제품 목표 | **결정됨** | 목표는 실제로 손에 들고 보는 시간. Android 13+ 대상, 측정할 수 없으면 `미측정`; UsageStats는 실제 시청시간의 대체값이 아님 |
 | 현황 감사 | **완료 — 정적 범위** | 소스/권한/데이터 경로를 확인하고 QA가 재검토. 정책/Play 및 전체 기기 검증은 미완료 |
-| 코드 및 자동 테스트 | **부분 완료** | `869a842`; JVM **70 passed, 0 failed, 0 skipped**. clock 0 fail-closed 및 미래 timestamp 테스트 반영. actual clock exception 및 event lifecycle 경계 테스트 잔여 |
+| 코드 및 자동 테스트 | **부분 완료** | `aec48fd`; JVM **82 passed, 0 failed, 0 skipped**. clock exception, timestamp/payload 및 lifecycle 상태 테스트 확인. 센서 미등록과 stop 후 지연 callback 검증 잔여 |
 | 실기기 기본 확인 | **제한 완료** | Galaxy S23+ `SM-S916N`, Android 16/API 36에서 Debug 설치·실행 및 기본 UI 확인. 자세 배지와 UsageStats 숫자는 표시 확인이지 정확도 측정이 아님 |
 | 미측정 처리 | **부분 완료** | relay Toast/Wellness 아이콘을 포함한 코드 경로 중립화. UI 렌더링 자동 검증은 없음 |
-| 센서 freshness | **부분 완료** | elapsed-realtime만 사용; clock 0 sentinel 및 미래 timestamp 테스트 통과. provider exception 자체, Infinity/empty/short/unknown type 및 stop/unreliable lifecycle 테스트 잔여 |
+| 센서 freshness | **부분 완료** | clock exception, 0/음수/미래 timestamp, Infinity/empty/short/unknown type, proximity max boundary, unreliable/stop 상태 테스트 확인. 테스트는 helper 기반이며 실제 SensorManager listener lifecycle은 미검증 |
 | 기기 프로필 | **코드 확인 완료** | `SM-S916N`/S916 계열이 `GALAXY_S23`으로 분류됨; 모델 단위 테스트 1건 통과 |
 | 시청 정확도/배터리 | **NOT RUN** | 정답 라벨 기반 정확도와 배터리 비교 미실시. 허용 기준/시험 절차도 사전 승인 필요 |
 | 출시 | **BLOCKED** | 내부 테스트 업로드·베타·Production 배포 미승인; Release Hold 유지 |
@@ -44,8 +44,8 @@
 |---|---|---|
 | 1. 현황 감사 | 실제 소스/Release 구성과 위험을 조사하고 QA가 근거를 재검토 | **완료(정적 범위)** — 실제 기기/Play 검증은 미완료 |
 | 2. 제품 범위·기준 승인 | 베타 핵심 범위, 데이터 의미, 예외/정책 및 측정 가능한 완료 기준을 PM이 승인 | **부분 완료** — 베타 MVP 범위와 실제 시청시간 목표, Android 13+ 및 `미측정` 원칙 결정. 정확도·전력 기준/시험 절차 미승인 |
-| 3. 개발 및 자체 검증 | 승인된 요구사항만 구현하고 기준별 증거/잔여 위험을 인계 | **수정 인계 제출** — `BATCH-UNMEASURED-01`, final `869a842`; JVM 70/0/0; provider exception 및 lifecycle 경계 테스트 필요 |
-| 4. QA 검증 | PM 완료 기준별 자동/수동 시험을 수행하고 증거와 PASS/FAIL/BLOCKED/NOT RUN 보고 | **PARTIAL PASS** — clock 0/future timestamp 테스트 확인; 실제 provider exception 및 추가 payload/lifecycle 경계 잔여 |
+| 3. 개발 및 자체 검증 | 승인된 요구사항만 구현하고 기준별 증거/잔여 위험을 인계 | **후속 테스트 제출** — `BATCH-UNMEASURED-01`, `aec48fd`; JVM 82/0/0; 미등록/지연 callback 잔여 |
+| 4. QA 검증 | PM 완료 기준별 자동/수동 시험을 수행하고 증거와 PASS/FAIL/BLOCKED/NOT RUN 보고 | **PARTIAL PASS** — 요청한 여러 JVM 상태 경계 테스트 확인; actual listener lifecycle 및 별도 `ea23d44` 범위는 미검증 |
 | 5. PM 완료·고정 판정 | QA 결과·기기 범위·잔여 위험을 검토해 완료/보류 판정 | **보류** — 제품 기능 완료/고정 미승인; 후속 수정 후 재검수 필요 |
 | 6. 내부 테스트 | Release 패키지 설치 및 핵심 흐름을 실제 테스트, PM/소유자가 트랙 업로드 승인 | **미착수/미승인** — Release Hold 유지 |
 | 7. 제한 베타 | 승인된 테스터와 기간/표본으로 사용성·안정성·피드백 검증 | **미착수** — 내부 테스트 종료 및 PM 승인 필요 |
@@ -97,6 +97,7 @@
 - 배치 후속 commit `53f1efa`를 재검토했다. `.\gradlew.bat :app:testDebugUnitTest` 성공, XML 13 suites **68/0/0** 확인. NaN 및 proximity maximumRange 초과 거부, 유효 payload 처리 테스트를 소스와 결과로 확인했다. 단, 테스트 timestamp는 `System.currentTimeMillis()`이고 production sensor sample timestamp는 elapsed-realtime domain이어야 한다. 코드도 `SystemClock.elapsedRealtime()` 오류 시 wall-clock fallback을 사용해 clock domain을 섞을 위험이 있어 제거/주입형 monotonic clock 및 fail-closed 검증이 필요하다. Infinity/unknown/invalid timestamp/stop/unreliable callback 테스트도 부족하다. 실기기 정확도/전력은 이번 검토에서 실행하지 않아 **NOT RUN**. PM 판정 **PARTIAL PASS**, Release Hold 유지. 상세: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R2_53f1efa_2026-11-16.md`.
 - 배치 후속 commit `ea40a32`를 재검토했다. `.\gradlew.bat :app:testDebugUnitTest` 성공, XML **68/0/0** 확인. wall-clock fallback이 제거되고 `SystemClock.elapsedRealtime()` provider 단일화, clock 0 fail-closed 처리가 적용됐으며 결정적 provider 테스트 3개를 확인했다. 다만 clock 예외 자체, timestamp 0/미래, Infinity/empty/short/unknown type, stop/unreliable callback의 전용 테스트가 없다. 테스트 추가 후 QA 재검수가 필요하다. 실기기 정확도·전력은 이번 검토에서 실행하지 않아 **NOT RUN**. PM 판정 **PARTIAL PASS**, Release Hold 유지. 상세: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R3_ea40a32_2026-11-16.md`.
 - 배치 후속 commit `869a842`를 재검토했다. `.\gradlew.bat :app:testDebugUnitTest` 성공, XML **70/0/0** 확인. provider `0L` fail-closed와 미래 timestamp 거부 테스트가 추가됐다. clock provider가 실제 예외를 throw하는 테스트는 아니므로 그 경로는 미검증이다. Infinity/empty/short/unknown type, timestamp 0 및 stop/unreliable lifecycle 테스트도 추가로 필요하다. 실기기 정확도·전력은 이번 검토에서 실행하지 않아 **NOT RUN**. PM 판정 **PARTIAL PASS**, Release Hold 유지. 상세: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R4_869a842_2026-11-16.md`.
+- `aec48fd` 후속 테스트를 독립 검토했다. `.\gradlew.bat :app:testDebugUnitTest` 성공 및 XML 15 suites **82/0/0** 확인. Clock exception, timestamp 0/음수/미래, Infinity/empty/short, unknown type, proximity `value == maximumRange`, unreliable accuracy 및 stop 이후 `isFresh=false` 상태 검증을 확인했다. 단 테스트는 ContextWrapper에서 sensor service를 null로 두고 helper로 등록 상태를 조작하므로 실제 listener 등록/해제나 `SensorEvent` callback을 검증하지 않는다. 미등록/등록 실패와 stop 후 늦은 callback 차단도 미검증이다. 또 HEAD에는 별도 `ea23d44` beta MVP/UI 범위가 포함되어 이번 검토에서 승인하지 않았다. PM은 R4 테스트 범위만 조건부 수용, 배치 PARTIAL PASS 및 Release Hold 유지로 판정. 실기기 accuracy/battery/heat는 **NOT RUN**. 상세: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R5_aec48fd_2026-11-17.md`.
 - 센서 이벤트 freshness/payload 검증, 실제 시청 정확도 및 배터리 비교는 **NOT RUN**이다. 기기 센서 하드웨어 가용성과 짧은 앱 UI/베타 안내 스모크만 제한 확인했다. 내부 테스트 배포, Release Hold 해제 및 정식 출시는 승인되지 않았다.
 - 이전 검토 기록: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_aad01ee_2026-11-15.md`. 최신 검토와 수정 지시: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Actual_Viewing_Time_QA_Review_b808392_2026-11-15.md`.
 
@@ -245,11 +246,11 @@ Developer와 QA는 동일 AI이므로, 역할을 분리한 QA 재검토는 사�
 
 ## 현재 단계 카드
 
-- **현재 단계:** 3–4 — `BATCH-UNMEASURED-01` R4 PARTIAL PASS, actual clock exception 및 sensor event lifecycle boundary tests 보완 후 QA 재검수 대기. 과거 trend data source는 현재 미지원으로 `미측정` 유지
+- **현재 단계:** 3–4 — `BATCH-UNMEASURED-01` R5 PARTIAL PASS, 미등록/지연 callback 경계와 별도 `ea23d44` QA 범위 확정 대기. 과거 trend data source는 현재 미지원으로 `미측정` 유지
 - **완료된 것:** 저장소 기준점/정적 감사, 감사 QA 재검토, 베타 MVP 범위 기본설계, 사용자가 승인한 실제 시청시간 목표와 Android 13+ 미측정 원칙, 두 Galaxy 기기의 초기 시험 후보, 오늘 화면 사용시간 UI에서 evaluator 추정치 비노출의 정적 확인
-- **부분 완료/미승인:** 배치 `BATCH-UNMEASURED-01`, commit `869a842`, JVM **70/0/0** 확인. clock 0 fail-closed와 미래 timestamp 테스트는 있으나 actual provider exception 및 payload/lifecycle 경계가 남았다. UI 경계 테스트와 실기기 viewing/posture accuracy 및 battery/heat는 **NOT RUN**이다.
-- **미완료:** clock exception 및 invalid payload/timestamp/unknown type/stop/unreliable callback 테스트, UI 경계 테스트, QA 재검수 및 실기기 정확도/전력 기준 승인
-- **다음 행동:** Developer가 provider exception과 callback lifecycle 경계 테스트를 추가하고 배치 QA 재검수한다. 실기기 시험은 별도 PM 승인 후 진행한다.
+- **부분 완료/미승인:** 배치 `BATCH-UNMEASURED-01`, commit `aec48fd`, JVM **82/0/0** 확인. 주요 clock/payload 경계 테스트는 추가됐으나 실제 SensorManager lifecycle, 미등록/등록 실패 및 stop 후 늦은 callback 차단은 미검증이다. 별도 `ea23d44` beta MVP/UI 변경은 QA 대상이다. 실기기 accuracy/전력은 **NOT RUN**이다.
+- **미완료:** 센서 미등록/등록 실패와 post-stop late callback 검증, 필요 시 actual listener integration test, `ea23d44` 변경의 별도 QA, 실기기 정확도/전력 기준 승인 및 실행
+- **다음 행동:** PM은 actual listener test 범위가 필요한지 정하고 `ea23d44`의 QA 범위를 별도 추적한다. 센서 미등록/지연 callback 테스트를 보완한 뒤 배치 재검수한다.
 - **배포 승인:** 없음 (Release Hold 유지)
 - **다음 단계 전환 승인자:** PM (QA 판정만으로 자동 이동하지 않음)
 
@@ -289,6 +290,7 @@ Developer와 QA는 동일 AI이므로, 역할을 분리한 QA 재검토는 사�
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R2_53f1efa_2026-11-16.md` — 배치 R2 `67c4dd4`→`53f1efa`/68개 테스트/monotonic clock domain 재작업 지시
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R3_ea40a32_2026-11-16.md` — 배치 R3 `53f1efa`→`ea40a32`/68개 테스트/추가 clock·callback lifecycle 경계 지시
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R4_869a842_2026-11-16.md` — 배치 R4 `ea40a32`→`869a842`/70개 테스트/actual exception 및 추가 lifecycle 테스트 지시
+- `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R5_aec48fd_2026-11-17.md` — 배치 R5 `aec48fd`/82개 테스트/조건부 PM 수용, 미등록·지연 callback 및 별도 beta QA 잔여
 - `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_QA_Role_and_Handoff_Standard_2026-11-15.md` — QA 검수 역할, 출력 형식 및 PASS/BLOCKED/NOT RUN 판정 원칙
 - 저장소 루트 `Walkthrough.md` — 이 통합 Walkthrough의 진입점
 - 기존 중복 Walkthrough 3개(`docs/WALKTHROUGH_P0_LATEST.md`, `docs/WALKTHROUGH_ROADMAP.md`, `docs/WALKTHROUGH_GOOGLE_PLAY_IRISFIT.md`) — 통합 후 삭제

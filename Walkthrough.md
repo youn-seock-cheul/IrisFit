@@ -2,15 +2,15 @@
 
 이 파일은 저장소에서 제품 로드맵과 구현 이력을 함께 확인하는 진입점입니다. **현재 기준 문서는 [`task/IrisFit_PM_User_Walkthrough.md`](task/IrisFit_PM_User_Walkthrough.md)**이며, 이 문서에 제품 상태, 전체 로드맵, 주요 개발 이력, QA 근거와 결정이 통합되어 있습니다.
 
-## 현재 상태 — 2026-11-16
+## 현재 상태 — 2026-11-17
 
 목표는 실제 시청시간(손에 들고 실제 화면을 보는 시간)입니다. UsageStats의 앱 사용시간이나 자세 분류를 실제 시선 측정으로 간주하지 않습니다.
 
 | 구분 | 현재까지 / 남은 일 |
 |---|---|
-| **완료** | 현재 구현 정적 감사와 QA 검토; 실제 시청시간 목표·Android 13+·측정 불가 시 `미측정` 원칙 설정; `869a842` 기준 JVM 테스트 **70 passed / 0 failed / 0 skipped**; clock 0 fail-closed 및 미래 timestamp 테스트 추가 |
+| **완료** | 현재 구현 정적 감사와 QA 검토; 실제 시청시간 목표·Android 13+·측정 불가 시 `미측정` 원칙 설정; `aec48fd` 기준 JVM 테스트 **82 passed / 0 failed / 0 skipped**; clock/payload/lifecycle 상태 테스트 추가 |
 | **진행 중** | 개발·QA 단계. PM 판정 **PARTIAL PASS**; 작업 재개방 |
-| **우선 보완** | 실제 clock exception 및 invalid payload/listener lifecycle freshness 경계 테스트 |
+| **우선 보완** | 미등록/등록 실패 및 stop 후 늦은 callback 검증; `ea23d44` beta MVP/UI 변경 별도 QA |
 | **실기기에서 미검증** | 센서 callback/freshness 정확도, 자세 오탐·미탐, 실제 시청시간 정확도, 배터리/발열 비교. 승인된 시험 프로토콜이 없어 정확도/전력 결과는 **NOT RUN** |
 | **출시** | 내부 테스트·베타·Play 배포 모두 미승인. **Release Hold 유지** |
 
@@ -31,6 +31,7 @@
 - [배치 재검토 R2 — 53f1efa](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R2_53f1efa_2026-11-16.md)
 - [배치 재검토 R3 — ea40a32](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R3_ea40a32_2026-11-16.md)
 - [배치 재검토 R4 — 869a842](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R4_869a842_2026-11-16.md)
+- [배치 재검토 R5 및 PM 제출 승인서 — aec48fd](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R5_aec48fd_2026-11-17.md)
 - [Galaxy S23 실기기 스모크 체크](C:/Users/youns/AndroidStudioProjects/task/IrisFit_PM_Device_Smoke_Check_2026-11-15.md)
 - 상세 로드맵과 결정 이력은 아래 통합 문서를 확인하세요.
 

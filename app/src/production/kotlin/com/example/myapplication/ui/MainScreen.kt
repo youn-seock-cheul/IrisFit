@@ -674,6 +674,8 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
     ) {
         Text(sessionModel.tr("settings_header"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
 
+        CareReminderSettings()
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -889,7 +891,7 @@ fun WellnessHomeTab(
         Text(sessionModel.tr("home_subtitle"), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
 
         EyePedometerCard(sessionModel, onNavigateToGym, onNavigateToPursuit)
-        BatteryTrendCard(sessionModel)
+        RestHistoryCard(sessionModel)
         GoalAchievementCard(sessionModel)               // 1) 오늘의 눈 건강 목표
         CommunityCheerCard(sessionModel)                // 2) 친구들과 릴레이 (베타 준비 알림 카드)
         PublicGlobalChallengeCard(sessionModel)         // 3) 공개 글로벌 릴레이 (베타 준비 알림 카드)

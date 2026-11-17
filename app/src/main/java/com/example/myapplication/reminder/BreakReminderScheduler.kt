@@ -112,11 +112,6 @@ class BreakReminderScheduler(private val context: Context) {
         notifications.createNotificationChannel(
             NotificationChannel(CHANNEL, "화면 휴식 알림", NotificationManager.IMPORTANCE_DEFAULT)
         )
-        // Switch icon to tired state when reminder is triggered
-        try {
-            com.example.myapplication.data.DynamicIconManager.switchAppIcon(context, 2)
-        } catch (_: Exception) {}
-
         val openRest = PendingIntent.getActivity(
             context, 10, Intent(context, MainActivity::class.java).putExtra("target_screen", "home"),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -134,8 +129,8 @@ class BreakReminderScheduler(private val context: Context) {
                 NOTIFICATION_ID,
                 NotificationCompat.Builder(context, CHANNEL)
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setContentTitle("눈이 패닉 상태예요! 😱 (IrisFit)")
-                    .setContentText("오늘 눈 휴식을 너무 안 하셨어요! 20초 눈 운동하고 소중한 시력을 지키세요 👁️✨")
+                    .setContentTitle(context.getString(R.string.care_notification_title))
+                    .setContentText(context.getString(R.string.care_notification_body))
                     .setContentIntent(openRest)
                     .addAction(0, "🟢 30초 눈 휴식", openRest)
                     .addAction(0, "🎮 눈 운동 미니게임", openGym)

@@ -39,12 +39,13 @@ class CompletionRepositoryTest {
         assertEquals(1, CompletionRepository(storage).records().size)
     }
 
-    @Test fun retainsMostRecentHundredAndPreservesOriginalLocalDate() {
-        val repo = CompletionRepository(Storage())
+    @Test fun retainsMoreThanHundredAndPreservesOriginalLocalDate() {
+        val storage = Storage()
+        val repo = CompletionRepository(storage)
         for (i in 1..101) repo.save(record(i))
-        val rows = repo.records()
-        assertEquals(100, rows.size)
-        assertEquals(record(2), rows.first())
+        val rows = CompletionRepository(storage).records()
+        assertEquals(101, rows.size)
+        assertEquals(record(1), rows.first())
         assertEquals("2026-11-01", rows.last().completedLocalDate)
     }
 

@@ -304,7 +304,7 @@ fun EyePedometerCard(
                     }
                 }
 
-                // 3. PURSUIT GAME CARD (부드러운 시선 추적)
+                // 3. PURSUIT GAME CARD (부드러운 안구 궤적 훈련)
                 Surface(
                     modifier = Modifier
                         .weight(1f)
@@ -317,9 +317,9 @@ fun EyePedometerCard(
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         Icon(painter = painterResource(id = R.drawable.ic_nav_ai), contentDescription = null, tint = statusColor, modifier = Modifier.size(18.dp))
-                        Text(sessionModel.tr("시선 추적"), style = MaterialTheme.typography.bodySmall, color = Color.Gray, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(sessionModel.tr("안구 궤적"), style = MaterialTheme.typography.bodySmall, color = Color.Gray, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(sessionModel.tr("무한대 궤적"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = statusColor, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(sessionModel.tr("탭하여 추적"), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = statusColor)
+                        Text(sessionModel.tr("탭하여 훈련"), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = statusColor)
                     }
                 }
             }
