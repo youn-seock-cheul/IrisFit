@@ -622,7 +622,7 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Text(sessionModel.tr("IrisFit PRO 차세대 유료 플랜 혜택"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 Text(sessionModel.tr("pro_demo_status"), style = MaterialTheme.typography.bodySmall)
-                Text(sessionModel.tr("시선 추적(Gaze Tracking) 기술 기반의 독보적인 프리미엄 기능:"))
+                Text(sessionModel.tr("안구 훈련(Eye Care) 기능 기반의 독보적인 프리미엄 혜택:"))
 
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(12.dp)) {
                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
