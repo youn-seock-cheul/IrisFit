@@ -137,7 +137,7 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 val greeting = when (lang) {
                     "en" -> "Good work today!"
                     "ja" -> "今日も一日お疲れ様でした！"
-                    "es" -> "¡Buen trabajo 오늘!"
+                    "es" -> "¡Buen trabajo hoy!"
                     else -> "오늘도 수고했어요!"
                 }
                 paint.textAlign = Paint.Align.RIGHT

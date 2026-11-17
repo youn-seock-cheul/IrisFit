@@ -579,6 +579,7 @@ object AppLocalization {
             }
             "ja" -> {
                 result = result
+                    .replace("미측정", "未測定")
                     .replace("IrisFit 눈 건강 배터리", "IrisFit 目の健康バッテリー")
                     .replace("오늘 화면 응시 시간", "本日の画面注視時間")
                     .replace("휴식 완료", "休憩完了")
@@ -619,6 +620,7 @@ object AppLocalization {
             }
             "es" -> {
                 result = result
+                    .replace("미측정", "Sin medir")
                     .replace("IrisFit 눈 건강 배터리", "Batería Ocular IrisFit")
                     .replace("오늘 화면 응시 시간", "Tiempo de pantalla hoy")
                     .replace("휴식 완료", "Descanso completado")
