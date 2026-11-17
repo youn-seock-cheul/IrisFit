@@ -11,6 +11,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 import java.time.LocalDate
 
 /**
@@ -18,23 +19,28 @@ import java.time.LocalDate
  */
 class IrisFitBetaMvpQaTest {
 
-    private class FakeCompletionStorage : CompletionStorage {
-        private var content: String = ""
-        override fun read(): String = content
+    private class DiskFileCompletionStorage(private val targetFile: File) : CompletionStorage {
+        override fun read(): String {
+            return if (targetFile.exists()) targetFile.readText(Charsets.UTF_8) else ""
+        }
+
         override fun write(value: String): Boolean {
-            content = value
-            return true
+            targetFile.writeText(value, Charsets.UTF_8)
+            return targetFile.exists() && targetFile.readText(Charsets.UTF_8) == value
         }
     }
 
-    private lateinit var storage: FakeCompletionStorage
+    private lateinit var tempFile: File
+    private lateinit var fileStorage: DiskFileCompletionStorage
     private lateinit var repository: CompletionRepository
     private lateinit var workoutCompletion: WorkoutCompletion
 
     @Before
     fun setUp() {
-        storage = FakeCompletionStorage()
-        repository = CompletionRepository(storage)
+        tempFile = File(System.getProperty("java.io.tmpdir"), "test_file_completion_ledger_${System.currentTimeMillis()}.txt")
+        tempFile.deleteOnExit()
+        fileStorage = DiskFileCompletionStorage(tempFile)
+        repository = CompletionRepository(fileStorage)
         workoutCompletion = WorkoutCompletion(repository)
     }
 
@@ -69,30 +75,46 @@ class IrisFitBetaMvpQaTest {
         assertEquals(1, secondSave.records.size)
     }
 
-    // 3. 완료 기록이 1,001건 이상 누적되어도 절삭 없이 전량 보관되며 새 저장소 인스턴스에서 월별 집계가 정확한지 검증
+    // 3. 실제 디스크 파일 저장소(DiskFileCompletionStorage)를 통해 1,505건 혼합(휴식 905건 + 운동 600건) 데이터를 영구 저장 후 새 저장소 인스턴스에서 재로드 시 월별 종류별 집계가 정확한지 검증
     @Test
     fun repositoryExceeding1001RecordsAcrossMonths_preservesExactCountsInNewInstance() {
         val novDateStr = "2026-11-15"
         val octDateStr = "2026-10-15"
 
-        // 10월 기록 500건 저장
-        for (i in 1..500) {
+        // 10월 기록 500건 저장 (휴식 300건 + 안구운동 200건)
+        for (i in 1..300) {
             val uuid = java.util.UUID.randomUUID().toString()
             repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "screen_rest"))
         }
+        for (i in 1..100) {
+            val uuid = java.util.UUID.randomUUID().toString()
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "eye_gym"))
+        }
+        for (i in 1..100) {
+            val uuid = java.util.UUID.randomUUID().toString()
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), octDateStr, "smooth_pursuit"))
+        }
 
-        // 11월 기록 1,005건 저장 (한 달 1,001건 초과!)
-        for (i in 1..1005) {
+        // 11월 기록 1,005건 저장 (한 달 1,001건 초과! / 휴식 605건 + 안구운동 400건)
+        for (i in 1..605) {
             val uuid = java.util.UUID.randomUUID().toString()
             repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "screen_rest"))
         }
+        for (i in 1..200) {
+            val uuid = java.util.UUID.randomUUID().toString()
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "eye_gym"))
+        }
+        for (i in 1..200) {
+            val uuid = java.util.UUID.randomUUID().toString()
+            repository.save(CompletionRecord(uuid, System.currentTimeMillis(), novDateStr, "smooth_pursuit"))
+        }
 
-        // 새 저장소 인스턴스로 동기화 로드
-        val newRepo = CompletionRepository(storage)
-        val loadedRecords = newRepo.records()
+        // 실제 디스크 파일에서 새 CompletionRepository 인스턴스로 로드
+        val fileReadRepo = CompletionRepository(fileStorage)
+        val loadedRecords = fileReadRepo.records()
         assertEquals(1505, loadedRecords.size)
 
-        // 월별 집계 정확성 실측 검증
+        // 월별/종류별(휴식/운동) 집계 정확성 실측 검증
         val novStats = com.example.myapplication.session.RestHistory.month(
             loadedRecords,
             java.time.YearMonth.of(2026, 11),
@@ -104,8 +126,13 @@ class IrisFitBetaMvpQaTest {
             LocalDate.parse("2026-10-31")
         )
 
-        assertEquals(1005, novStats.rests)
-        assertEquals(500, octStats.rests)
+        // 11월 검증
+        assertEquals(605, novStats.rests)
+        assertEquals(400, novStats.exercises)
+
+        // 10월 검증
+        assertEquals(300, octStats.rests)
+        assertEquals(200, octStats.exercises)
     }
 
     // 4. 세션 ID 형식이 유효한 UUID인지 검증
