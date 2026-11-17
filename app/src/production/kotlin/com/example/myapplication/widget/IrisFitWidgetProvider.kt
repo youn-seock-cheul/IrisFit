@@ -54,11 +54,18 @@ class IrisFitWidgetProvider : AppWidgetProvider() {
                 views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
                 val queryResult = try { ScreenTimeManager.queryTodayScreenTime(context) } catch (_: Exception) { com.example.myapplication.data.ScreenTimeQueryResult.QueryError("Widget Error") }
+                val recordsResult = try {
+                    Pair(FileCompletionStorage.repository(context).records(), true)
+                } catch (_: Exception) {
+                    Pair(emptyList(), false)
+                }
+                val records = recordsResult.first
+                val recordsSuccess = recordsResult.second
+
                 val (screenTime, isMeasured) = when (queryResult) {
-                    is com.example.myapplication.data.ScreenTimeQueryResult.Success -> Pair(queryResult.minutes, true)
+                    is com.example.myapplication.data.ScreenTimeQueryResult.Success -> Pair(queryResult.minutes, recordsSuccess)
                     else -> Pair(0, false)
                 }
-                val records = try { FileCompletionStorage.repository(context).records() } catch (_: Exception) { emptyList() }
                 val today = LocalDate.now().toString()
                 val rests = records.count { it.completedLocalDate == today && it.routineId == "screen_rest" }
                 val miniGames = records.count { it.completedLocalDate == today && (it.routineId == "eye_gym" || it.routineId == "smooth_pursuit") }
