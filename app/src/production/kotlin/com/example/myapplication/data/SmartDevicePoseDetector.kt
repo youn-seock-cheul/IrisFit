@@ -14,6 +14,89 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.myapplication.R
 
+internal data class PoseSensorSample(
+    val sensorType: Int,
+    val values: FloatArray,
+    val timestampNs: Long,
+    val maxRange: Float
+)
+
+internal interface PoseSensorCallback {
+    fun onSample(sample: PoseSensorSample)
+    fun onUnreliable()
+}
+
+internal interface PoseSensorGateway {
+    fun register(sensorType: Int, callback: PoseSensorCallback): Boolean
+    fun unregisterAll()
+}
+
+private class AndroidPoseSensorGateway(context: Context) : PoseSensorGateway {
+    private fun logError(message: String, error: Throwable? = null) {
+        try {
+            if (error == null) Log.e("SmartDevicePoseDetector", message)
+            else Log.e("SmartDevicePoseDetector", message, error)
+        } catch (_: Throwable) {}
+    }
+
+    private fun logWarning(message: String) {
+        try {
+            Log.w("SmartDevicePoseDetector", message)
+        } catch (_: Throwable) {}
+    }
+
+    private val sensorManager = try {
+        context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+    } catch (e: Exception) {
+        logError("Failed to access SENSOR_SERVICE", e)
+        null
+    }
+    private val listeners = mutableListOf<SensorEventListener>()
+
+    override fun register(sensorType: Int, callback: PoseSensorCallback): Boolean {
+        return try {
+            val manager = sensorManager ?: return false
+            val sensor = manager.getDefaultSensor(sensorType) ?: return false
+            val listener = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    if (event == null) return
+                    val type = event.sensor?.type ?: return
+                    val maxRange = event.sensor?.maximumRange ?: 0f
+                    callback.onSample(
+                        PoseSensorSample(type, event.values?.copyOf() ?: return, event.timestamp, maxRange)
+                    )
+                }
+
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                    if (accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) callback.onUnreliable()
+                }
+            }
+            if (manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)) {
+                listeners += listener
+                true
+            } else {
+                logWarning("Sensor registration failed for type: $sensorType")
+                false
+            }
+        } catch (e: Exception) {
+            logError("Sensor registration threw for type: $sensorType", e)
+            false
+        }
+    }
+
+    override fun unregisterAll() {
+        val registered = listeners.toList()
+        listeners.clear()
+        registered.forEach { listener ->
+            try {
+                sensorManager?.unregisterListener(listener)
+            } catch (e: Exception) {
+                logError("Sensor unregistration failed", e)
+            }
+        }
+    }
+}
+
 enum class DevicePose(val labelKey: String, val iconRes: Int) {
     HAND_HELD_ACTIVE("pose_handheld", R.drawable.ic_pose_handheld),
     DEVICE_TILTED("pose_tilted", R.drawable.ic_pose_handheld),
@@ -22,7 +105,11 @@ enum class DevicePose(val labelKey: String, val iconRes: Int) {
     val label: String get() = labelKey
 }
 
-class SmartDevicePoseDetector(context: Context) : SensorEventListener {
+class SmartDevicePoseDetector internal constructor(
+    private val sensorGateway: PoseSensorGateway
+) {
+    constructor(context: Context) : this(AndroidPoseSensorGateway(context))
+
     private fun safeLogE(tag: String, msg: String, e: Throwable? = null) {
         try {
             if (e != null) Log.e(tag, msg, e) else Log.e(tag, msg)
@@ -35,12 +122,6 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
         } catch (_: Throwable) {}
     }
 
-    private val sensorManager = try {
-        context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
-    } catch (e: Exception) {
-        safeLogE("SmartDevicePoseDetector", "Failed to access SENSOR_SERVICE: ${e.message}", e)
-        null
-    }
     private val classifier = PoseClassifier()
     private val handler by lazy {
         try {
@@ -63,6 +144,7 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
     private var listening = false
     private var registeredSensorsCount = 0
     private var lastEventTimestampMs = 0L
+    private var listenerGeneration = 0L
     private var _observedPose by mutableStateOf(DevicePose.HAND_HELD_ACTIVE)
 
     val isListening: Boolean get() = listening
@@ -98,29 +180,45 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
         listening = true
         registeredSensorsCount = 0
         lastEventTimestampMs = 0L // Must receive at least 1 validated real sensor event!
+        val generation = ++listenerGeneration
+        val callback = object : PoseSensorCallback {
+            override fun onSample(sample: PoseSensorSample) {
+                if (!listening || listenerGeneration != generation) return
+                processSensorSample(sample.sensorType, sample.values, sample.timestampNs, sample.maxRange)
+            }
 
-        for (type in listOf(Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE, Sensor.TYPE_PROXIMITY, Sensor.TYPE_LIGHT)) {
-            val sensor = sensorManager?.getDefaultSensor(type) ?: continue
-            if (sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI) == true) {
-                registeredSensorsCount++
-            } else {
-                safeLogW("SmartDevicePoseDetector", "Sensor registration failed for type: $type")
+            override fun onUnreliable() {
+                if (!listening || listenerGeneration != generation) return
+                invalidateFreshness()
             }
         }
-        handler?.post(freshnessCheck)
+
+        for (type in listOf(Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE, Sensor.TYPE_PROXIMITY, Sensor.TYPE_LIGHT)) {
+            try {
+                if (sensorGateway.register(type, callback)) {
+                    registeredSensorsCount++
+                } else {
+                    safeLogW("SmartDevicePoseDetector", "Sensor unavailable or registration failed for type: $type")
+                }
+            } catch (e: Exception) {
+                safeLogE("SmartDevicePoseDetector", "Sensor registration failed for type: $type", e)
+            }
+        }
+        if (registeredSensorsCount > 0) handler?.post(freshnessCheck)
     }
 
     fun stopListening() {
         listening = false
+        listenerGeneration++
         registeredSensorsCount = 0
         lastEventTimestampMs = 0L
         handler?.removeCallbacks(freshnessCheck)
-        sensorManager?.unregisterListener(this)
+        sensorGateway.unregisterAll()
         classifier.reset()
         _observedPose = DevicePose.HAND_HELD_ACTIVE
     }
 
-    override fun onSensorChanged(event: SensorEvent?) {
+    fun onSensorChanged(event: SensorEvent?) {
         if (!listening || event == null) return
         val values = event.values ?: return
         val sensorType = event.sensor?.type ?: return
@@ -201,12 +299,16 @@ class SmartDevicePoseDetector(context: Context) : SensorEventListener {
         _observedPose = classifier.pose(if (nowMs > 0L) nowMs else 0L)
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+    fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         if (accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) {
-            classifier.reset()
-            lastEventTimestampMs = 0L // Invalidate freshness on unreliable sensor status
-            _observedPose = DevicePose.HAND_HELD_ACTIVE
+            invalidateFreshness()
         }
+    }
+
+    private fun invalidateFreshness() {
+        classifier.reset()
+        lastEventTimestampMs = 0L
+        _observedPose = DevicePose.HAND_HELD_ACTIVE
     }
 
     // Test-helpers for deterministic simulation in JVM unit tests

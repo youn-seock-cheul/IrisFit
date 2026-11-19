@@ -5,12 +5,42 @@ import android.content.ContextWrapper
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import com.example.myapplication.data.SmartDevicePoseDetector
+import com.example.myapplication.data.PoseSensorCallback
+import com.example.myapplication.data.PoseSensorGateway
+import com.example.myapplication.data.PoseSensorSample
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
 class SmartDevicePoseDetectorTest {
+
+    private class FakeSensorGateway(
+        private val registration: (Int) -> Boolean = { true }
+    ) : PoseSensorGateway {
+        val callbacks = mutableMapOf<Int, MutableList<PoseSensorCallback>>()
+        var unregisterCount = 0
+
+        override fun register(sensorType: Int, callback: PoseSensorCallback): Boolean {
+            if (!registration(sensorType)) return false
+            callbacks.getOrPut(sensorType) { mutableListOf() }.add(callback)
+            return true
+        }
+
+        override fun unregisterAll() {
+            unregisterCount++
+        }
+
+        fun emit(
+            sensorType: Int,
+            callbackIndex: Int,
+            timestampNs: Long
+        ) {
+            callbacks.getValue(sensorType)[callbackIndex].onSample(
+                PoseSensorSample(sensorType, floatArrayOf(0f, 0f, 9.8f), timestampNs, 20f)
+            )
+        }
+    }
 
     private class TestContext : ContextWrapper(null) {
         override fun getSystemService(name: String): Any? = null
@@ -149,5 +179,47 @@ class SmartDevicePoseDetectorTest {
         // Stop listening invalidates freshness
         detector.stopListening()
         assertFalse(detector.isFresh)
+    }
+
+    @Test
+    fun allSensorRegistrationsFail_remainsUnavailableAndNotFresh() {
+        val gateway = FakeSensorGateway { false }
+        val unavailableDetector = SmartDevicePoseDetector(gateway)
+        unavailableDetector.monotonicClockMsProvider = { 1000L }
+
+        unavailableDetector.startListening()
+
+        assertTrue(unavailableDetector.isListening)
+        assertFalse(unavailableDetector.hasRegisteredSensors)
+        assertFalse(unavailableDetector.isFresh)
+
+        unavailableDetector.stopListening()
+        assertFalse(unavailableDetector.isFresh)
+        assertTrue(gateway.unregisterCount > 0)
+    }
+
+    @Test
+    fun callbackFromPreviousSessionCannotRefreshCurrentSession() {
+        val gateway = FakeSensorGateway()
+        val sessionDetector = SmartDevicePoseDetector(gateway)
+        var nowMs = 1000L
+        sessionDetector.monotonicClockMsProvider = { nowMs }
+
+        sessionDetector.startListening()
+        val oldSessionCallback = 0
+        sessionDetector.stopListening()
+        assertFalse(sessionDetector.isFresh)
+
+        sessionDetector.startListening()
+        gateway.emit(Sensor.TYPE_ACCELEROMETER, oldSessionCallback, 500_000_000L)
+        assertFalse(sessionDetector.isFresh)
+
+        gateway.emit(Sensor.TYPE_ACCELEROMETER, 1, 900_000_000L)
+        assertTrue(sessionDetector.isFresh)
+
+        nowMs = 7000L
+        assertFalse(sessionDetector.isFresh)
+        gateway.emit(Sensor.TYPE_ACCELEROMETER, oldSessionCallback, 6_900_000_000L)
+        assertFalse(sessionDetector.isFresh)
     }
 }
