@@ -52,9 +52,9 @@ class BreakReminderDeliveryTest {
         sendReminder()
         await { ownNotification() != null }
         val notification = ownNotification()!!
-        assertEquals("잠시 화면에서 눈을 떼세요",
+        assertEquals(context.getString(R.string.care_notification_title),
             notification.extras.getString(Notification.EXTRA_TITLE))
-        notification.actions.single { it.title.toString() == "알림 종료" }.actionIntent.send()
+        notification.actions.single { it.title.toString() == context.getString(R.string.care_stop) }.actionIntent.send()
         await { scheduler.deadline() == 0L && ownNotification() == null }
     }
 

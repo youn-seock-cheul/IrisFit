@@ -1,9 +1,9 @@
 <resources>
     <string name="history_title">Tu historial de descanso</string>
     <string name="history_loading">Cargando registros…</string>
-    <string name="history_today">Hoy: %1$d descansos · %2$d ejercicios</string>
-    <string name="history_this_month">Este mes hasta hoy: %1$d descansos · %2$d ejercicios · %3$d días activos</string>
-    <string name="history_last_month">Mes pasado: %1$d descansos · %2$d ejercicios · %3$d días activos</string>
+    <string name="history_today">Hoy: %1$d descansos · %2$d entrenamientos</string>
+    <string name="history_this_month">Este mes hasta hoy: %1$d descansos · %2$d entrenamientos · %3$d días activos</string>
+    <string name="history_last_month">Mes pasado: %1$d descansos · %2$d entrenamientos · %3$d días activos</string>
     <string name="history_segment">Días %1$d–%2$d: %3$d actividades</string>
     <string name="history_note">Solo se muestran actividades confirmadas. No se pueden recuperar registros eliminados anteriormente; estas cifras no miden la salud ocular.</string>
     <string name="care_settings_title">Recordatorios suaves de descanso</string>
@@ -16,9 +16,9 @@
     <string name="care_hours_all">Todo el día</string>
     <string name="care_channel">Recordatorios suaves de descanso</string>
     <string name="care_notification_title">Descansa un momento de la pantalla</string>
-    <string name="care_notification_body">¿Quieres descansar o hacer un breve ejercicio ocular?</string>
-    <string name="care_open_rest">Descansar</string>
-    <string name="care_open_exercise">Ejercicio ocular</string>
+    <string name="care_notification_body">¿Quieres descansar o hacer un breve entrenamiento ocular?</string>
+    <string name="care_open_focus">Enfoque</string>
+    <string name="care_open_pursuit">Seguimiento visual</string>
     <string name="care_stop">Desactivar recordatorios</string>
     <string name="care_later">Más tarde</string>
     <string name="care_schedule_error">No se pudo actualizar el recordatorio. Inténtalo de nuevo.</string>
@@ -26,17 +26,17 @@
     <string name="care_open_notification_settings">Abrir ajustes de notificaciones</string>
     <string name="app_name">IrisFit</string>
     <string name="nav_home">Inicio</string>
-    <string name="nav_gym">Gimnasio Visual</string>
+    <string name="nav_gym">Entrenamiento ocular</string>
     <string name="nav_eye_comfort">Comodidad visual</string>
     <string name="nav_ai">Entrenador IA</string>
     <string name="nav_settings">Ajustes</string>
 
     <string name="home_title">IrisFit</string>
-    <string name="home_subtitle">Podómetro ocular &amp; hábitos</string>
+    <string name="home_subtitle">Batería de salud ocular &amp; hábitos</string>
 
     <string name="battery_title">Batería Ocular IrisFit</string>
     <string name="battery_subtitle">Informe de fatiga en tiempo real</string>
-    <string name="tap_mascot">👆 ¡Toca la mascota para descansar!</string>
+    <string name="tap_mascot">Toca la mascota para descansar</string>
     <string name="screen_time_today">Tiempo de pantalla hoy</string>
 
     <string name="status_optimal">Óptimo (Sin fatiga)</string>
@@ -44,7 +44,7 @@
     <string name="status_warning">Advertencia (Alto consumo)</string>
 
     <string name="rest_completed">Descanso completado</string>
-    <string name="eye_exercise">Ejercicio ocular</string>
+    <string name="eye_exercise">Entrenamiento ocular</string>
     <string name="sns_share">Compartir estado en SNS</string>
 
     <string name="weekly_trend">Tendencia semanal</string>
@@ -56,10 +56,10 @@
     <string name="tab_monthly">Mensual (4s)</string>
 
     <string name="cheer_header">Relevo de ánimo</string>
-    <string name="goals_header">Objetivos de salud visual &amp; trofeos</string>
-    <string name="gym_header">Estación de carga ocular</string>
+    <string name="goals_header">Objetivos de salud ocular de hoy</string>
+    <string name="gym_header">Entrenamiento ocular</string>
     <string name="ai_header">Entrenador IA IrisFit</string>
-    <string name="settings_header">Ajustes y gestión</string>
+    <string name="settings_header">Ajustes</string>
 
     <string name="btn_close">Cerrar</string>
     <string name="btn_cancel">Cancelar</string>

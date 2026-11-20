@@ -20,14 +20,34 @@
 
 ## 현재 기준
 
+- 2026-11-20 홈 카드 글자 크기 승인: 카드 안 글자 크기만 21:11 목업 버전으로 복원(배치·여백·아이콘·구성 유지, 버튼 긴 번역은 자동 축소). Debug 조립·UI 테스트 컴파일·관련 JVM 16/16 통과; 시각 검수·폰 설치 NOT RUN. [상세 기록](IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md#home-card-font-mockup). Release Hold 유지.
+- 2026-11-20 시선 추적 크기 승인: 행성(지구·목성·토성·금성)·달 반지름 절반, 이동 반경·궤도 계산 유지. Debug 조립 및 궤도 JVM 4/4 통과; 시각 검수·폰 설치 NOT RUN, S23은 21:24 설치본 유지. [상세 기록](IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md#pursuit-planet-size). Release Hold 유지.
+- 2026-11-20 홈 문구·정렬 승인: 정상 안내 축약, 홈 의료 측정 고지·건강 기록 없음 문구 삭제, 앱의 기술 명칭을 건강 데이터 연동 표현으로 교체. 세 휴식·훈련 버튼 중앙 정렬, 크기·여백·계산·실제 오류 안내 유지. Debug 조립 및 관련 JVM 16/16 통과; 시각 검수·실데이터·폰 설치 NOT RUN, S23은 21:24 설치본 유지. [상세 기록](IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md#home-copy-center). Release Hold 유지.
+
+- 2026-11-20 홈 카드 후속 결정: 목업 외형 대신 직전 카드의 크기와 스타일을 유지하고 배치·문구만 정리한다. 측정·연동 로직 변경 없음. 사용자 요청에 따라 21:24 수정본 Debug APK를 S23에 설치하고 기동·해시를 확인했다. [적용 내용·검증](IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md#home-layout-restore), [폰 설치 기록](IrisFit_Phone_Debug_Install_2026-11-20.md).
+
+- 2026-11-20 홈 배터리 카드 목업 승인: 상태 라벨은 4단계 모두 단어만(`행복` 등), 홈 카드는 사용자 첨부 목업 구성으로 정돈, 연동 문구는 `건강정보연동 배터리 표시 중`. ⓘ 정보창 정리안은 미승인. 산식·구간 불변. JVM 108/108, Release boundary, 격리 AVD 관련 UI 테스트 통과(탭 유지 반영 테스트 1건 수정). 사용자 요청으로 21:11에 Debug APK를 S23에 업데이트 설치하고 앱 실행 및 APK 해시 일치를 확인했다. 위젯·알림·실데이터 NOT RUN. 카드 안 추가 고지는 사용자 지시(필수 아니면 목업 유지)에 따라 넣지 않음. 출시 때 스토어 설명에 '의료기기 아님' 고지 필요(Play Health 정책). Release Hold 유지. [변경·검증 기록](IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md), [폰 설치 기록](IrisFit_Phone_Debug_Install_2026-11-20.md).
+
+- 2026-11-20 Health Connect 후속 승인: Android 14 이상 권한 안내 복구, 홈 연동 상태 표시, 산식 세 항목으로 축약. 개인 기기 권한은 자동 허용하지 않으며 계산식은 유지한다. 사용자 후속 요청으로 19:32에 S23 Debug 업데이트 설치를 완료하고 앱 실행·권한 안내 화면 등록·설치 APK 해시 일치를 확인했다. 실데이터 검증은 NOT RUN, Release Hold 유지. [구현·검증 기록](IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md), [설치 기록](IrisFit_Phone_Debug_Install_2026-11-20.md).
+
+- 2026-11-20 상태 구간 결정: 3단계 및 저잔량 응원 매칭 요청을 취소하고 기존 4단계로 복원. 점수·연동 산식은 유지했다. 복원본은 이후 사용자 요청으로 Galaxy S23에 Debug 업데이트 설치했으며 전체 JVM 108/108이 통과했다. Release Hold 유지. [변경 범위·검증 기록](IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md), [설치 기록](IrisFit_Phone_Debug_Install_2026-11-20.md).
+
 - 진행 순서: **현재 Release 구현 감사 → 베타 범위/수용 기준 승인 → 개발·자체검증 → QA 재검수 → PM 완료 판정 → 내부 테스트 → 제한 베타 → 별도 정식 출시 승인**
 - `AUD-01` Developer 감사 및 `QA-01` 정적 재검토는 완료됐으나 실제 기기/Play 검증은 미완료다. 전체 제품 출시 준비는 **BLOCKED**다.
-- 실제 시청시간 목표는 유지한다. Android 13+ 범용 목표와 측정 불가 시 `미측정`을 승인했고, Galaxy S23/Z Fold7은 초기 시험 후보로만 정했다. 기기별 전력 허용치·정확도 기준·시험 절차는 미승인이다.
-- 현재 단계: **`BATCH-UNMEASURED-01` R5, final `aec48fd` PM 검토 — PARTIAL PASS, 일부 센서 lifecycle 검증 대기**. Gradle XML 82 passed/0 skipped/0 failed. Clock/payload/range/unreliable/stop 상태 테스트를 확인했으나 test helper가 sensor registration을 모의하므로 실제 listener lifecycle은 검증되지 않는다. 미등록/등록 실패 및 stop 후 늦은 callback 차단도 미검증이다. HEAD에 포함된 별도 `ea23d44` beta MVP/UI 변경은 별도 QA 범위다. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R5_aec48fd_2026-11-17.md`.
+- 실제 시청시간 목표는 유지한다. 사용자 요청으로 UsageStats 화면 사용 기반 **추정치**를 제공하지만 실제 시선/시청시간 측정값으로 취급하지 않는다. 권한 거부 시 `미측정`으로 남긴다. Health Connect는 기본 꺼짐인 선택 연동이다. Android 13+ 목표 및 Galaxy S23/Z Fold7의 시험 후보 지위는 유지하며 기기별 전력 허용치·정확도 기준·시험 절차는 미승인이다.
+- 현재 단계: **센서 lifecycle 제한 범위 PASS, 베타 수정 및 자동 QA PASS / 제품 전체 QA PARTIAL PASS**. UsageStats·Health Connect 및 홈 설명 간결화 후 JVM 106/106, AndroidTest 19/19, Usage Access 허용/거부 흐름 각 1/1, 홈 설명 펼침 UI 1/1, Release 컴파일/boundary 검증 통과. 최신 Debug APK를 Galaxy S23(Android 16)에 업데이트 설치하고 시작을 확인했다. Health Connect 실데이터, 사용량 정확도, 수동 UI/전력/Play 검증은 NOT RUN. 외부 Release/Play 배포가 아니며 Release Hold 유지. 상세: [구현·QA](IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md), [폰 설치](IrisFit_Phone_Debug_Install_2026-11-20.md).
+- 2026-11-20 홈 안내 후속: 카드 여백과 `산식` 토글을 간결화하고, 연동 성공 시 Health Connect 수면/깊은 수면·실제 계산 시작 잔량 및 걸음/등산 보너스를 노출한다(산식 유지). 선택 JVM 15/15, Android 17 격리 AVD 전체 AndroidTest 19/19, Release 컴파일/boundary 및 Debug 조립 통과. 최신 Debug APK를 S23에 `adb install -r`로 업데이트하고 앱 시작 확인. 실기기 Health Connect 표시/권한/정확도·전력은 NOT RUN; Release Hold 유지. SHA-256과 상세 결과는 [설치 기록](IrisFit_Phone_Debug_Install_2026-11-20.md).
 - 실기기 상태: 이번 PM 검토에서 callback freshness, 실제 viewing/posture accuracy 및 battery/heat를 실행하지 않았다. 모두 NOT RUN. 근거: `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R5_aec48fd_2026-11-17.md`.
 - 출시 Hold 해제, 내부 테스트 업로드 및 Production 배포는 별도 PM 승인 대상이다.
 
 ## 문서 인덱스
+
+- **2026-11-18~19 추가:** [UI 개편 및 후속 개발 기록](IrisFit_UI_Followup_2026-11-18.md). 승인된 후속 UI/색톤 변경을 기록한다. 2026-11-19 원근 조절·시선 추적의 중단 후 재시작 결함을 수정하고 빠른 점멸·파동 리플, 4가지 3D 위성 궤도와 지구·목성·토성·금성 행성별 표현을 구현했다. 패널 없는 작은 자연 위성과 표면 무늬의 행성 자전을 추가했고, 사용자 피드백으로 지그재그 궤도를 부드러운 S자 궤도로 교체했다. 관련 JVM 테스트와 APK 조립 및 Galaxy S23(Android 16) UI 테스트가 통과했다. 미커밋, Release Hold 유지.
+- **2026-11-19 센서 후속 검증:** [센서 생명주기 검증 기록](IrisFit_Sensor_Lifecycle_Verification_2026-11-19.md). 등록 실패와 이전 세션 늦은 callback을 JVM에서 검증하고, Galaxy S23(Android 16)에서 실제 SensorManager 등록·callback·stop 무효화 기기 테스트를 통과했다. 정확도/전력은 NOT RUN; Release Hold 유지.
+- **2026-11-19 베타 MVP/UI QA:** [재검수 기록](IrisFit_Beta_MVP_UI_QA_Review_2026-11-19.md). 전체 JVM 103개와 UI 후속 7개(격리 에뮬레이터), 휴식 핵심 흐름 2개를 통과했으나 승인된 베타 범위 기준 위반이 남아 PARTIAL FAIL이다. Release Hold 유지.
+- **2026-11-20 베타 MVP/UI QA 후속:** [수정 및 재검증 기록](IrisFit_Beta_MVP_UI_QA_Followup_2026-11-20.md). 릴레이/AI 진입점과 UsageStats 기반 배터리 점수 문제를 수정해 해당 항목은 PASS. 잔여 자동 QA 재실행 결과 JVM 103/103, 격리 Android 17 에뮬레이터 전체 AndroidTest 18/18 및 `UiFollowupTest` 10/10 통과. 수동 시각 검수, S23 전체 클래스 재실행, 센서/시청시간 정확도·전력 및 Play 검증은 NOT RUN; 전체 QA PARTIAL PASS, Release Hold 유지.
+- **2026-11-20 눈 배터리 추정 및 Health Connect:** [구현·검증 기록](IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md). UsageStats 화면 사용 추정, 기본 꺼짐 Health Connect, 후속 승인된 홈 요약/자세히 설명 UI를 기록했다. JVM 106/106 및 관련 Android UI 테스트 통과. 실데이터·정확도/전력/Play는 NOT RUN.
+- **2026-11-20 Galaxy S23 설치:** [Debug 설치 기록](IrisFit_Phone_Debug_Install_2026-11-20.md). 사용자 요청으로 Android 16 Galaxy S23에 Debug APK(version 1.0.0)를 설치하고, 설명 간결화 후 업데이트하여 MainActivity 시작을 확인했다. Play/외부 배포와 Release Hold 해제는 하지 않았다.
 
 | 문서 | 상태 | 용도 |
 |---|---|---|
@@ -128,7 +148,7 @@
 
 ### DEC-2026-11-15-08 — 베타 MVP 범위 선택
 
-- **상태:** 사용자가 범위 선택; 상세 기본설계 및 개발 승인 전
+- **상태:** 사용자 선택; 초기 범위 승인. 후속 요청으로 UsageStats 화면 사용 추정 기능과 선택형 Health Connect 연동은 구현 승인됨
 - **결정:** 베타 범위 후보는 홈, 선택적 Usage Access, 30초 휴식, 눈 운동, 기기 내 로컬 기록으로 한다. 커뮤니티/릴레이, AI Coach, PRO는 베타에서 숨기는 방향으로 설계한다.
 - **미결:** 점수의 사용자-facing 의미, 운동 모드/완료 조건, 로컬 기록 보존/삭제 범위, 알림 및 배터리 최적화 설정.
 - **근거:** 사용자의 2026-11-15 범위 선택; `IrisFit_PM_Beta_MVP_Basic_Design_2026-11-15.md`
@@ -463,6 +483,15 @@
 - **다음:** 미등록/late callback 테스트를 보완하거나 actual listener test 제외 근거를 PM이 명시하고, `ea23d44` QA 범위를 별도 추적한다. 이번 문서는 배치 자동 테스트 증거만 조건부 수용하며 내부 테스트/베타/Play 배포를 승인하지 않는다.
 - **근거:** `C:\Users\youns\AndroidStudioProjects\task\IrisFit_PM_Batch_Review_BATCH-UNMEASURED-01_R5_aec48fd_2026-11-17.md`.
 
+### DEC-2026-11-20-01 — UsageStats 화면 사용 추정 및 선택형 Health Connect
+
+- **상태:** 사용자 요청에 따른 구현 승인; 실제 시청시간/정확도 목표 변경 또는 출시 승인은 아님
+- **결정:** UsageStats의 앱 전경 사용을 화면 사용 기반 눈 배터리 **추정치**로 표시한다. 실제 시선·실제 시청시간 측정으로 표현하지 않고, Usage Access가 거부되거나 조회에 실패하면 미측정으로 처리한다. Health Connect 수면/활동 연동은 설정의 선택 기능으로 두고 기본은 꺼진 상태로 유지한다.
+- **구현 범위:** 야간 및 앱 카테고리 가중치, 기존 완료 휴식/훈련 회복값, 사용자 안내/다국어, 위젯 전달 및 Health Connect 수면·걸음·등산 데이터 읽기. 앱 설정에서 끄면 추가 데이터 읽기를 중단하고 권한 철회 위치를 안내한다.
+- **검증:** JVM 106/106, Android 17 격리 AVD AndroidTest 19/19, Usage Access 허용/거부 UI 흐름 각 1/1, Release Kotlin 컴파일, `verifyReleaseBoundary`, `git diff --check` 통과.
+- **미완료:** 실제 Health Connect provider/data, Galaxy S23 실사용 추정 정확도, 배터리/발열/전력, 수동 시각 QA 및 Play 검토. 기존 Release Hold 유지.
+- **근거:** 사용자 요청 및 `IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md`.
+
 ## 진행 추적
 
 | ID | 작업 | 상태 | 담당 | 다음 결과 |
@@ -470,9 +499,11 @@
 | AUD-01 | Release 구현·기능·권한·데이터 읽기 전용 감사 | 완료 — 정적 조사 | 개발자 | `IrisFit_Current_State_Audit_2026-11-15.md` |
 | AUD-02 | dirty worktree/HEAD 기준점 기록 | 완료 | 개발자 | branch/HEAD, 24 modified, 34 untracked 기록 |
 | QA-01 | 감사 결과 acceptance criteria 재검토 | 완료 — 전체 QA BLOCKED | QA | `IrisFit_Current_State_Audit_QA_Review_2026-11-15.md` |
-| PM-01 | 베타 MVP 범위 및 제품 목표 승인 | 부분 완료 — 실제 시청시간 목표 유지, Android 13+ 및 `미측정` 결정 | PM/사용자 | 정확도·전력 기준 및 시험 절차 결정 |
-| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | `BATCH-UNMEASURED-01` R5, `aec48fd`; JVM 82/0/0 | Developer | 미등록/late callback 검증; 필요 시 actual listener integration |
-| QA-03 | DEV-02 재검수 | 배치 R5 PARTIAL PASS — 테스트 보완 조건부 수용 | QA/PM | 미등록/late callback 및 `ea23d44` beta MVP/UI 별도 QA |
+| PM-01 | 베타 MVP 범위 및 제품 목표 승인 | 부분 완료 — 실제 시청시간 목표 유지; 사용자 요청으로 UsageStats 추정치와 기본 꺼짐 Health Connect 선택 연동 추가 | PM/사용자 | 정확도·전력 기준 및 시험 절차 결정 |
+| DEV-02 | ViewingTimeEvaluator/UsageStats 상태·노출 리팩터링 | `BATCH-UNMEASURED-01` R5, `aec48fd`; 후속 센서 lifecycle 검증 기록 참조 | Developer | 실제 시청시간 산식·표시·전력 기준 결정 및 검증 |
+| DEV-03 | 눈 배터리 화면 사용 추정 및 Health Connect 선택 연동 | 구현 완료; 사용자 안내 및 설정을 연결 (`IrisFit_Eye_Battery_Health_Connect_Implementation_2026-11-20.md`) | Developer | 기기 사용량 정확도와 실제 Health Connect provider/data 검증 |
+| QA-03 | DEV-02 및 베타 MVP/UI 재검수 | 센서 lifecycle 제한 범위 PASS; QA-BETA-01/02 수정 및 당시 자동 suite PASS (`IrisFit_Beta_MVP_UI_QA_Followup_2026-11-20.md`) | QA/PM | 현행 구현의 추가 QA는 QA-04에 연결 |
+| QA-04 | UsageStats 추정 및 선택형 Health Connect 재검증 | JVM 106, AndroidTest 19, Usage Access 허용/거부 경로 각 1 통과; 전체 제품 QA **PARTIAL PASS** | QA/PM | Health Connect 실데이터, S23 정확도, 수동 UI, 전력/Play 검증 |
 | TEST-01 | Galaxy S23/Z Fold7 타당성 시험 | Galaxy S23+ 기본 UI 스모크 완료; 정확도/전력 기준·시험 미승인 | PM/Developer/QA | 승인된 시험 기준, 센서 이벤트·시청 정확도 및 충전 해제 후 기기별 배터리 결과 |
 | REL-01 | 내부 테스트 진입 및 Play 배포 승인 | 미승인 | PM/소유자 | 별도 명시적 승인 |
 

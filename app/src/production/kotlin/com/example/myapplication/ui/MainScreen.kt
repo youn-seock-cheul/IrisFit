@@ -1,6 +1,8 @@
 package com.example.myapplication.ui
 
 import android.Manifest
+import androidx.compose.foundation.layout.RowScope
+import androidx.annotation.DrawableRes
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -59,6 +61,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,9 +77,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.myapplication.R
+import com.example.myapplication.data.HealthConnectManager
 import com.example.myapplication.data.ScreenTimeManager
 import com.example.myapplication.session.GuidedSessionViewModel
 import com.example.myapplication.session.EyeBatteryCalculator
+import com.example.myapplication.ui.theme.LegacyBatteryTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -93,58 +98,19 @@ fun MainScreen(
     onNavigateToPursuitRandom: () -> Unit = onNavigateToPursuit,
     onNavigateToWorkoutRandom: () -> Unit = {}
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    var showBetaNoticeDialog by remember { mutableStateOf(false) }
-
-    if (showBetaNoticeDialog) {
-        AlertDialog(
-            onDismissRequest = { showBetaNoticeDialog = false },
-            title = { Text(text = "알림", fontWeight = FontWeight.Bold) },
-            text = { Text(text = "베타 준비 중입니다.") },
-            confirmButton = {
-                TextButton(onClick = { showBetaNoticeDialog = false }) {
-                    Text("확인")
-                }
-            }
-        )
-    }
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp
+                tonalElevation = 0.dp
             ) {
-                NavigationBarItem(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    icon = { Icon(painter = painterResource(id = R.drawable.ic_nav_home), contentDescription = sessionModel.tr("nav_home"), modifier = Modifier.size(22.dp)) },
-                    label = { Text(sessionModel.tr("nav_home"), fontWeight = FontWeight.SemiBold) }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    icon = { Icon(painter = painterResource(id = R.drawable.ic_nav_gym), contentDescription = sessionModel.tr("nav_gym"), modifier = Modifier.size(22.dp)) },
-                    label = { Text(sessionModel.tr("nav_gym"), fontWeight = FontWeight.SemiBold) }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    icon = { Icon(painter = painterResource(id = R.drawable.ic_nav_eye_comfort), contentDescription = sessionModel.tr("nav_eye_comfort"), modifier = Modifier.size(22.dp)) },
-                    label = { Text(sessionModel.tr("nav_eye_comfort"), fontWeight = FontWeight.SemiBold) }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 3,
-                    onClick = { showBetaNoticeDialog = true },
-                    icon = { Icon(painter = painterResource(id = R.drawable.ic_nav_ai), contentDescription = sessionModel.tr("nav_ai"), modifier = Modifier.size(22.dp)) },
-                    label = { Text(sessionModel.tr("nav_ai"), fontWeight = FontWeight.SemiBold) }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 4,
-                    onClick = { selectedTab = 4 },
-                    icon = { Icon(painter = painterResource(id = R.drawable.ic_nav_settings), contentDescription = sessionModel.tr("nav_settings"), modifier = Modifier.size(22.dp)) },
-                    label = { Text(sessionModel.tr("nav_settings"), fontWeight = FontWeight.SemiBold) }
-                )
+                IrisNavItem(selectedTab == 0, R.drawable.ic_ms_home, R.drawable.ic_ms_home_fill, sessionModel.tr("nav_home")) { selectedTab = 0 }
+                IrisNavItem(selectedTab == 1, R.drawable.ic_ms_visibility, R.drawable.ic_ms_visibility_fill, sessionModel.tr("nav_gym")) { selectedTab = 1 }
+                IrisNavItem(selectedTab == 2, R.drawable.ic_ms_shield, R.drawable.ic_ms_shield_fill, sessionModel.tr("nav_eye_comfort")) { selectedTab = 2 }
+                IrisNavItem(selectedTab == 3, R.drawable.ic_ms_settings, R.drawable.ic_ms_settings_fill, sessionModel.tr("nav_settings")) { selectedTab = 3 }
             }
         }
     ) { innerPadding ->
@@ -158,202 +124,153 @@ fun MainScreen(
             )
             1 -> GymAndExamTab(sessionModel, modifier, onNavigateToGym, onNavigateToPursuitMode, onNavigateToExam)
             2 -> EyeComfortSettingsTab(sessionModel, modifier)
-            3 -> AiCoachTab(sessionModel, modifier)
-            4 -> SettingsTab(sessionModel, modifier)
+            3 -> SettingsTab(sessionModel, modifier)
         }
     }
 }
 
 @Composable
+private fun RowScope.IrisNavItem(
+    selected: Boolean,
+    @DrawableRes icon: Int,
+    @DrawableRes selectedIcon: Int,
+    label: String,
+    onClick: () -> Unit
+) {
+    NavigationBarItem(
+        selected = selected,
+        onClick = onClick,
+        icon = {
+            Icon(
+                painter = painterResource(id = if (selected) selectedIcon else icon),
+                contentDescription = label,
+                modifier = Modifier.size(24.dp)
+            )
+        },
+        label = { Text(label, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+    )
+}
+
+@Composable
+fun BetaNoticeDialog(sessionModel: GuidedSessionViewModel, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(painterResource(R.drawable.ic_ms_info), contentDescription = null) },
+        title = { Text(text = sessionModel.tr("beta_notice_title"), fontWeight = FontWeight.Bold) },
+        text = { Text(text = sessionModel.tr("beta_notice_body")) },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(sessionModel.tr("btn_ok")) }
+        }
+    )
+}
+
+@Composable
 fun CommunityCheerCard(sessionModel: GuidedSessionViewModel) {
-    val context = LocalContext.current
     var showBetaNoticeDialog by remember { mutableStateOf(false) }
 
     if (showBetaNoticeDialog) {
-        AlertDialog(
-            onDismissRequest = { showBetaNoticeDialog = false },
-            title = { Text(text = "알림", fontWeight = FontWeight.Bold) },
-            text = { Text(text = "베타 준비 중입니다.") },
-            confirmButton = {
-                TextButton(onClick = { showBetaNoticeDialog = false }) {
-                    Text("확인")
-                }
-            }
-        )
+        BetaNoticeDialog(sessionModel) { showBetaNoticeDialog = false }
     }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { showBetaNoticeDialog = true },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(Color(0xFFFF9800).copy(alpha = 0.2f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("🚩", fontSize = 18.sp)
-                    }
-                    Column {
-                        Text("눈 건강 응원 릴레이 & 커뮤니티", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text("친구들과 함께 이어가는 눈 휴식 릴레이", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                    }
-                }
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "[베타 준비 중]",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            Text(
-                text = "릴레이 탐색, 바통 인계 및 소셜 방명록 기능은 현재 정식 베타 출시를 위해 준비 중입니다.",
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-
-            Button(
-                onClick = { showBetaNoticeDialog = true },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Text("베타 알림 확인하기", fontWeight = FontWeight.Bold)
-            }
-        }
+    IrisCard {
+        IrisCardHeader(
+            icon = R.drawable.ic_ms_flag,
+            title = sessionModel.tr("cheer_card_title"),
+            subtitle = sessionModel.tr("cheer_card_sub"),
+            badge = sessionModel.tr("badge_beta")
+        )
+        IrisBodyText(sessionModel.tr("cheer_card_body"))
+        IrisPrimaryButton(
+            text = sessionModel.tr("cheer_card_btn"),
+            icon = R.drawable.ic_ms_notifications,
+            onClick = { showBetaNoticeDialog = true }
+        )
     }
 }
 
 @Composable
 fun GoalAchievementCard(sessionModel: GuidedSessionViewModel) {
+    val recordsAvailable = sessionModel.recordsReady && sessionModel.error == null
     val restCount = sessionModel.todayRestCount
-    val isMeasured = sessionModel.eyeBatteryStats.screenTimeMeasured
-    val batteryScore = sessionModel.eyeBatteryStats.eyeHealthScore
+    val stats = sessionModel.eyeBatteryStats
+    val isMeasured = recordsAvailable && stats.screenTimeMeasured
+    val batteryScore = stats.eyeHealthScore
+    val streak = com.example.myapplication.session.RestHistory.currentRestStreak(
+        sessionModel.records, java.time.LocalDate.parse(sessionModel.today)
+    )
     val isGoal1Reached = isMeasured && batteryScore >= 85
-    val isGoal2Reached = restCount >= 3
-    val isGoal3Reached = true
+    val isGoal2Reached = recordsAvailable && restCount >= 3
+    val isGoal3Reached = recordsAvailable && streak >= 7
+    val batteryText = if (isMeasured && batteryScore >= 0) "${batteryScore}%" else sessionModel.tr("not_measured")
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    IrisCard {
+        IrisCardHeader(
+            icon = R.drawable.ic_ms_emoji_events,
+            title = sessionModel.tr("goals_header"),
+            subtitle = sessionModel.tr("goals_sub")
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            GoalRow(
+                sessionModel = sessionModel,
+                icon = R.drawable.ic_ms_battery_saver,
+                title = sessionModel.tr("goal_1"),
+                detail = sessionModel.tr("goal_current_battery").format(batteryText),
+                reached = isGoal1Reached,
+                available = isMeasured
+            )
+            GoalRow(
+                sessionModel = sessionModel,
+                icon = R.drawable.ic_ms_timer,
+                title = sessionModel.tr("goal_2"),
+                detail = if (recordsAvailable) sessionModel.tr("goal_rest_progress").format(restCount) else sessionModel.tr("records_unavailable"),
+                reached = isGoal2Reached,
+                available = recordsAvailable
+            )
+            GoalRow(
+                sessionModel = sessionModel,
+                icon = R.drawable.ic_ms_local_fire_department,
+                title = sessionModel.tr("goal_3"),
+                detail = if (recordsAvailable) sessionModel.tr("goal_streak_progress").format(streak) else sessionModel.tr("records_unavailable"),
+                reached = isGoal3Reached,
+                available = recordsAvailable
+            )
+        }
+    }
+}
+
+@Composable
+private fun GoalRow(
+    sessionModel: GuidedSessionViewModel,
+    @DrawableRes icon: Int,
+    title: String,
+    detail: String,
+    reached: Boolean,
+    available: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background, RoundedCornerShape(14.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(Color(0xFFFFB300).copy(alpha = 0.2f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(painter = painterResource(id = R.drawable.ic_card_trophy), contentDescription = null, tint = Color(0xFFFFB300), modifier = Modifier.size(20.dp))
-                    }
-                    Column {
-                        Text(sessionModel.tr("goals_header"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text(sessionModel.tr("goals_sub"), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                    }
-                }
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                // Goal 1
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(12.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(modifier = Modifier.weight(1f).padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Icon(painter = painterResource(id = R.drawable.ic_goal_battery), contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(22.dp))
-                            Column {
-                                Text(sessionModel.tr("goal_1"), fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                Text(if (isMeasured && batteryScore >= 0) "현재 잔량: ${batteryScore}%" else "현재 잔량: 미측정", fontSize = 11.sp, color = Color.Gray)
-                            }
-                        }
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            if (isGoal1Reached) {
-                                Icon(painter = painterResource(id = R.drawable.ic_goal_achieved), contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(16.dp))
-                            }
-                            Text(if (isGoal1Reached) sessionModel.tr("goal_achieved") else sessionModel.tr("goal_progress"), fontWeight = FontWeight.Bold, color = if (isGoal1Reached) Color(0xFF00E676) else Color.Gray, fontSize = 12.sp)
-                        }
-                    }
-                }
-
-                // Goal 2
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(12.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(modifier = Modifier.weight(1f).padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Icon(painter = painterResource(id = R.drawable.ic_goal_rest), contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(22.dp))
-                            Column {
-                                Text(sessionModel.tr("goal_2"), fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                Text("현재 진행: ${restCount} / 3회", fontSize = 11.sp, color = Color.Gray)
-                            }
-                        }
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            if (isGoal2Reached) {
-                                Icon(painter = painterResource(id = R.drawable.ic_goal_achieved), contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(16.dp))
-                            }
-                            Text(if (isGoal2Reached) sessionModel.tr("goal_achieved") else sessionModel.tr("goal_progress"), fontWeight = FontWeight.Bold, color = if (isGoal2Reached) Color(0xFF00E676) else Color.Gray, fontSize = 12.sp)
-                        }
-                    }
-                }
-
-                // Goal 3
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(12.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(modifier = Modifier.weight(1f).padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Icon(painter = painterResource(id = R.drawable.ic_goal_streak), contentDescription = null, tint = Color(0xFFFFC107), modifier = Modifier.size(22.dp))
-                            Column {
-                                Text(sessionModel.tr("goal_3"), fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                Text("연속 7일째 달성 중!", fontSize = 11.sp, color = Color.Gray)
-                            }
-                        }
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            if (isGoal3Reached) {
-                                Icon(painter = painterResource(id = R.drawable.ic_goal_achieved), contentDescription = null, tint = Color(0xFF00E676), modifier = Modifier.size(16.dp))
-                            }
-                            Text(if (isGoal3Reached) sessionModel.tr("goal_achieved") else sessionModel.tr("goal_progress"), fontWeight = FontWeight.Bold, color = if (isGoal3Reached) Color(0xFF00E676) else Color.Gray, fontSize = 12.sp)
-                        }
-                    }
-                }
-            }
+        Icon(
+            painterResource(icon),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(22.dp)
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (!available) {
+            IrisPill(sessionModel.tr("goal_unavailable"))
+        } else if (reached) {
+            IrisPill(sessionModel.tr("goal_achieved"), MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimary)
+        } else {
+            IrisPill(sessionModel.tr("goal_progress"))
         }
     }
 }
@@ -371,79 +288,68 @@ fun GymAndExamTab(
         modifier = modifier.padding(20.dp).verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(sessionModel.tr("gym_header"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(sessionModel.tr("gym_sub"))
+        IrisScreenHeader(sessionModel.tr("gym_header"), sessionModel.tr("gym_sub"))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-            shape = RoundedCornerShape(20.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("🔋", fontSize = 20.sp)
-                    Text(sessionModel.tr("gym_card_banner"), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                }
-                Text(sessionModel.tr("gym_card_banner_sub"))
-            }
+        IrisInfoBanner(
+            icon = R.drawable.ic_ms_check_circle,
+            title = sessionModel.tr("gym_card_banner"),
+            text = sessionModel.tr("gym_card_banner_sub")
+        )
+
+        IrisCard {
+            IrisCardHeader(
+                icon = R.drawable.ic_ms_center_focus_strong,
+                title = sessionModel.tr("gym_focus_title"),
+                subtitle = sessionModel.tr("gym_focus_meta")
+            )
+            IrisBodyText(sessionModel.tr("gym_focus_sub"))
+            IrisPrimaryButton(
+                text = sessionModel.tr("gym_focus_btn"),
+                icon = R.drawable.ic_ms_play_arrow,
+                onClick = onNavigateToGym
+            )
         }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(sessionModel.tr("gym_focus_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(sessionModel.tr("gym_focus_sub"))
-                Button(onClick = onNavigateToGym, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Text(sessionModel.tr("gym_focus_btn"), fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-
-        // PURSUIT MODES CARD (4 Distinct Pursuit Modes: Infinity, Figure-8, Circle, Zig-Zag)
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(sessionModel.tr("gym_pursuit_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(sessionModel.tr("gym_pursuit_sub"))
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Button(onClick = { onNavigateToPursuitMode(0) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(10.dp)) {
-                        Text(sessionModel.tr("♾️ Infinity (∞)"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Button(onClick = { onNavigateToPursuitMode(1) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(10.dp)) {
-                        Text(sessionModel.tr("🔀 Figure-8 (8자)"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Button(onClick = { onNavigateToPursuitMode(2) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(10.dp)) {
-                        Text(sessionModel.tr("⭕ Circle (원형)"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Button(onClick = { onNavigateToPursuitMode(3) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(10.dp)) {
-                        Text(sessionModel.tr("〰️ Zig-Zag"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        IrisCard {
+            IrisCardHeader(
+                icon = R.drawable.ic_ms_all_inclusive,
+                title = sessionModel.tr("gym_pursuit_title"),
+                subtitle = sessionModel.tr("gym_pursuit_meta")
+            )
+            IrisBodyText(sessionModel.tr("gym_pursuit_sub"))
+            val modes = listOf(
+                R.drawable.ic_ms_all_inclusive to "pursuit_mode_infinity",
+                R.drawable.ic_ms_gesture to "pursuit_mode_figure8",
+                R.drawable.ic_ms_radio_button_unchecked to "pursuit_mode_circle",
+                R.drawable.ic_ms_show_chart to "pursuit_mode_zigzag"
+            )
+            modes.chunked(2).forEachIndexed { rowIndex, pair ->
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    pair.forEachIndexed { colIndex, (icon, key) ->
+                        val mode = rowIndex * 2 + colIndex
+                        IrisTonalButton(
+                            text = sessionModel.tr(key),
+                            icon = icon,
+                            onClick = { onNavigateToPursuitMode(mode) },
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
             }
         }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(sessionModel.tr("gym_exam_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(sessionModel.tr("gym_exam_sub"))
-                OutlinedButton(onClick = onNavigateToExam, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Text(sessionModel.tr("gym_exam_btn"))
-                }
-            }
+        IrisCard {
+            IrisCardHeader(
+                icon = R.drawable.ic_ms_ophthalmology,
+                title = sessionModel.tr("gym_exam_title"),
+                subtitle = sessionModel.tr("gym_exam_meta")
+            )
+            IrisBodyText(sessionModel.tr("gym_exam_sub"))
+            IrisPrimaryButton(
+                text = sessionModel.tr("gym_exam_btn"),
+                icon = R.drawable.ic_ms_play_arrow,
+                onClick = onNavigateToExam
+            )
         }
     }
 }
@@ -453,52 +359,34 @@ fun EyeComfortSettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifi
     val context = LocalContext.current
 
     Column(
-        modifier = modifier.padding(20.dp),
+        modifier = modifier
+            .padding(20.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            sessionModel.tr("eye_comfort_title"),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-        Text(sessionModel.tr("eye_comfort_desc"))
+        IrisScreenHeader(sessionModel.tr("eye_comfort_title"), sessionModel.tr("eye_comfort_desc"))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    sessionModel.tr("eye_comfort_card_title"),
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    sessionModel.tr("eye_comfort_card_desc"),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Button(
-                    onClick = {
-                        try {
-                            context.startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS))
-                        } catch (_: Exception) {
-                            Toast.makeText(
-                                context,
-                                sessionModel.tr("eye_comfort_open_failed"),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(sessionModel.tr("eye_comfort_open_settings"), fontWeight = FontWeight.Bold)
+        IrisCard {
+            IrisCardHeader(
+                icon = R.drawable.ic_ms_light_mode,
+                title = sessionModel.tr("eye_comfort_card_title")
+            )
+            IrisBodyText(sessionModel.tr("eye_comfort_card_desc"))
+            IrisPrimaryButton(
+                text = sessionModel.tr("eye_comfort_open_settings"),
+                icon = R.drawable.ic_ms_arrow_forward,
+                onClick = {
+                    try {
+                        context.startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS))
+                    } catch (_: Exception) {
+                        Toast.makeText(
+                            context,
+                            sessionModel.tr("eye_comfort_open_failed"),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-            }
+            )
         }
     }
 }
@@ -544,7 +432,7 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
                 color = MaterialTheme.colorScheme.tertiaryContainer,
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("👑 PRO 멤버십", modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("PRO", modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp), fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -665,63 +553,40 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
     val scrollState = rememberScrollState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPrivacyDialog by remember { mutableStateOf(false) }
+    var showColorToneDialog by remember { mutableStateOf(false) }
+    var showHealthConnectDisclosure by remember { mutableStateOf(false) }
+    var notificationsEnabled by remember {
+        mutableStateOf(com.example.myapplication.data.PreferencesManager(context).isNotificationsEnabled)
+    }
+    val healthPermissionLauncher = rememberLauncherForActivityResult(
+        HealthConnectManager.permissionRequestContract()
+    ) { granted ->
+        if (HealthConnectManager.hasAllPermissions(granted)) {
+            sessionModel.updateHealthConnectEnabled(true)
+        } else {
+            sessionModel.updateHealthConnectEnabled(false)
+            Toast.makeText(context, sessionModel.tr("health_permission_denied"), Toast.LENGTH_LONG).show()
+        }
+    }
 
     val sysLang = java.util.Locale.getDefault().displayLanguage
 
     Column(
         modifier = modifier.padding(20.dp).verticalScroll(scrollState),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(sessionModel.tr("settings_header"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        IrisScreenHeader(sessionModel.tr("settings_header"))
 
-        CareReminderSettings()
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(sessionModel.tr("스마트폰 언어 자동 연동"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(sessionModel.tr("현재 스마트폰 시스템 언어"), fontSize = 12.sp, color = Color.Gray)
-                        Text(sysLang, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
-                    }
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("🟢 " + sessionModel.tr("실시간 자동 번역 중"), modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-        }
-
-        var notificationsEnabled by remember {
-            mutableStateOf(com.example.myapplication.data.PreferencesManager(context).isNotificationsEnabled)
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(sessionModel.tr("noti_settings_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text(sessionModel.tr("noti_settings_desc"), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                    }
-                    androidx.compose.material3.Switch(
+        IrisSectionLabel(sessionModel.tr("settings_section_noti"))
+        IrisSettingsGroup {
+            CareReminderSettings()
+            IrisRowDivider()
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_notifications_active,
+                title = sessionModel.tr("noti_settings_title"),
+                subtitle = sessionModel.tr("noti_settings_desc"),
+                trailing = {
+                    Switch(
                         checked = notificationsEnabled,
                         onCheckedChange = { checked ->
                             notificationsEnabled = checked
@@ -730,130 +595,155 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
                         }
                     )
                 }
-            }
+            )
         }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(sessionModel.tr("유저 피드백 & 버그 제보 (CS 센터)"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(sessionModel.tr("앱 사용 중 버그가 발생하거나 개선 아이디어가 있으시면 언제든지 의견을 남겨주세요!"), fontSize = 12.sp, color = Color.Gray)
-                OutlinedButton(
-                    onClick = {
-                        try {
-                            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:support@irisfit.app?subject=[IrisFit Bug Report / Feedback]&body=Device: ${android.os.Build.MODEL} (Android ${android.os.Build.VERSION.RELEASE})\nFeedback: "))
-                            context.startActivity(intent)
-                        } catch (_: Exception) {
-                            Toast.makeText(context, "지원되는 이메일 앱이 없습니다. support@irisfit.app 으로 문의해 주세요.", Toast.LENGTH_LONG).show()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(sessionModel.tr("개발자에게 피드백 보내기 (Email)"), fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(sessionModel.tr("백그라운드 강제종료 방지 (배터리 최적화 예외)"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(sessionModel.tr("삼성, 샤오미 등 일부 기기에서 백그라운드 실시간 눈 건강 모니터링이 멈추지 않도록 [배터리 최적화 예외 앱]으로 등록해 주세요."), fontSize = 12.sp, color = Color.Gray)
-                OutlinedButton(
-                    onClick = {
-                        try {
-                            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${context.packageName}"))
-                            context.startActivity(intent)
-                        } catch (_: Exception) {
-                            try {
-                                val intent2 = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                                context.startActivity(intent2)
-                            } catch (_: Exception) {
-                                Toast.makeText(context, "설정 화면을 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+        IrisSectionLabel(sessionModel.tr("settings_section_general"))
+        IrisSettingsGroup {
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_translate,
+                title = sessionModel.tr("settings_lang_title"),
+                subtitle = sessionModel.tr("settings_lang_sub").format(sysLang),
+                trailing = { IrisTrailingText(sessionModel.tr("settings_lang_auto")) }
+            )
+            IrisRowDivider()
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_battery_saver,
+                title = sessionModel.tr("health_connect_settings_title"),
+                subtitle = sessionModel.tr("health_connect_settings_desc"),
+                trailing = {
+                    Switch(
+                        checked = sessionModel.healthConnectEnabled,
+                        onCheckedChange = { enabled ->
+                            if (!enabled) {
+                                sessionModel.updateHealthConnectEnabled(false)
+                            } else if (HealthConnectManager.isAvailable(context)) {
+                                showHealthConnectDisclosure = true
+                            } else {
+                                Toast.makeText(context, sessionModel.tr("health_connect_unavailable"), Toast.LENGTH_LONG).show()
                             }
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(sessionModel.tr("배터리 최적화 예외 설정 열기"), fontWeight = FontWeight.Bold)
+                    )
                 }
-            }
+            )
+            IrisRowDivider()
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_light_mode,
+                title = sessionModel.tr("settings_color_tone"),
+                subtitle = sessionModel.tr(sessionModel.colorTone.labelKey),
+                onClick = { showColorToneDialog = true },
+                trailing = { IrisChevron() }
+            )
+            IrisRowDivider()
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_battery_saver,
+                title = sessionModel.tr("settings_battery_title"),
+                subtitle = sessionModel.tr("settings_battery_sub"),
+                onClick = {
+                    try {
+                        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${context.packageName}"))
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                        try {
+                            val intent2 = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                            context.startActivity(intent2)
+                        } catch (_: Exception) {
+                            Toast.makeText(context, sessionModel.tr("settings_battery_open_failed"), Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                },
+                trailing = { IrisChevron() }
+            )
         }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(sessionModel.tr("settings_version_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text("IrisFit v1.0.0 (Google Play Release Ready)")
-            }
+        IrisSectionLabel(sessionModel.tr("settings_section_support"))
+        IrisSettingsGroup {
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_mail,
+                title = sessionModel.tr("settings_feedback_title"),
+                subtitle = sessionModel.tr("settings_feedback_sub"),
+                onClick = {
+                    try {
+                        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:support@irisfit.app?subject=[IrisFit Bug Report / Feedback]&body=Device: ${android.os.Build.MODEL} (Android ${android.os.Build.VERSION.RELEASE})\nFeedback: "))
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                        Toast.makeText(context, sessionModel.tr("settings_feedback_no_app"), Toast.LENGTH_LONG).show()
+                    }
+                },
+                trailing = { IrisChevron() }
+            )
+            IrisRowDivider()
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_privacy_tip,
+                title = sessionModel.tr("settings_privacy_row"),
+                onClick = { showPrivacyDialog = true },
+                trailing = { IrisChevron() }
+            )
+            IrisRowDivider()
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_info,
+                title = sessionModel.tr("settings_version_row"),
+                trailing = { IrisTrailingText(com.example.myapplication.BuildConfig.VERSION_NAME) }
+            )
         }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(sessionModel.tr("settings_data_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(sessionModel.tr("settings_data_desc"))
-                OutlinedButton(onClick = { showDeleteDialog = true }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Text(sessionModel.tr("settings_delete_btn"), color = MaterialTheme.colorScheme.error)
-                }
-            }
+        IrisSectionLabel(sessionModel.tr("settings_section_data"))
+        IrisSettingsGroup {
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_delete,
+                title = sessionModel.tr("settings_delete_btn"),
+                subtitle = sessionModel.tr("settings_delete_sub"),
+                destructive = true,
+                onClick = { showDeleteDialog = true },
+                trailing = { IrisChevron() }
+            )
         }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(sessionModel.tr("개인정보 처리방침 및 이용약관"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(sessionModel.tr("구글 플레이 스토어 등록 필수 법적 문서 및 로컬 데이터 보호 정책"), fontSize = 12.sp, color = Color.Gray)
-                OutlinedButton(
-                    onClick = { showPrivacyDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(sessionModel.tr("개인정보 처리방침 전문 보기"), fontWeight = FontWeight.Bold)
-                }
-            }
-        }
+        Spacer(modifier = Modifier.height(8.dp))
     }
 
+    if (showColorToneDialog) {
+        ColorToneDialog(sessionModel) { showColorToneDialog = false }
+    }
+    if (showHealthConnectDisclosure) {
+        AlertDialog(
+            onDismissRequest = { showHealthConnectDisclosure = false },
+            title = { Text(sessionModel.tr("health_connect_disclosure_title")) },
+            text = { Text(sessionModel.tr("health_connect_disclosure_body")) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showHealthConnectDisclosure = false
+                    healthPermissionLauncher.launch(HealthConnectManager.requiredPermissions)
+                }) {
+                    Text(sessionModel.tr("usage_access_open_settings"))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showHealthConnectDisclosure = false }) {
+                    Text(sessionModel.tr("btn_cancel"))
+                }
+            }
+        )
+    }
     if (showPrivacyDialog) {
         AlertDialog(
             onDismissRequest = { showPrivacyDialog = false },
+            icon = { Icon(painterResource(R.drawable.ic_ms_privacy_tip), contentDescription = null) },
             title = { Text(sessionModel.tr("privacy_policy_title")) },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp).verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(sessionModel.tr("privacy_usage"), fontSize = 12.sp)
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(sessionModel.tr("health_connect_disclosure_body"), fontSize = 12.sp)
                     Text(sessionModel.tr("privacy_sensor"), fontSize = 12.sp)
-                    Spacer(modifier = Modifier.height(4.dp))
                     Text(sessionModel.tr("privacy_storage"), fontSize = 12.sp)
-                    Spacer(modifier = Modifier.height(4.dp))
                     Text(sessionModel.tr("privacy_ai"), fontSize = 12.sp)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text("3. 문의 사항\n- 이메일: support@irisfit.app", fontSize = 12.sp)
+                    Text(sessionModel.tr("privacy_contact"), fontSize = 12.sp)
                 }
             },
             confirmButton = {
-                Button(onClick = { showPrivacyDialog = false }) { Text("확인") }
+                TextButton(onClick = { showPrivacyDialog = false }) { Text(sessionModel.tr("btn_ok")) }
             }
         )
     }
@@ -861,8 +751,9 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("기기 기록 전체 삭제") },
-            text = { Text("저장된 모든 눈 건강 마일리지와 완료 기록이 삭제됩니다. 계속하시겠습니까?") },
+            icon = { Icon(painterResource(R.drawable.ic_ms_delete), contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text(sessionModel.tr("settings_delete_dialog_title")) },
+            text = { Text(sessionModel.tr("settings_delete_dialog_body")) },
             confirmButton = {
                 TextButton(onClick = {
                     sessionModel.clearAll { showDeleteDialog = false }
@@ -887,14 +778,21 @@ fun WellnessHomeTab(
         modifier = modifier.padding(20.dp).verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("IrisFit", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text(sessionModel.tr("home_subtitle"), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        Text(sessionModel.tr("home_title"), style = MaterialTheme.typography.headlineMedium)
+        val screenTime = sessionModel.screenTimeResult?.let {
+            ScreenTimeManager.formatScreenTime(it, sessionModel.currentLang)
+        } ?: sessionModel.tr("not_measured")
+        Text(
+            sessionModel.tr("screen_usage_today").format(screenTime),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
 
-        EyePedometerCard(sessionModel, onNavigateToGym, onNavigateToPursuit)
+        LegacyBatteryTheme {
+            EyePedometerCard(sessionModel, onNavigateToGym, onNavigateToPursuit)
+        }
         RestHistoryCard(sessionModel)
-        GoalAchievementCard(sessionModel)               // 1) 오늘의 눈 건강 목표
-        CommunityCheerCard(sessionModel)                // 2) 친구들과 릴레이 (베타 준비 알림 카드)
-        PublicGlobalChallengeCard(sessionModel)         // 3) 공개 글로벌 릴레이 (베타 준비 알림 카드)
+        GoalAchievementCard(sessionModel)
     }
 
     if (sessionModel.state.phase != com.example.myapplication.session.SessionPhase.HOME) {

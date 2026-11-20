@@ -17,9 +17,11 @@ import android.widget.RemoteViews
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
 import com.example.myapplication.data.LanguageManager
-import com.example.myapplication.data.ScreenTimeManager
 import com.example.myapplication.session.AppLocalization
 import com.example.myapplication.session.EyeBatteryCalculator
+import com.example.myapplication.session.EyeBatterySnapshotStore
+import com.example.myapplication.session.EyeBatteryStats
+import com.example.myapplication.session.EyeFatigueStatus
 import com.example.myapplication.session.FileCompletionStorage
 import java.time.LocalDate
 
@@ -72,7 +74,6 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
             val views = RemoteViews(context.packageName, layoutResId)
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-            val queryResult = try { ScreenTimeManager.queryTodayScreenTime(context) } catch (_: Exception) { com.example.myapplication.data.ScreenTimeQueryResult.QueryError("Widget Error") }
             val recordsResult = try {
                 Pair(FileCompletionStorage.repository(context).records(), true)
             } catch (_: Exception) {
@@ -81,23 +82,25 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
             val records = recordsResult.first
             val recordsSuccess = recordsResult.second
 
-            val (screenTime, isScreenTimeMeasured) = when (queryResult) {
-                is com.example.myapplication.data.ScreenTimeQueryResult.Success -> Pair(queryResult.minutes, true)
-                else -> Pair(0, false)
-            }
             val today = LocalDate.now().toString()
             val rests = records.count { it.completedLocalDate == today && it.routineId == "screen_rest" }
             val miniGames = records.count { it.completedLocalDate == today && (it.routineId == "eye_gym" || it.routineId == "smooth_pursuit") }
 
-            val isScoreCalculable = isScreenTimeMeasured && recordsSuccess
-
-            val stats = EyeBatteryCalculator.calculateBattery(
-                screenTimeMinutes = screenTime,
+            val snapshot = EyeBatterySnapshotStore.readToday(context)
+            val stats = if (snapshot == null) EyeBatteryCalculator.calculateBattery(
+                screenTimeMinutes = 0,
                 restCount = rests,
                 miniGameCount = miniGames,
-                screenTimeMeasured = isScoreCalculable
+                screenTimeMeasured = false
+            ) else EyeBatteryStats(
+                screenTimeMinutes = snapshot.screenTimeMinutes,
+                screenTimeMeasured = true,
+                restCount = rests,
+                miniGameCount = miniGames,
+                eyeHealthScore = snapshot.score,
+                fatigueStatus = EyeFatigueStatus.fromScore(snapshot.score)
             )
-            val selectedLang = LanguageManager.getSelectedLanguage(context)
+            val selectedLang = LanguageManager.effectiveLanguage(context)
             val effectiveLang = AppLocalization.resolveEffectiveLang(selectedLang)
 
             val bitmap = renderMasterpieceWidgetBitmap(context, widgetIndex, stats.eyeHealthScore, rests, miniGames, effectiveLang, recordsSuccess)
@@ -146,12 +149,12 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 canvas.drawText(greeting, width - 42f, 62f, paint)
 
                 // 4-Tier Dynamic Color depending on Eye Health Battery Score (or Neutral Grey if unmeasured)
-                val statusColor = when {
-                    score < 0 -> Color.parseColor("#A0A0A0")   // Neutral Grey (Unmeasured)
-                    score >= 85 -> Color.parseColor("#00E676") // Bright Green (Optimal 85~100%)
-                    score >= 65 -> Color.parseColor("#FFC107") // Yellow (Caution 65~84%)
-                    score >= 45 -> Color.parseColor("#FF9800") // Orange (Warning 45~64%)
-                    else -> Color.parseColor("#FF5252")        // Rose Red (Danger 10~44%)
+                val statusColor = when (EyeFatigueStatus.fromScore(score)) {
+                    EyeFatigueStatus.UNMEASURED -> Color.parseColor("#A0A0A0")
+                    EyeFatigueStatus.OPTIMAL -> Color.parseColor("#00E676")
+                    EyeFatigueStatus.CAUTION -> Color.parseColor("#FFC107")
+                    EyeFatigueStatus.WARNING -> Color.parseColor("#FF9800")
+                    EyeFatigueStatus.DANGER -> Color.parseColor("#FF5252")
                 }
 
                 // Battery gauge: simple flat circular progress
@@ -183,9 +186,9 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 paint.textSize = 20f
                 paint.typeface = Typeface.DEFAULT
                 val batteryLabel = when (lang) {
-                    "en" -> "Eye battery"
-                    "ja" -> "目のバッテリー"
-                    "es" -> "Batería ocular"
+                    "en" -> "Eye Health Battery"
+                    "ja" -> "目の健康バッテリー"
+                    "es" -> "Batería de salud ocular"
                     else -> "눈 건강 배터리"
                 }
                 canvas.drawText(batteryLabel, cx, cy + 48f, paint)
@@ -204,10 +207,10 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                 val valueX = 748f
                 val rowYs = listOf(155f, 225f, 295f)
                 val labels = when (lang) {
-                    "en" -> listOf("Rest completed", "Eye exercise", "Daily completion")
-                    "ja" -> listOf("休憩完了", "目の運動", "今日の達成率")
-                    "es" -> listOf("Descanso completado", "Ejercicio ocular", "Meta diaria")
-                    else -> listOf("휴식 완료", "눈 운동 완료", "오늘 목표 달성률")
+                    "en" -> listOf("Rest completed", "Eye training", "Daily completion")
+                    "ja" -> listOf("休憩完了", "目のトレーニング", "今日の達成率")
+                    "es" -> listOf("Descanso completado", "Entrenamiento ocular", "Meta diaria")
+                    else -> listOf("휴식 완료", "눈동자 훈련 완료", "오늘 목표 달성률")
                 }
                 val values = if (!recordsSuccess) {
                     listOf(unmeasuredText, unmeasuredText, unmeasuredText)
@@ -259,199 +262,7 @@ open class BitmapWidgetProvider(private val layoutResId: Int, private val widget
                     4f, 4f, paint
                 )
             }
-            2 -> { // Widget 2: 주간 눈 건강 트렌드 (중형)
-                paint.color = Color.WHITE
-                paint.textSize = 34f
-                paint.typeface = Typeface.DEFAULT_BOLD
-                paint.textAlign = Paint.Align.LEFT
-                val tTitle = if (lang == "en") "📊 Weekly Eye Health Trend" else "📊 주간 눈 건강 트렌드"
-                canvas.drawText(tTitle, 44f, 65f, paint)
-
-                paint.color = Color.parseColor("#90A4AE")
-                paint.textSize = 24f
-                paint.typeface = Typeface.DEFAULT
-                val subText = if (lang == "en") "This Week >" else "이번 주 >"
-                canvas.drawText(subText, width - 200f, 65f, paint)
-
-                val scores = listOf(70, 70, 70, 70, 100, 100, 70)
-                val days = if (lang == "en") listOf("M", "T", "W", "T", "F", "S", "S") else listOf("월", "화", "수", "목", "금", "토", "일")
-
-                val bWidth = 46f
-                val gap = (width - 80f - (bWidth * 7)) / 8f
-                val chartBottom = 270f
-
-                scores.forEachIndexed { i, s ->
-                    val x = 40f + gap + i * (bWidth + gap)
-                    val bh = (s / 100f) * 140f
-                    val top = chartBottom - bh
-
-                    // Percentage on top of bar
-                    paint.color = Color.parseColor("#B0BEC5")
-                    paint.textSize = 18f
-                    paint.textAlign = Paint.Align.CENTER
-                    canvas.drawText("${s}%", x + bWidth / 2f, top - 8f, paint)
-
-                    // Bar
-                    paint.color = if (s >= 90) Color.parseColor("#00E676") else Color.parseColor("#29B6F6")
-                    canvas.drawRoundRect(RectF(x, top, x + bWidth, chartBottom), 10f, 10f, paint)
-
-                    // Day label
-                    paint.color = Color.parseColor("#90A4AE")
-                    paint.textSize = 22f
-                    canvas.drawText(days[i], x + bWidth / 2f, 310f, paint)
-                }
-
-                paint.color = Color.parseColor("#00E676")
-                paint.textSize = 24f
-                paint.textAlign = Paint.Align.CENTER
-                val tComp = if (lang == "en") "📈 +20% vs Last Week" else "📈 지난주 대비 +20%"
-                canvas.drawText(tComp, width / 2f, 355f, paint)
-            }
-            3 -> { // Widget 3: 원터치 눈 운동 (중형 - 디자인 3)
-                // Left Title & Subtitle
-                paint.color = Color.WHITE
-                paint.textSize = 38f
-                paint.typeface = Typeface.DEFAULT_BOLD
-                paint.textAlign = Paint.Align.LEFT
-                val tMain = if (lang == "en") "Start Eye Gym!" else "눈 운동 시작!"
-                canvas.drawText(tMain, 140f, 180f, paint)
-
-                paint.color = Color.parseColor("#90A4AE")
-                paint.textSize = 24f
-                paint.typeface = Typeface.DEFAULT
-                val tSub = if (lang == "en") "Start right now" else "지금 바로 시작해보세요"
-                canvas.drawText(tSub, 140f, 225f, paint)
-
-                // Large Eye Icon on Left
-                paint.color = Color.parseColor("#29B6F6")
-                canvas.drawCircle(80f, 195f, 36f, paint)
-                paint.color = Color.WHITE
-                canvas.drawCircle(80f, 195f, 16f, paint)
-
-                // Right Blue Action Button: ▶ 눈 운동 시작
-                val btnL = 460f
-                val btnT = 150f
-                val btnR = 750f
-                val btnB = 240f
-                paint.color = Color.parseColor("#29B6F6")
-                canvas.drawRoundRect(RectF(btnL, btnT, btnR, btnB), 20f, 20f, paint)
-
-                paint.color = Color.WHITE
-                paint.textSize = 28f
-                paint.typeface = Typeface.DEFAULT_BOLD
-                paint.textAlign = Paint.Align.CENTER
-                val btnText = if (lang == "en") "▶ Start Eye Gym" else "▶ 눈 운동 시작"
-                canvas.drawText(btnText, btnL + ((btnR - btnL) / 2f), btnT + 58f, paint)
-            }
-            4 -> { // Widget 4: 연속 휴식 스트릭 (중형)
-                // Flame Badge
-                paint.color = Color.parseColor("#FF9800")
-                paint.textSize = 32f
-                paint.typeface = Typeface.DEFAULT_BOLD
-                paint.textAlign = Paint.Align.LEFT
-                val t1 = if (lang == "en") "🔥 Rest Streak" else "🔥 연속 휴식 스트릭"
-                canvas.drawText(t1, 44f, 80f, paint)
-
-                paint.color = Color.WHITE
-                paint.textSize = 64f
-                val t2 = if (lang == "en") "7 Days!" else "7일째!"
-                canvas.drawText(t2, 44f, 175f, paint)
-
-                paint.color = Color.parseColor("#90A4AE")
-                paint.textSize = 24f
-                paint.typeface = Typeface.DEFAULT
-                val t3 = if (lang == "en") "Consistent rest protects vision!" else "꾸준한 눈 관리가\n눈 건강을 지켜줘요!"
-                canvas.drawText(t3, 44f, 250f, paint)
-
-                // Right Golden Trophy & Next Target Badge
-                paint.color = Color.parseColor("#FFC107")
-                val trophyL = 580f
-                val trophyT = 80f
-                canvas.drawRoundRect(RectF(trophyL, trophyT, trophyL + 140f, trophyT + 120f), 28f, 28f, paint)
-                canvas.drawRect(RectF(trophyL + 40f, trophyT + 120f, trophyL + 100f, trophyT + 160f), paint)
-                canvas.drawRect(RectF(trophyL + 20f, trophyT + 160f, trophyL + 120f, trophyT + 180f), paint)
-
-                paint.color = Color.parseColor("#90A4AE")
-                paint.textSize = 22f
-                paint.textAlign = Paint.Align.CENTER
-                val tNext = if (lang == "en") "Next Goal" else "다음 목표"
-                canvas.drawText(tNext, trophyL + 70f, 240f, paint)
-
-                paint.color = Color.parseColor("#FFC107")
-                paint.textSize = 32f
-                paint.typeface = Typeface.DEFAULT_BOLD
-                val t14 = if (lang == "en") "14 Days" else "14일"
-                canvas.drawText(t14, trophyL + 70f, 285f, paint)
-            }
-            5 -> { // Widget 5: 오늘의 눈 건강 미션 (소형 - Design 5)
-                // Left Green Check Circle
-                paint.color = Color.parseColor("#00E676")
-                canvas.drawCircle(70f, 90f, 32f, paint)
-                paint.color = Color.WHITE
-                paint.textSize = 32f
-                paint.textAlign = Paint.Align.CENTER
-                canvas.drawText("✓", 70f, 101f, paint)
-
-                // Center Title & Subtitle
-                paint.textAlign = Paint.Align.LEFT
-                paint.color = Color.WHITE
-                paint.textSize = 28f
-                paint.typeface = Typeface.DEFAULT_BOLD
-                val tTitle = if (lang == "en") "Today's Mission" else "오늘의 미션"
-                canvas.drawText(tTitle, 130f, 75f, paint)
-
-                paint.color = Color.parseColor("#B0BEC5")
-                paint.textSize = 22f
-                paint.typeface = Typeface.DEFAULT
-                val tSub = if (lang == "en") "3 PM: 30s Eye Rest" else "오후 3시, 눈 휴식하기"
-                canvas.drawText(tSub, 130f, 120f, paint)
-
-                // Right Completed Badge
-                val badgeL = 620f
-                paint.color = Color.parseColor("#1B3A2B")
-                canvas.drawRoundRect(RectF(badgeL, 45f, 750f, 135f), 20f, 20f, paint)
-                paint.color = Color.parseColor("#00E676")
-                paint.textSize = 24f
-                paint.typeface = Typeface.DEFAULT_BOLD
-                paint.textAlign = Paint.Align.CENTER
-                val t3 = if (lang == "en") "Done!" else "완료!"
-                canvas.drawText(t3, badgeL + 65f, 100f, paint)
-            }
-            else -> { // Widget 6: 스마트폰 미니 위젯 (소형 - Design 6)
-                // Left Eye Icon
-                paint.color = Color.parseColor("#29B6F6")
-                canvas.drawCircle(60f, 90f, 24f, paint)
-                paint.color = Color.WHITE
-                canvas.drawCircle(60f, 90f, 10f, paint)
-
-                // Score Text
-                paint.color = Color.WHITE
-                paint.textSize = 46f
-                paint.typeface = Typeface.DEFAULT_BOLD
-                paint.textAlign = Paint.Align.LEFT
-                canvas.drawText("${score}%", 100f, 95f, paint)
-
-                paint.color = Color.parseColor("#B0BEC5")
-                paint.textSize = 20f
-                paint.typeface = Typeface.DEFAULT
-                val tSub = if (lang == "en") "Eye Battery" else "눈 건강 배터리"
-                canvas.drawText(tSub, 100f, 132f, paint)
-
-                // Right Blue Button: 눈 운동
-                val btnL = 540f
-                val btnT = 45f
-                val btnR = 750f
-                val btnB = 135f
-                paint.color = Color.parseColor("#29B6F6")
-                canvas.drawRoundRect(RectF(btnL, btnT, btnR, btnB), 20f, 20f, paint)
-
-                paint.color = Color.WHITE
-                paint.textSize = 26f
-                paint.typeface = Typeface.DEFAULT_BOLD
-                paint.textAlign = Paint.Align.CENTER
-                val btnText = if (lang == "en") "Eye Gym" else "눈 운동"
-                canvas.drawText(btnText, btnL + 105f, 100f, paint)
-            }
+            else -> error("Only the today-summary widget is supported: $index")
         }
 
         return bitmap

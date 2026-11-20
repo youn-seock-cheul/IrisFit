@@ -18,6 +18,9 @@ object LanguageManager {
         prefs.edit().putString(KEY_LANG, langCode).apply()
     }
 
+    fun effectiveLanguage(context: Context): String =
+        getSelectedLanguage(context).ifEmpty { context.resources.configuration.locales[0].language }
+
     fun wrapContext(context: Context): Context {
         val langCode = getSelectedLanguage(context)
         if (langCode.isEmpty()) return context

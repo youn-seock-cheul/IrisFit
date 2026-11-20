@@ -1,9 +1,9 @@
 <resources>
     <string name="history_title">休憩の記録</string>
     <string name="history_loading">記録を読み込んでいます…</string>
-    <string name="history_today">今日：休憩 %1$d回 · 運動 %2$d回</string>
-    <string name="history_this_month">今月のこれまで：休憩 %1$d回 · 運動 %2$d回 · 活動 %3$d日</string>
-    <string name="history_last_month">先月：休憩 %1$d回 · 運動 %2$d回 · 活動 %3$d日</string>
+    <string name="history_today">今日：休憩 %1$d回 · トレーニング %2$d回</string>
+    <string name="history_this_month">今月のこれまで：休憩 %1$d回 · トレーニング %2$d回 · 活動 %3$d日</string>
+    <string name="history_last_month">先月：休憩 %1$d回 · トレーニング %2$d回 · 活動 %3$d日</string>
     <string name="history_segment">%1$d日〜%2$d日：活動 %3$d回</string>
     <string name="history_note">完了を確認した記録のみ表示します。以前削除された記録は復元できません。この回数は目の健康の測定値ではありません。</string>
     <string name="care_settings_title">静かな休憩のお知らせ</string>
@@ -16,9 +16,9 @@
     <string name="care_hours_all">終日</string>
     <string name="care_channel">静かな休憩のお知らせ</string>
     <string name="care_notification_title">少し画面から目を離しましょう</string>
-    <string name="care_notification_body">休憩や軽い目の運動をしてみませんか？</string>
-    <string name="care_open_rest">休憩する</string>
-    <string name="care_open_exercise">目の運動</string>
+    <string name="care_notification_body">休憩や目のトレーニングをしてみませんか？</string>
+    <string name="care_open_focus">遠近フォーカス</string>
+    <string name="care_open_pursuit">視線追跡</string>
     <string name="care_stop">お知らせをオフ</string>
     <string name="care_later">後で</string>
     <string name="care_schedule_error">お知らせを設定できませんでした。もう一度お試しください。</string>
@@ -26,17 +26,17 @@
     <string name="care_open_notification_settings">通知設定を開く</string>
     <string name="app_name">IrisFit</string>
     <string name="nav_home">ホーム</string>
-    <string name="nav_gym">アイジム</string>
+    <string name="nav_gym">目のトレーニング</string>
     <string name="nav_eye_comfort">画面の快適設定</string>
     <string name="nav_ai">AIコーチ</string>
     <string name="nav_settings">設定</string>
 
     <string name="home_title">IrisFit</string>
-    <string name="home_subtitle">目の健康歩数計 &amp; 休憩習慣</string>
+    <string name="home_subtitle">目の健康バッテリー &amp; 休憩習慣</string>
 
     <string name="battery_title">IrisFit 目の健康バッテリー</string>
     <string name="battery_subtitle">リアルタイム眼精疲労レポート</string>
-    <string name="tap_mascot">👆 マスコットをタップして即座に休憩!</string>
+    <string name="tap_mascot">マスコットをタップしてすぐに休憩</string>
     <string name="screen_time_today">本日の画面注視時間</string>
 
     <string name="status_optimal">最適 (疲労なし)</string>
@@ -44,7 +44,7 @@
     <string name="status_warning">危険 (エネルギー消耗大)</string>
 
     <string name="rest_completed">休憩完了</string>
-    <string name="eye_exercise">眼の運動</string>
+    <string name="eye_exercise">目のトレーニング</string>
     <string name="sns_share">目の健康バッテリーをSNSで共有</string>
 
     <string name="weekly_trend">週間バッテリー動向</string>
@@ -56,10 +56,10 @@
     <string name="tab_monthly">月間 (4週)</string>
 
     <string name="cheer_header">応援リレー</string>
-    <string name="goals_header">本日の目の健康目標 &amp; トロフィー</string>
-    <string name="gym_header">目のバッテリー充電所</string>
+    <string name="goals_header">今日の目の健康目標</string>
+    <string name="gym_header">目のトレーニング</string>
     <string name="ai_header">IrisFit AI習慣コーチ</string>
-    <string name="settings_header">設定と管理</string>
+    <string name="settings_header">設定</string>
 
     <string name="btn_close">閉じる</string>
     <string name="btn_cancel">キャンセル</string>

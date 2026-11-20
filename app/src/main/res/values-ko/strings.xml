@@ -1,9 +1,9 @@
 <resources>
     <string name="history_title">나의 휴식 기록</string>
     <string name="history_loading">기록을 불러오고 있어요…</string>
-    <string name="history_today">오늘: 휴식 %1$d회 · 운동 %2$d회</string>
-    <string name="history_this_month">이번 달 현재: 휴식 %1$d회 · 운동 %2$d회 · 활동 %3$d일</string>
-    <string name="history_last_month">지난달: 휴식 %1$d회 · 운동 %2$d회 · 활동 %3$d일</string>
+    <string name="history_today">오늘: 휴식 %1$d회 · 훈련 %2$d회</string>
+    <string name="history_this_month">이번 달 현재: 휴식 %1$d회 · 훈련 %2$d회 · 활동 %3$d일</string>
+    <string name="history_last_month">지난달: 휴식 %1$d회 · 훈련 %2$d회 · 활동 %3$d일</string>
     <string name="history_segment">%1$d일–%2$d일: 활동 %3$d회</string>
     <string name="history_note">완료를 확인한 기록만 표시합니다. 이전에 삭제된 기록은 복원되지 않으며, 이 횟수는 눈 건강 측정값이 아닙니다.</string>
     <string name="care_settings_title">조용한 휴식 안내</string>
@@ -16,9 +16,9 @@
     <string name="care_hours_all">하루 종일</string>
     <string name="care_channel">조용한 휴식 안내</string>
     <string name="care_notification_title">잠시 화면에서 눈을 떼세요</string>
-    <string name="care_notification_body">잠깐 쉬거나 가벼운 눈 운동을 해볼까요?</string>
-    <string name="care_open_rest">휴식하기</string>
-    <string name="care_open_exercise">눈 운동</string>
+    <string name="care_notification_body">잠깐 쉬거나 눈동자 훈련을 해볼까요?</string>
+    <string name="care_open_focus">원근 조절</string>
+    <string name="care_open_pursuit">시선 추적</string>
     <string name="care_stop">안내 끄기</string>
     <string name="care_later">나중에</string>
     <string name="care_schedule_error">안내 설정을 저장하지 못했어요. 다시 시도해 주세요.</string>
@@ -26,17 +26,17 @@
     <string name="care_open_notification_settings">알림 설정 열기</string>
     <string name="app_name">IrisFit</string>
     <string name="nav_home">홈</string>
-    <string name="nav_gym">눈 운동 존</string>
+    <string name="nav_gym">눈동자 훈련</string>
     <string name="nav_eye_comfort">시력 보호</string>
     <string name="nav_ai">AI 코치</string>
     <string name="nav_settings">설정</string>
 
     <string name="home_title">IrisFit</string>
-    <string name="home_subtitle">눈 건강 만보기 &amp; 휴식 습관</string>
+    <string name="home_subtitle">눈 건강 배터리 &amp; 휴식 습관</string>
 
     <string name="battery_title">IrisFit 눈 건강 배터리</string>
     <string name="battery_subtitle">실시간 안구 피로도 리포트</string>
-    <string name="tap_mascot">👆 마스코트를 탭하여 즉시 휴식 시작!</string>
+    <string name="tap_mascot">마스코트를 탭하여 즉시 휴식 시작</string>
     <string name="screen_time_today">오늘 화면 응시 시간</string>
 
     <string name="status_optimal">최상 (눈 피로 없음)</string>
@@ -44,7 +44,7 @@
     <string name="status_warning">위험 (눈 에너지 소모 큼)</string>
 
     <string name="rest_completed">휴식 완료</string>
-    <string name="eye_exercise">눈 운동</string>
+    <string name="eye_exercise">눈동자 훈련</string>
     <string name="sns_share">나의 눈 건강 배터리 SNS 공유하기</string>
 
     <string name="weekly_trend">주간 눈 건강 배터리 트렌드</string>
@@ -56,10 +56,10 @@
     <string name="tab_monthly">월간 (4주)</string>
 
     <string name="cheer_header">눈 건강 응원 릴레이</string>
-    <string name="goals_header">오늘의 눈 건강 목표 &amp; 트로피</string>
-    <string name="gym_header">눈 배터리 충전소</string>
+    <string name="goals_header">오늘의 눈 건강 목표</string>
+    <string name="gym_header">눈동자 훈련</string>
     <string name="ai_header">IrisFit AI 습관 코치</string>
-    <string name="settings_header">설정 및 관리</string>
+    <string name="settings_header">설정</string>
 
     <string name="btn_close">닫기</string>
     <string name="btn_cancel">취소</string>

@@ -1,6 +1,11 @@
 package com.example.myapplication.ui
 
 import androidx.activity.compose.BackHandler
+import com.example.myapplication.R
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.background
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.geometry.Offset
@@ -59,6 +64,18 @@ private fun MarkerSurface(elapsedMs: Long, speedStep: Int, rangeStep: Int, previ
 }
 
 @Composable
+private fun SessionIcon(@DrawableRes icon: Int) {
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(18.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(painterResource(icon), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(30.dp))
+    }
+}
+
+@Composable
 fun GuidedSessionCard(model: GuidedSessionViewModel) {
     val state = model.state
     BackHandler(enabled = state.phase != SessionPhase.HOME) { model.back() }
@@ -68,158 +85,157 @@ fun GuidedSessionCard(model: GuidedSessionViewModel) {
             delay(if (model.isMarker) 16L else 200L)
         }
     }
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            when (state.phase) {
-                SessionPhase.HOME -> {
-                    Text("👁️ 즉시 눈 휴식 & 마일리지 적립", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Button(onClick = model::prepare, enabled = model.recordsReady && !model.busy, modifier = Modifier.fillMaxWidth()) {
-                        Text("🟢 30초 눈 휴식 시작 (+100 Steps)", fontWeight = FontWeight.Bold)
-                    }
-                    OutlinedButton(onClick = model::prepareMarker, enabled = model.recordsReady && !model.busy, modifier = Modifier.fillMaxWidth()) {
-                        Text("🔵 20초 마커 따라보기 체험")
-                    }
-                }
-                SessionPhase.READY -> {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            text = if (model.isMarker) "👁️ 20초 마커 따라보기 모드" else "🔋 눈 건강 배터리 충전 모드",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = if (model.isMarker) "편한 범위에서 화면 속 점을 따라 움직여 보세요." else "스마트폰에서 시선을 떼고 먼 곳을 바라보며 눈 배터리를 급속 충전하세요!",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Button(
-                            onClick = model::start,
-                            enabled = !model.busy,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp)
-                        ) {
-                            Text("🟢 휴식 & 충전 시작하기", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        }
-
-                        OutlinedButton(
-                            onClick = model::home,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp)
-                        ) {
-                            Text("나중에 하기")
-                        }
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        when (state.phase) {
+            SessionPhase.HOME -> {
+                IrisCardHeader(icon = R.drawable.ic_ms_self_improvement, title = model.tr("session_home_title"))
+                IrisPrimaryButton(
+                    text = model.tr("session_home_rest_btn"),
+                    icon = R.drawable.ic_ms_play_arrow,
+                    onClick = model::prepare,
+                    enabled = model.recordsReady && !model.busy
+                )
+                IrisTonalButton(
+                    text = model.tr("session_home_marker_btn"),
+                    icon = R.drawable.ic_ms_visibility,
+                    onClick = { if (model.recordsReady && !model.busy) model.prepareMarker() },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            SessionPhase.READY -> {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    SessionIcon(if (model.isMarker) R.drawable.ic_ms_visibility else R.drawable.ic_ms_self_improvement)
+                    Text(
+                        text = if (model.isMarker) model.tr("session_ready_marker_title") else model.tr("session_ready_rest_title"),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = if (model.isMarker) model.tr("session_ready_marker_desc") else model.tr("session_ready_rest_desc"),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                    IrisPrimaryButton(
+                        text = model.tr("session_start_btn"),
+                        icon = R.drawable.ic_ms_play_arrow,
+                        onClick = model::start,
+                        enabled = !model.busy
+                    )
+                    TextButton(onClick = model::home) {
+                        Text(model.tr("session_later"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                SessionPhase.RUNNING, SessionPhase.PAUSED -> {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+            }
+            SessionPhase.RUNNING, SessionPhase.PAUSED -> {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (model.isMarker) {
+                        MarkerSurface(state.elapsedMs, model.markerSpeedStep, model.markerRangeStep)
+                    } else {
+                        Box(
+                            modifier = Modifier.size(160.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                progress = { state.remainingSeconds.toFloat() / 30f },
+                                modifier = Modifier.fillMaxSize(),
+                                strokeWidth = 10.dp,
+                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                strokeCap = StrokeCap.Round
+                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("${state.remainingSeconds}s", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Text(model.tr("session_resting"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+
+                    Text(
+                        text = if (state.phase == SessionPhase.PAUSED) model.tr("session_paused")
+                        else if (model.isMarker) model.tr("session_marker_hint")
+                        else model.tr("session_rest_hint"),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        if (model.isMarker) {
-                            MarkerSurface(state.elapsedMs, model.markerSpeedStep, model.markerRangeStep)
+                        if (state.phase == SessionPhase.RUNNING) {
+                            IrisTonalButton(text = model.tr("session_pause"), icon = null, onClick = model::pause, modifier = Modifier.weight(1f))
                         } else {
-                            Box(
-                                modifier = Modifier.size(160.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    progress = { state.remainingSeconds.toFloat() / 30f },
-                                    modifier = Modifier.fillMaxSize(),
-                                    strokeWidth = 10.dp,
-                                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                                    strokeCap = StrokeCap.Round
-                                )
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(model.tr("${state.remainingSeconds}s"), style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                    Text(model.tr("눈 휴식 중"), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                                }
-                            }
+                            IrisTonalButton(text = model.tr("session_resume"), icon = R.drawable.ic_ms_play_arrow, onClick = model::resume, modifier = Modifier.weight(1f))
                         }
-
-                        Text(
-                            text = if (state.phase == SessionPhase.PAUSED) model.tr("안내를 잠시 멈췄어요.")
-                            else if (model.isMarker) model.tr("점을 편한 범위에서 따라보세요")
-                            else model.tr("화면에서 시선을 떼고 편안히 쉬어보세요 🌿"),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            if (state.phase == SessionPhase.RUNNING) {
-                                OutlinedButton(onClick = model::pause, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)) {
-                                    Text(model.tr("일시정지"))
-                                }
-                            } else {
-                                Button(onClick = model::resume, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)) {
-                                    Text(model.tr("계속하기"))
-                                }
-                            }
-                            Button(onClick = model::end, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
-                                Text(model.tr("그만하기"))
-                            }
-                        }
-                    }
-                }
-                SessionPhase.CONFIRM -> {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        if (model.isMarker) {
-                            Text(model.tr("마커 체험 안내가 끝났어요."), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                            Text(model.tr("시선 추적이나 건강 측정 결과가 아니며 휴식 완료 기록에 합산하지 않습니다."), textAlign = TextAlign.Center)
-                            Button(onClick = model::home, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Text(model.tr("홈으로")) }
-                        } else {
-                            Text(model.tr("🔋 눈 건강 배터리 충전 완료!"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            Text(model.tr("30초 휴식이 완료되었습니다.\n+100 눈 걸음 수 & +50 포인트 충전!"), textAlign = TextAlign.Center)
-
-                            Button(
-                                onClick = model::confirm,
-                                enabled = !model.busy,
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text(if (model.busy) model.tr("저장 중…") else model.tr("마일리지 적립 & 완료"), fontWeight = FontWeight.Bold)
-                            }
-                            TextButton(onClick = model::end, enabled = !model.busy) {
-                                Text(model.tr("기록 남기지 않기"), color = Color.Gray)
-                            }
-                        }
-                    }
-                }
-                SessionPhase.COMPLETED, SessionPhase.ENDED -> {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(if (state.phase == SessionPhase.COMPLETED) model.tr("🎉 휴식 완료 & 충전 성공!") else model.tr("안내를 종료했어요."), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                        Text(model.tr("오늘도 건강한 눈 습관을 만드셨습니다."))
                         Button(
-                            onClick = model::home,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            onClick = model::end,
+                            modifier = Modifier.weight(1f).height(44.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
                         ) {
-                            Text(model.tr("홈으로 돌아가기"), fontWeight = FontWeight.Bold)
+                            Text(model.tr("session_stop"), fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
             }
-            model.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            SessionPhase.CONFIRM -> {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    if (model.isMarker) {
+                        SessionIcon(R.drawable.ic_ms_check_circle)
+                        Text(model.tr("session_marker_done_title"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                        Text(model.tr("session_marker_done_desc"), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                        IrisPrimaryButton(text = model.tr("session_home_btn"), icon = R.drawable.ic_ms_home, onClick = model::home)
+                    } else {
+                        SessionIcon(R.drawable.ic_ms_check_circle)
+                        Text(model.tr("session_confirm_title"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                        Text(model.tr("session_confirm_desc"), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                        IrisPrimaryButton(
+                            text = if (model.busy) model.tr("session_saving") else model.tr("session_confirm_btn"),
+                            icon = R.drawable.ic_ms_check_circle,
+                            onClick = model::confirm,
+                            enabled = !model.busy
+                        )
+                        TextButton(onClick = model::end, enabled = !model.busy) {
+                            Text(model.tr("session_skip_record"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+            SessionPhase.COMPLETED, SessionPhase.ENDED -> {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    SessionIcon(if (state.phase == SessionPhase.COMPLETED) R.drawable.ic_ms_celebration else R.drawable.ic_ms_info)
+                    Text(
+                        if (state.phase == SessionPhase.COMPLETED) model.tr("session_completed_title") else model.tr("session_ended_title"),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(model.tr("session_completed_desc"), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                    IrisPrimaryButton(text = model.tr("session_back_home"), icon = R.drawable.ic_ms_home, onClick = model::home)
+                }
+            }
         }
+        model.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     }
 }

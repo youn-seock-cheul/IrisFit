@@ -153,7 +153,7 @@ class EyeExerciseOverlayService : LifecycleService() {
             Intent(this, EyeExerciseOverlayService::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         return NotificationCompat.Builder(this, CHANNEL)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_stat_irisfit)
             .setContentTitle("카메라 개발 실험 · 최대 2분")
             .setContentText(status)
             .setContentIntent(open)

@@ -6,6 +6,21 @@ import java.time.YearMonth
 data class RestCounts(val rests: Int, val exercises: Int, val activeDays: Int)
 
 object RestHistory {
+    fun currentRestStreak(records: List<CompletionRecord>, today: LocalDate): Int {
+        val restDays = records.asSequence()
+            .filter { it.routineId == "screen_rest" }
+            .map { LocalDate.parse(it.completedLocalDate) }
+            .filter { !it.isAfter(today) }
+            .toSet()
+        var day = if (today in restDays) today else today.minusDays(1)
+        var streak = 0
+        while (day in restDays) {
+            streak++
+            day = day.minusDays(1)
+        }
+        return streak
+    }
+
     fun counts(records: List<CompletionRecord>, from: LocalDate, through: LocalDate): RestCounts {
         require(!through.isBefore(from))
         val selected = records.filter {

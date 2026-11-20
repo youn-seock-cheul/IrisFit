@@ -77,8 +77,11 @@ class CareReminderScheduler(private val context: Context) {
             val home = PendingIntent.getActivity(context, 31,
                 Intent(context, MainActivity::class.java).putExtra("target_screen", "home"),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            val gym = PendingIntent.getActivity(context, 32,
+            val focus = PendingIntent.getActivity(context, 32,
                 Intent(context, MainActivity::class.java).putExtra("target_screen", "gym"),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            val pursuit = PendingIntent.getActivity(context, 35,
+                Intent(context, MainActivity::class.java).putExtra("target_screen", "pursuit"),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             val stop = PendingIntent.getBroadcast(context, 33,
                 Intent(context, CareReminderReceiver::class.java).setAction(ACTION_STOP),
@@ -88,12 +91,12 @@ class CareReminderScheduler(private val context: Context) {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             try {
                 manager.notify(NOTIFICATION_ID, NotificationCompat.Builder(context, CHANNEL)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setSmallIcon(R.drawable.ic_stat_irisfit)
                     .setContentTitle(context.getString(R.string.care_notification_title))
                     .setContentText(context.getString(R.string.care_notification_body))
                     .setContentIntent(home)
-                    .addAction(0, context.getString(R.string.care_open_rest), home)
-                    .addAction(0, context.getString(R.string.care_open_exercise), gym)
+                    .addAction(0, context.getString(R.string.care_open_focus), focus)
+                    .addAction(0, context.getString(R.string.care_open_pursuit), pursuit)
                     .addAction(0, context.getString(R.string.care_later), later)
                     .addAction(0, context.getString(R.string.care_stop), stop)
                     .setOnlyAlertOnce(true)

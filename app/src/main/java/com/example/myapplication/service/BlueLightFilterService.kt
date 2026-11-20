@@ -119,7 +119,7 @@ class BlueLightFilterService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         return NotificationCompat.Builder(this, CHANNEL)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_stat_irisfit)
             .setContentTitle("IrisFit 블루라이트 필터 작동 중 🛡️")
             .setContentText("눈 보호 필터가 켜져 있습니다. (강도: ${(filterIntensity * 100).toInt()}%)")
             .setContentIntent(open)

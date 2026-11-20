@@ -220,6 +220,10 @@ androidComponents.onVariants(androidComponents.selector().withBuildType("release
 dependencies {
     // Android 기본 및 UI 라이브러리
     implementation(libs.androidx.core.ktx)
+    implementation("androidx.health.connect:connect-client:1.1.0")
+
+    // Google Play Integrity API (유료 앱 무결성 및 정식 결제 라이선스 검증)
+    implementation("com.google.android.play:integrity:1.4.0")
 
     // On-device Gemini Nano through Android AICore (no cloud API key)
     implementation("com.google.mlkit:genai-prompt:1.0.0-beta4")

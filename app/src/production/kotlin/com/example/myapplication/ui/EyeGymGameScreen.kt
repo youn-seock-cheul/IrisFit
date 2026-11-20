@@ -1,5 +1,6 @@
 package com.example.myapplication.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -14,6 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -37,6 +40,18 @@ fun EyeGymGameScreen(
     var remainingSeconds by rememberSaveable { mutableIntStateOf(20) }
     var selectedMode by rememberSaveable { mutableIntStateOf(0) }
     var workoutId by rememberSaveable { mutableStateOf<String?>(null) }
+    val flashAlpha = remember { Animatable(1f) }
+    val rippleProgress = remember { Animatable(0f) }
+
+    fun leaveTraining() {
+        sessionModel.cancelWorkoutSession()
+        gameState = "READY"
+        workoutId = null
+        onBack()
+    }
+
+    BackHandler(onBack = ::leaveTraining)
+
     LaunchedEffect(sessionModel.activityVisible) {
         if (!sessionModel.activityVisible && gameState == "PLAYING") {
             gameState = "PAUSED"
@@ -44,17 +59,17 @@ fun EyeGymGameScreen(
     }
 
     val modeNames = listOf(
-        "🔍 Pulse & Zoom (맥동 줌)",
-        "⚡ Rapid Flash (초고속 점멸)",
-        "🌊 Wave Ripple (파동 리플)",
-        "🎯 Dual-Target (교차 타겟)"
+        sessionModel.tr("focus_mode_pulse"),
+        sessionModel.tr("focus_mode_flash"),
+        sessionModel.tr("focus_mode_wave"),
+        sessionModel.tr("focus_mode_dual")
     )
 
     val modeIcons = listOf(
-        R.drawable.ic_card_chart,
-        R.drawable.ic_goal_streak,
-        R.drawable.ic_card_lightbulb,
-        R.drawable.ic_goal_battery
+        R.drawable.ic_ms_center_focus_strong,
+        R.drawable.ic_ms_bolt,
+        R.drawable.ic_ms_radio_button_unchecked,
+        R.drawable.ic_ms_target
     )
 
     val scaleAnim = remember { Animatable(40f) }
@@ -62,10 +77,30 @@ fun EyeGymGameScreen(
     LaunchedEffect(gameState) {
         if (gameState == "PLAYING") {
             launch {
-                while (gameState == "PLAYING") {
-                    val duration = if (selectedMode == 1) 1000 else if (selectedMode == 2) 2500 else 2000
-                    scaleAnim.animateTo(130f, animationSpec = tween(duration))
-                    scaleAnim.animateTo(40f, animationSpec = tween(duration))
+                when (selectedMode) {
+                    1 -> {
+                        flashAlpha.snapTo(0f)
+                        while (gameState == "PLAYING") {
+                            flashAlpha.animateTo(1f, animationSpec = tween(100))
+                            delay(160)
+                            flashAlpha.animateTo(0f, animationSpec = tween(100))
+                            delay(240)
+                        }
+                    }
+                    2 -> {
+                        rippleProgress.snapTo(0f)
+                        while (gameState == "PLAYING") {
+                            rippleProgress.animateTo(1f, animationSpec = tween(1500))
+                            rippleProgress.snapTo(0f)
+                        }
+                    }
+                    else -> {
+                        scaleAnim.snapTo(40f)
+                        while (gameState == "PLAYING") {
+                            scaleAnim.animateTo(130f, animationSpec = tween(2000))
+                            scaleAnim.animateTo(40f, animationSpec = tween(2000))
+                        }
+                    }
                 }
             }
             while (remainingSeconds > 0 && gameState == "PLAYING") {
@@ -81,108 +116,72 @@ fun EyeGymGameScreen(
 
     Scaffold(
         topBar = {
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 4.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedButton(
-                        onClick = onBack,
-                        shape = RoundedCornerShape(10.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(sessionModel.tr("gym_back"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Text(
-                        text = sessionModel.tr("gym_screen_title"),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
+            IrisTopBar(sessionModel.tr("gym_screen_title"), sessionModel.tr("gym_back"), ::leaveTraining)
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(20.dp),
+                .padding(20.dp)
+                .then(if (gameState == "PLAYING") Modifier.verticalScroll(rememberScrollState()) else Modifier),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             when (gameState) {
                 "READY" -> {
-                    Card(
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
+                    IrisCard {
                         Column(
-                            modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState()),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                            modifier = Modifier.verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            Text(sessionModel.tr("gym_ready_title"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                            Text(sessionModel.tr("gym_ready_desc"))
+                            IrisCardHeader(
+                                icon = R.drawable.ic_ms_center_focus_strong,
+                                title = sessionModel.tr("gym_ready_title"),
+                                subtitle = sessionModel.tr("gym_focus_meta")
+                            )
+                            IrisBodyText(sessionModel.tr("gym_ready_desc"))
 
-                            Text(sessionModel.tr("훈련 모드 선택:"), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(sessionModel.tr("training_mode_select"), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                                 modeNames.forEachIndexed { idx, name ->
-                                    val isSelected = selectedMode == idx
-                                    Surface(
-                                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                                        shape = RoundedCornerShape(10.dp),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable { selectedMode = idx }
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(12.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(id = modeIcons[idx]),
-                                                contentDescription = null,
-                                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                            Text(
-                                                text = sessionModel.tr(name),
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
+                                    IrisModeOption(
+                                        icon = modeIcons[idx],
+                                        label = name,
+                                        selected = selectedMode == idx,
+                                        onClick = { selectedMode = idx }
+                                    )
                                 }
                             }
-
-                            Button(enabled = sessionModel.recordsReady && !sessionModel.busy, onClick = {
-                                workoutId = sessionModel.prepareWorkoutSession("eye_gym")
-                                remainingSeconds = 20
-                                gameState = "PLAYING"
-                            }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                                Text(sessionModel.tr("gym_start"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            if (selectedMode == 1 || selectedMode == 2) {
+                                IrisBodyText(sessionModel.tr(if (selectedMode == 1) "focus_mode_flash_desc" else "focus_mode_wave_desc"))
                             }
+
+                            IrisPrimaryButton(
+                                text = sessionModel.tr("gym_start"),
+                                icon = R.drawable.ic_ms_play_arrow,
+                                enabled = sessionModel.recordsReady && !sessionModel.busy,
+                                onClick = {
+                                    workoutId = sessionModel.prepareWorkoutSession("eye_gym")
+                                    remainingSeconds = 20
+                                    gameState = "PLAYING"
+                                }
+                            )
                         }
                     }
                 }
                 "PLAYING" -> {
-                    Text(sessionModel.tr("${modeNames[selectedMode]} (${remainingSeconds}초)"), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    val primaryColor = MaterialTheme.colorScheme.primary
+                    val tertiaryColor = MaterialTheme.colorScheme.tertiary
+                    Text(sessionModel.tr("fmt_mode_seconds").format(modeNames[selectedMode], remainingSeconds), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(30.dp))
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(0.95f)
                             .height(320.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp)),
+                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
+                            .clipToBounds()
+                            .testTag("focus_target"),
                         contentAlignment = Alignment.Center
                     ) {
                         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -190,9 +189,9 @@ fun EyeGymGameScreen(
                             val centerY = size.height / 2f
 
                             when (selectedMode) {
-                                0, 1 -> {
+                                0 -> {
                                     drawCircle(
-                                        color = Color(0xFF00E676),
+                                        color = primaryColor,
                                         radius = scaleAnim.value,
                                         center = Offset(centerX, centerY)
                                     )
@@ -202,78 +201,131 @@ fun EyeGymGameScreen(
                                         center = Offset(centerX, centerY)
                                     )
                                 }
+                                1 -> {
+                                    drawCircle(
+                                        color = primaryColor.copy(alpha = flashAlpha.value),
+                                        radius = 30f,
+                                        center = Offset(centerX, centerY)
+                                    )
+                                    drawCircle(
+                                        color = Color.White.copy(alpha = flashAlpha.value),
+                                        radius = 9f,
+                                        center = Offset(centerX, centerY)
+                                    )
+                                }
                                 2 -> {
-                                    val r = scaleAnim.value
-                                    drawCircle(color = Color(0xFF00E676).copy(alpha = 0.3f), radius = r * 1.2f, center = Offset(centerX, centerY), style = Stroke(width = 4f))
-                                    drawCircle(color = Color(0xFF00E676), radius = r, center = Offset(centerX, centerY))
-                                    drawCircle(color = Color.White, radius = r * 0.4f, center = Offset(centerX, centerY))
+                                    repeat(3) { index ->
+                                        val phase = (rippleProgress.value + index / 3f) % 1f
+                                        val radius = 24f + phase * 150f
+                                        drawCircle(
+                                            color = primaryColor.copy(alpha = (1f - phase) * 0.72f),
+                                            radius = radius,
+                                            center = Offset(centerX, centerY),
+                                            style = Stroke(width = 5f)
+                                        )
+                                    }
+                                    drawCircle(color = primaryColor, radius = 10f, center = Offset(centerX, centerY))
+                                    drawCircle(color = Color.White, radius = 4f, center = Offset(centerX, centerY))
                                 }
                                 else -> {
                                     val r = scaleAnim.value
-                                    drawCircle(color = Color(0xFF00C853), radius = r, center = Offset(centerX - 80f, centerY))
-                                    drawCircle(color = Color(0xFF29B6F6), radius = 140f - r, center = Offset(centerX + 80f, centerY), style = Stroke(width = 6f))
+                                    drawCircle(color = primaryColor, radius = r, center = Offset(centerX - 80f, centerY))
+                                    drawCircle(color = tertiaryColor, radius = 140f - r, center = Offset(centerX + 80f, centerY), style = Stroke(width = 6f))
                                     drawCircle(color = Color.White, radius = 10f, center = Offset(centerX - 80f, centerY))
                                     drawCircle(color = Color.White, radius = 10f, center = Offset(centerX + 80f, centerY))
                                 }
                             }
                         }
-                        Text(sessionModel.tr("gym_gazing"), color = Color.White, fontWeight = FontWeight.Bold)
                     }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        sessionModel.tr(
+                            when (selectedMode) {
+                                1 -> "focus_mode_flash_desc"
+                                2 -> "focus_mode_wave_desc"
+                                else -> "gym_gazing"
+                            }
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.testTag("focus_guidance")
+                    )
                     Spacer(modifier = Modifier.height(30.dp))
-                    Button(onClick = { gameState = "READY" }, shape = RoundedCornerShape(12.dp)) {
-                        Text(sessionModel.tr("gym_stop"), fontWeight = FontWeight.Bold)
+                    Button(
+                        onClick = {
+                            sessionModel.cancelWorkoutSession()
+                            workoutId = null
+                            remainingSeconds = 20
+                            gameState = "READY"
+                        },
+                        modifier = Modifier.height(44.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text(sessionModel.tr("gym_stop"), fontWeight = FontWeight.SemiBold)
                     }
                 }
                 "PAUSED" -> {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
+                    IrisCard {
                         Column(
-                            modifier = Modifier.padding(24.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Text(sessionModel.tr("workout_paused_title"), style = MaterialTheme.typography.titleLarge)
-                            Button(onClick = { gameState = "PLAYING" }) {
-                                Text(sessionModel.tr("workout_resume"))
-                            }
+                            Text(sessionModel.tr("workout_paused_title"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                            IrisPrimaryButton(
+                                text = sessionModel.tr("workout_resume"),
+                                icon = R.drawable.ic_ms_play_arrow,
+                                onClick = { gameState = "PLAYING" }
+                            )
                             TextButton(onClick = {
                                 sessionModel.cancelWorkoutSession()
                                 gameState = "READY"
                             }) {
-                                Text(sessionModel.tr("workout_cancel"))
+                                Text(sessionModel.tr("workout_cancel"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
                 }
                 "FINISHED" -> {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
+                    IrisCard {
                         Column(
-                            modifier = Modifier.padding(24.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Text(sessionModel.tr("gym_finished"), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                            if (sessionModel.busy) Text("완료 기록을 저장하고 있어요.")
-                            else if (sessionModel.workoutSaved) Text(sessionModel.tr("gym_finished_desc"))
+                            Icon(
+                                painterResource(R.drawable.ic_ms_check_circle_fill),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Text(sessionModel.tr("gym_finished"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            if (sessionModel.busy) IrisBodyText(sessionModel.tr("workout_saving"))
+                            else if (sessionModel.workoutSaved) IrisBodyText(sessionModel.tr("gym_finished_desc"))
                             else {
-                                Text(sessionModel.error ?: "완료 기록을 저장하지 못했어요.")
-                                Button(onClick = { workoutId?.let(onGameCompleted) }) { Text("저장 다시 시도") }
+                                Text(sessionModel.error ?: sessionModel.tr("workout_save_failed"), color = MaterialTheme.colorScheme.error)
+                                IrisTonalButton(
+                                    text = sessionModel.tr("workout_retry_save"),
+                                    icon = null,
+                                    onClick = { workoutId?.let(onGameCompleted) }
+                                )
                             }
-                            Button(enabled = !sessionModel.busy && sessionModel.workoutSaved, onClick = {
-                                gameState = "READY"
-                            }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                                Text(sessionModel.tr("gym_restart"), fontWeight = FontWeight.Bold)
-                            }
-                            Button(onClick = onBack, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                                Text(sessionModel.tr("gym_home"), fontWeight = FontWeight.Bold)
-                            }
+                            IrisPrimaryButton(
+                                text = sessionModel.tr("gym_restart"),
+                                icon = R.drawable.ic_ms_replay,
+                                onClick = { gameState = "READY" },
+                                enabled = !sessionModel.busy && sessionModel.workoutSaved
+                            )
+                            IrisTonalButton(
+                                text = sessionModel.tr("gym_home"),
+                                icon = R.drawable.ic_ms_home,
+                                onClick = ::leaveTraining,
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
                 }

@@ -56,7 +56,7 @@ class BreakReminderScheduler(private val context: Context) {
     fun start() {
         // Make the channel configurable before the first reminder is delivered.
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(
-            NotificationChannel(CHANNEL, "화면 휴식 알림", NotificationManager.IMPORTANCE_DEFAULT)
+            NotificationChannel(CHANNEL, context.getString(R.string.care_channel), NotificationManager.IMPORTANCE_DEFAULT)
         )
         cancel()
         val deadline = SystemClock.elapsedRealtime() + INTERVAL_MS
@@ -76,14 +76,14 @@ class BreakReminderScheduler(private val context: Context) {
 
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
         manager.createNotificationChannel(
-            NotificationChannel(CHANNEL, "화면 휴식 알림", NotificationManager.IMPORTANCE_DEFAULT)
+            NotificationChannel(CHANNEL, context.getString(R.string.care_channel), NotificationManager.IMPORTANCE_DEFAULT)
         )
         val openRest = PendingIntent.getActivity(
             context, 20, Intent(context, MainActivity::class.java).putExtra("target_screen", "home"),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val selectedLang = com.example.myapplication.data.LanguageManager.getSelectedLanguage(context)
+        val selectedLang = com.example.myapplication.data.LanguageManager.effectiveLanguage(context)
         val localizedTitle = com.example.myapplication.session.AppLocalization.get(selectedLang, "noti_status_title")
         val localizedStatusLabel = com.example.myapplication.session.AppLocalization.get(selectedLang, status.labelKey)
         val localizedDesc = com.example.myapplication.session.AppLocalization.get(selectedLang, status.descKey)
@@ -93,7 +93,7 @@ class BreakReminderScheduler(private val context: Context) {
             manager.notify(
                 2002,
                 NotificationCompat.Builder(context, CHANNEL)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setSmallIcon(R.drawable.ic_stat_irisfit)
                     .setContentTitle(localizedTitle)
                     .setContentText(localizedBody)
                     .setContentIntent(openRest)
@@ -110,7 +110,7 @@ class BreakReminderScheduler(private val context: Context) {
             PackageManager.PERMISSION_GRANTED) return
         val notifications = context.getSystemService(NotificationManager::class.java)
         notifications.createNotificationChannel(
-            NotificationChannel(CHANNEL, "화면 휴식 알림", NotificationManager.IMPORTANCE_DEFAULT)
+            NotificationChannel(CHANNEL, context.getString(R.string.care_channel), NotificationManager.IMPORTANCE_DEFAULT)
         )
         val openRest = PendingIntent.getActivity(
             context, 10, Intent(context, MainActivity::class.java).putExtra("target_screen", "home"),
@@ -124,17 +124,18 @@ class BreakReminderScheduler(private val context: Context) {
             context, 12, Intent(context, BreakReminderReceiver::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        val lang = com.example.myapplication.data.LanguageManager.effectiveLanguage(context)
         try {
             notifications.notify(
                 NOTIFICATION_ID,
                 NotificationCompat.Builder(context, CHANNEL)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setSmallIcon(R.drawable.ic_stat_irisfit)
                     .setContentTitle(context.getString(R.string.care_notification_title))
                     .setContentText(context.getString(R.string.care_notification_body))
                     .setContentIntent(openRest)
-                    .addAction(0, "🟢 30초 눈 휴식", openRest)
-                    .addAction(0, "🎮 눈 운동 미니게임", openGym)
-                    .addAction(0, "알림 종료", stop)
+                    .addAction(0, com.example.myapplication.session.AppLocalization.get(lang, "session_ready_rest_title"), openRest)
+                    .addAction(0, com.example.myapplication.session.AppLocalization.get(lang, "nav_gym"), openGym)
+                    .addAction(0, context.getString(R.string.care_stop), stop)
                     .setAutoCancel(true)
                     .build()
             )

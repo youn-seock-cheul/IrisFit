@@ -1,9 +1,9 @@
 <resources>
     <string name="history_title">Your rest history</string>
     <string name="history_loading">Loading records…</string>
-    <string name="history_today">Today: %1$d rests · %2$d exercises</string>
-    <string name="history_this_month">This month so far: %1$d rests · %2$d exercises · %3$d active days</string>
-    <string name="history_last_month">Last month: %1$d rests · %2$d exercises · %3$d active days</string>
+    <string name="history_today">Today: %1$d rests · %2$d trainings</string>
+    <string name="history_this_month">This month so far: %1$d rests · %2$d trainings · %3$d active days</string>
+    <string name="history_last_month">Last month: %1$d rests · %2$d trainings · %3$d active days</string>
     <string name="history_segment">Days %1$d–%2$d: %3$d activities</string>
     <string name="history_note">Only confirmed activities are shown. Previously discarded records cannot be restored; these counts do not measure eye health.</string>
     <string name="care_settings_title">Gentle rest reminders</string>
@@ -16,9 +16,9 @@
     <string name="care_hours_all">All day</string>
     <string name="care_channel">Gentle rest reminders</string>
     <string name="care_notification_title">Take a moment away from your screen</string>
-    <string name="care_notification_body">Would you like to rest or try a short eye exercise?</string>
-    <string name="care_open_rest">Rest</string>
-    <string name="care_open_exercise">Eye exercise</string>
+    <string name="care_notification_body">Would you like to rest or try a short eye training?</string>
+    <string name="care_open_focus">Focus shift</string>
+    <string name="care_open_pursuit">Eye tracking</string>
     <string name="care_stop">Turn off reminders</string>
     <string name="care_later">Later</string>
     <string name="care_schedule_error">Could not update the reminder. Please try again.</string>
@@ -26,17 +26,17 @@
     <string name="care_open_notification_settings">Open notification settings</string>
     <string name="app_name">IrisFit</string>
     <string name="nav_home">Home</string>
-    <string name="nav_gym">Eye Gym</string>
+    <string name="nav_gym">Eye Training</string>
     <string name="nav_eye_comfort">Eye Comfort</string>
     <string name="nav_ai">AI Coach</string>
     <string name="nav_settings">Settings</string>
 
     <string name="home_title">IrisFit</string>
-    <string name="home_subtitle">Eye Health &amp; Rest Habits</string>
+    <string name="home_subtitle">Eye Health Battery &amp; Rest Habits</string>
 
     <string name="battery_title">IrisFit Eye Health Battery</string>
     <string name="battery_subtitle">Real-time Eye Fatigue Report</string>
-    <string name="tap_mascot">👆 Tap mascot for instant rest!</string>
+    <string name="tap_mascot">Tap the mascot for an instant rest</string>
     <string name="screen_time_today">Screen Time Today</string>
 
     <string name="status_optimal">Optimal (No Fatigue)</string>
@@ -44,7 +44,7 @@
     <string name="status_warning">Warning (High Energy Drain)</string>
 
     <string name="rest_completed">Rest Completed</string>
-    <string name="eye_exercise">Eye Exercise</string>
+    <string name="eye_exercise">Eye Training</string>
     <string name="sns_share">Share My Eye Health Battery SNS</string>
 
     <string name="weekly_trend">Weekly Eye Health Battery Trend</string>
@@ -56,10 +56,10 @@
     <string name="tab_monthly">Monthly (4w)</string>
 
     <string name="cheer_header">Eye Health Cheer Relay</string>
-    <string name="goals_header">Today\'s Eye Health Goals &amp; Trophies</string>
-    <string name="gym_header">Eye Battery Charging Station</string>
+    <string name="goals_header">Today\'s Eye Health Goals</string>
+    <string name="gym_header">Eye Training</string>
     <string name="ai_header">IrisFit AI Habit Coach</string>
-    <string name="settings_header">Settings &amp; Management</string>
+    <string name="settings_header">Settings</string>
 
     <string name="btn_close">Close</string>
     <string name="btn_cancel">Cancel</string>

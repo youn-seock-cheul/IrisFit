@@ -10,7 +10,6 @@ import android.widget.RemoteViews
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
 import com.example.myapplication.data.LanguageManager
-import com.example.myapplication.data.ScreenTimeManager
 import com.example.myapplication.session.AppLocalization
 import com.example.myapplication.session.EyeBatteryCalculator
 import com.example.myapplication.session.EyeFatigueStatus
@@ -53,33 +52,24 @@ class IrisFitWidgetProvider : AppWidgetProvider() {
                 val views = RemoteViews(context.packageName, layoutRes)
                 views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-                val queryResult = try { ScreenTimeManager.queryTodayScreenTime(context) } catch (_: Exception) { com.example.myapplication.data.ScreenTimeQueryResult.QueryError("Widget Error") }
-                val recordsResult = try {
-                    Pair(FileCompletionStorage.repository(context).records(), true)
+                val records = try {
+                    FileCompletionStorage.repository(context).records()
                 } catch (_: Exception) {
-                    Pair(emptyList(), false)
+                    emptyList()
                 }
-                val records = recordsResult.first
-                val recordsSuccess = recordsResult.second
 
-                val (screenTime, isScreenTimeMeasured) = when (queryResult) {
-                    is com.example.myapplication.data.ScreenTimeQueryResult.Success -> Pair(queryResult.minutes, true)
-                    else -> Pair(0, false)
-                }
                 val today = LocalDate.now().toString()
                 val rests = records.count { it.completedLocalDate == today && it.routineId == "screen_rest" }
                 val miniGames = records.count { it.completedLocalDate == today && (it.routineId == "eye_gym" || it.routineId == "smooth_pursuit") }
 
-                val isScoreCalculable = isScreenTimeMeasured && recordsSuccess
-
                 val stats = EyeBatteryCalculator.calculateBattery(
-                    screenTimeMinutes = screenTime,
+                    screenTimeMinutes = 0,
                     restCount = rests,
                     miniGameCount = miniGames,
-                    screenTimeMeasured = isScoreCalculable
+                    screenTimeMeasured = false
                 )
 
-                val selectedLang = LanguageManager.getSelectedLanguage(context)
+                val selectedLang = LanguageManager.effectiveLanguage(context)
                 val effectiveLang = AppLocalization.resolveEffectiveLang(selectedLang)
                 val localizedStatusLabel = AppLocalization.get(selectedLang, stats.fatigueStatus.labelKey)
 
