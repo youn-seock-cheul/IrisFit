@@ -43,7 +43,10 @@ private val careHourLabels = listOf(R.string.care_hours_default, R.string.care_h
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CareReminderSettings() {
+fun CareReminderSettings(
+    isUnlocked: Boolean = true,
+    onOpenPaywall: () -> Unit = {}
+) {
     val context = LocalContext.current
     val scheduler = remember { CareReminderScheduler(context.applicationContext) }
     val owner = LocalLifecycleOwner.current
@@ -92,11 +95,13 @@ fun CareReminderSettings() {
     }
     IrisSettingsRow(
         icon = R.drawable.ic_ms_notifications,
-        title = stringResource(R.string.care_settings_title),
+        title = if (isUnlocked) stringResource(R.string.care_settings_title) else "${stringResource(R.string.care_settings_title)} 🔒",
         subtitle = summary,
         trailing = {
             Switch(checked = enabled, onCheckedChange = { on ->
-                if (!on) configure(false, interval, hours)
+                if (!isUnlocked && on) {
+                    onOpenPaywall()
+                } else if (!on) configure(false, interval, hours)
                 else if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                     permission.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else if (notificationsAvailable) configure(true, interval, hours)

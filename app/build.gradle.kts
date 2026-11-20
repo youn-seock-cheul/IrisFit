@@ -222,6 +222,14 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation("androidx.health.connect:connect-client:1.1.0")
 
+    // Google Play Billing Library (인앱 구독결제 모듈)
+    implementation(libs.play.billing.ktx)
+
+    // Firebase (4명 동반자 권한 공유 인증 및 Firestore 데이터베이스)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+
     // Google Play Integrity API (유료 앱 무결성 및 정식 결제 라이선스 검증)
     implementation("com.google.android.play:integrity:1.4.0")
 

@@ -11,6 +11,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.billing.BillingManager
+import com.example.myapplication.billing.CompanionGroupManager
+import com.example.myapplication.billing.EntitlementManager
 import com.example.myapplication.ui.theme.AppColorTone
 import com.example.myapplication.data.HealthConnectManager
 import com.example.myapplication.data.ScreenTimeManager
@@ -30,6 +33,14 @@ private enum class HealthReadState(val messageKey: String? = null, val connected
 }
 
 class GuidedSessionViewModel(application: Application) : AndroidViewModel(application) {
+    val entitlementManager = EntitlementManager(application)
+    val billingManager = BillingManager(application, entitlementManager)
+    val companionGroupManager = CompanionGroupManager(entitlementManager)
+
+    init {
+        billingManager.startBillingConnection()
+    }
+
     private val session = GuidedSession(SystemClock::elapsedRealtime) { UUID.randomUUID().toString() }
     private val repository = FileCompletionStorage.repository(application)
     private val markerPreferences = MarkerPreferences(FileCompletionStorage(application, "marker_preferences_v1.txt"))

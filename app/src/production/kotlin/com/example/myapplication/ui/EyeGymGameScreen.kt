@@ -34,7 +34,9 @@ import kotlinx.coroutines.launch
 fun EyeGymGameScreen(
     sessionModel: GuidedSessionViewModel,
     onBack: () -> Unit,
-    onGameCompleted: (String) -> Unit
+    onGameCompleted: (String) -> Unit,
+    isUnlocked: Boolean = true,
+    onOpenPaywall: () -> Unit = {}
 ) {
     var gameState by rememberSaveable { mutableStateOf("READY") }
     var remainingSeconds by rememberSaveable { mutableIntStateOf(20) }
@@ -158,13 +160,17 @@ fun EyeGymGameScreen(
                             }
 
                             IrisPrimaryButton(
-                                text = sessionModel.tr("gym_start"),
+                                text = if (isUnlocked) sessionModel.tr("gym_start") else "${sessionModel.tr("gym_start")} 🔒",
                                 icon = R.drawable.ic_ms_play_arrow,
                                 enabled = sessionModel.recordsReady && !sessionModel.busy,
                                 onClick = {
-                                    workoutId = sessionModel.prepareWorkoutSession("eye_gym")
-                                    remainingSeconds = 20
-                                    gameState = "PLAYING"
+                                    if (isUnlocked) {
+                                        workoutId = sessionModel.prepareWorkoutSession("eye_gym")
+                                        remainingSeconds = 20
+                                        gameState = "PLAYING"
+                                    } else {
+                                        onOpenPaywall()
+                                    }
                                 }
                             )
                         }

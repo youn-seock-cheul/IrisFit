@@ -56,6 +56,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -99,6 +100,9 @@ fun MainScreen(
     onNavigateToWorkoutRandom: () -> Unit = {}
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    var showPaywall by remember { mutableStateOf(false) }
+    var showCompanionGroup by remember { mutableStateOf(false) }
+    val activity = LocalContext.current as? android.app.Activity
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -119,12 +123,60 @@ fun MainScreen(
             0 -> WellnessHomeTab(
                 sessionModel = sessionModel,
                 modifier = modifier,
-                onNavigateToGym = onNavigateToGym,
-                onNavigateToPursuit = onNavigateToPursuitRandom
+                onNavigateToGym = {
+                    if (sessionModel.entitlementManager.isFocusShiftUnlocked()) onNavigateToGym() else showPaywall = true
+                },
+                onNavigateToPursuit = {
+                    if (sessionModel.entitlementManager.isSmoothPursuitUnlocked()) onNavigateToPursuitRandom() else showPaywall = true
+                }
             )
-            1 -> GymAndExamTab(sessionModel, modifier, onNavigateToGym, onNavigateToPursuitMode, onNavigateToExam)
+            1 -> GymAndExamTab(
+                sessionModel = sessionModel,
+                modifier = modifier,
+                onNavigateToGym = onNavigateToGym,
+                onNavigateToPursuitMode = onNavigateToPursuitMode,
+                onNavigateToExam = onNavigateToExam,
+                onOpenPaywall = { showPaywall = true }
+            )
             2 -> EyeComfortSettingsTab(sessionModel, modifier)
-            3 -> SettingsTab(sessionModel, modifier)
+            3 -> SettingsTab(
+                sessionModel = sessionModel,
+                modifier = modifier,
+                onOpenPaywall = { showPaywall = true },
+                onOpenCompanionGroup = { showCompanionGroup = true }
+            )
+        }
+    }
+
+    if (showPaywall) {
+        val state by sessionModel.entitlementManager.subscriptionState.collectAsState()
+        Dialog(
+            onDismissRequest = { showPaywall = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            PaywallScreen(
+                subscriptionState = state,
+                onSubscribeClicked = { productId ->
+                    activity?.let { sessionModel.billingManager.launchSubscriptionFlow(it, productId) }
+                },
+                onOpenCompanionGroupClicked = {
+                    showPaywall = false
+                    showCompanionGroup = true
+                },
+                onClose = { showPaywall = false }
+            )
+        }
+    }
+
+    if (showCompanionGroup) {
+        Dialog(
+            onDismissRequest = { showCompanionGroup = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            CompanionGroupScreen(
+                companionGroupManager = sessionModel.companionGroupManager,
+                onBack = { showCompanionGroup = false }
+            )
         }
     }
 }
@@ -281,9 +333,13 @@ fun GymAndExamTab(
     modifier: Modifier,
     onNavigateToGym: () -> Unit,
     onNavigateToPursuitMode: (Int) -> Unit = {},
-    onNavigateToExam: () -> Unit
+    onNavigateToExam: () -> Unit,
+    onOpenPaywall: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
+    val isFocusUnlocked = sessionModel.entitlementManager.isFocusShiftUnlocked()
+    val isPursuitUnlocked = sessionModel.entitlementManager.isSmoothPursuitUnlocked()
+
     Column(
         modifier = modifier.padding(20.dp).verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -299,21 +355,23 @@ fun GymAndExamTab(
         IrisCard {
             IrisCardHeader(
                 icon = R.drawable.ic_ms_center_focus_strong,
-                title = sessionModel.tr("gym_focus_title"),
+                title = if (isFocusUnlocked) sessionModel.tr("gym_focus_title") else "${sessionModel.tr("gym_focus_title")} 🔒",
                 subtitle = sessionModel.tr("gym_focus_meta")
             )
             IrisBodyText(sessionModel.tr("gym_focus_sub"))
             IrisPrimaryButton(
-                text = sessionModel.tr("gym_focus_btn"),
+                text = if (isFocusUnlocked) sessionModel.tr("gym_focus_btn") else "${sessionModel.tr("gym_focus_btn")} (🔒 유료)",
                 icon = R.drawable.ic_ms_play_arrow,
-                onClick = onNavigateToGym
+                onClick = {
+                    if (isFocusUnlocked) onNavigateToGym() else onOpenPaywall()
+                }
             )
         }
 
         IrisCard {
             IrisCardHeader(
                 icon = R.drawable.ic_ms_all_inclusive,
-                title = sessionModel.tr("gym_pursuit_title"),
+                title = if (isPursuitUnlocked) sessionModel.tr("gym_pursuit_title") else "${sessionModel.tr("gym_pursuit_title")} 🔒",
                 subtitle = sessionModel.tr("gym_pursuit_meta")
             )
             IrisBodyText(sessionModel.tr("gym_pursuit_sub"))
@@ -328,9 +386,11 @@ fun GymAndExamTab(
                     pair.forEachIndexed { colIndex, (icon, key) ->
                         val mode = rowIndex * 2 + colIndex
                         IrisTonalButton(
-                            text = sessionModel.tr(key),
+                            text = if (isPursuitUnlocked) sessionModel.tr(key) else "${sessionModel.tr(key)} 🔒",
                             icon = icon,
-                            onClick = { onNavigateToPursuitMode(mode) },
+                            onClick = {
+                                if (isPursuitUnlocked) onNavigateToPursuitMode(mode) else onOpenPaywall()
+                            },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -548,7 +608,12 @@ fun AiCoachTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
 }
 
 @Composable
-fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
+fun SettingsTab(
+    sessionModel: GuidedSessionViewModel,
+    modifier: Modifier,
+    onOpenPaywall: () -> Unit = {},
+    onOpenCompanionGroup: () -> Unit = {}
+) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -577,9 +642,31 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
     ) {
         IrisScreenHeader(sessionModel.tr("settings_header"))
 
+        IrisSectionLabel("IrisFit 유료 구독 & 4명 동반자 공유")
+        IrisSettingsGroup {
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_workspace_premium,
+                title = "유료 구독 ($4/월 + 3개월 체험)",
+                subtitle = "원근조절, 시선추적, 헬스연동, 색톤 4종 & 동반자 공유",
+                onClick = onOpenPaywall,
+                trailing = { IrisChevron() }
+            )
+            IrisRowDivider()
+            IrisSettingsRow(
+                icon = R.drawable.ic_ms_shield,
+                title = "동반자 4명 공유 초대 코드",
+                subtitle = "초대 코드 생성 및 동반자 연결 관리",
+                onClick = onOpenCompanionGroup,
+                trailing = { IrisChevron() }
+            )
+        }
+
         IrisSectionLabel(sessionModel.tr("settings_section_noti"))
         IrisSettingsGroup {
-            CareReminderSettings()
+            CareReminderSettings(
+                isUnlocked = sessionModel.entitlementManager.isHealthConnectUnlocked(),
+                onOpenPaywall = onOpenPaywall
+            )
             IrisRowDivider()
             IrisSettingsRow(
                 icon = R.drawable.ic_ms_notifications_active,
@@ -702,7 +789,14 @@ fun SettingsTab(sessionModel: GuidedSessionViewModel, modifier: Modifier) {
     }
 
     if (showColorToneDialog) {
-        ColorToneDialog(sessionModel) { showColorToneDialog = false }
+        ColorToneDialog(
+            model = sessionModel,
+            onDismiss = { showColorToneDialog = false },
+            onOpenPaywall = {
+                showColorToneDialog = false
+                onOpenPaywall()
+            }
+        )
     }
     if (showHealthConnectDisclosure) {
         AlertDialog(

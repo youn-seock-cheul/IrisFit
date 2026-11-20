@@ -29,7 +29,9 @@ fun SmoothPursuitGameScreen(
     sessionModel: GuidedSessionViewModel,
     initialMode: Int = -1,
     onBack: () -> Unit,
-    onGameCompleted: (String) -> Unit
+    onGameCompleted: (String) -> Unit,
+    isUnlocked: Boolean = true,
+    onOpenPaywall: () -> Unit = {}
 ) {
     var gameState by rememberSaveable { mutableStateOf("READY") }
     var remainingSeconds by rememberSaveable { mutableIntStateOf(20) }
@@ -127,14 +129,18 @@ fun SmoothPursuitGameScreen(
                             }
 
                             IrisPrimaryButton(
-                                text = sessionModel.tr("pursuit_start"),
+                                text = if (isUnlocked) sessionModel.tr("pursuit_start") else "${sessionModel.tr("pursuit_start")} 🔒",
                                 icon = R.drawable.ic_ms_play_arrow,
                                 enabled = sessionModel.recordsReady && !sessionModel.busy,
                                 onClick = {
-                                    workoutId = sessionModel.prepareWorkoutSession("smooth_pursuit")
-                                    remainingSeconds = 20
-                                    angle = 0.6f
-                                    gameState = "PLAYING"
+                                    if (isUnlocked) {
+                                        workoutId = sessionModel.prepareWorkoutSession("smooth_pursuit")
+                                        remainingSeconds = 20
+                                        angle = 0.6f
+                                        gameState = "PLAYING"
+                                    } else {
+                                        onOpenPaywall()
+                                    }
                                 }
                             )
                         }
