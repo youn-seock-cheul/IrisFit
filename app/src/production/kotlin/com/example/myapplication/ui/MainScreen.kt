@@ -36,6 +36,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -128,7 +133,8 @@ fun MainScreen(
                 },
                 onNavigateToPursuit = {
                     if (sessionModel.entitlementManager.isSmoothPursuitUnlocked()) onNavigateToPursuitRandom() else showPaywall = true
-                }
+                },
+                onOpenPaywall = { showPaywall = true }
             )
             1 -> GymAndExamTab(
                 sessionModel = sessionModel,
@@ -642,6 +648,34 @@ fun SettingsTab(
     ) {
         IrisScreenHeader(sessionModel.tr("settings_header"))
 
+        val subscriptionState by sessionModel.entitlementManager.subscriptionState.collectAsState()
+        Card(
+            modifier = Modifier.fillMaxWidth().clickable { onOpenPaywall() },
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                    Text("내 구독 상태", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = when (subscriptionState.planType) {
+                            com.example.myapplication.model.PlanType.FAMILY_HOST -> "가족 패스 방장 결제 중 (4명 공유)"
+                            com.example.myapplication.model.PlanType.FAMILY_MEMBER -> "방장 상속으로 모든 Pro 기능 이용 중"
+                            com.example.myapplication.model.PlanType.FREE_TRIAL -> "3개월 무료 체험 기간 (남은 기한: ${subscriptionState.trialDaysRemaining}일)"
+                            com.example.myapplication.model.PlanType.EXPIRED, com.example.myapplication.model.PlanType.FREE -> "무료 이용 중 (Pro 유료 기능 잠금)"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                PlanStatusBadge(sessionModel = sessionModel, onClick = onOpenPaywall)
+            }
+        }
+
         IrisSectionLabel("IrisFit 유료 구독 & 4명 동반자 공유")
         IrisSettingsGroup {
             IrisSettingsRow(
@@ -861,18 +895,69 @@ fun SettingsTab(
 }
 
 @Composable
+fun PlanStatusBadge(
+    sessionModel: GuidedSessionViewModel,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val state by sessionModel.entitlementManager.subscriptionState.collectAsState()
+    val (label, containerColor, contentColor, icon) = when (state.planType) {
+        com.example.myapplication.model.PlanType.FAMILY_HOST -> 
+            BadgeInfo("Pro 방장 👑", Color(0xFFFBC02D), Color(0xFF212121), Icons.Default.Star)
+        com.example.myapplication.model.PlanType.FAMILY_MEMBER -> 
+            BadgeInfo("Pro 멤버 👥", Color(0xFF0288D1), Color.White, Icons.Default.Group)
+        com.example.myapplication.model.PlanType.FREE_TRIAL -> 
+            BadgeInfo("무료체험 D-${state.trialDaysRemaining}", Color(0xFF2E7D32), Color.White, Icons.Default.Schedule)
+        com.example.myapplication.model.PlanType.EXPIRED, com.example.myapplication.model.PlanType.FREE -> 
+            BadgeInfo("무료 플랜 🔒", Color(0xFF616161), Color.White, Icons.Default.Lock)
+    }
+
+    Surface(
+        color = containerColor,
+        contentColor = contentColor,
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier.clickable(onClick = onClick)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(14.dp))
+            Text(text = label, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+private data class BadgeInfo(
+    val label: String,
+    val containerColor: Color,
+    val contentColor: Color,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
+)
+
+@Composable
 fun WellnessHomeTab(
     sessionModel: GuidedSessionViewModel,
     modifier: Modifier,
     onNavigateToGym: () -> Unit = {},
-    onNavigateToPursuit: () -> Unit = {}
+    onNavigateToPursuit: () -> Unit = {},
+    onOpenPaywall: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
         modifier = modifier.padding(20.dp).verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(sessionModel.tr("home_title"), style = MaterialTheme.typography.headlineMedium)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(sessionModel.tr("home_title"), style = MaterialTheme.typography.headlineMedium)
+            PlanStatusBadge(sessionModel = sessionModel, onClick = onOpenPaywall)
+        }
+
         val screenTime = sessionModel.screenTimeResult?.let {
             ScreenTimeManager.formatScreenTime(it, sessionModel.currentLang)
         } ?: sessionModel.tr("not_measured")
