@@ -33,6 +33,7 @@ fun FamilySubscriptionDialog(
     val statusState by FamilySubscriptionManager.subscriptionStatus.collectAsState()
     var inviteCodeInput by remember { mutableStateOf("") }
     var statusMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -142,11 +143,16 @@ fun FamilySubscriptionDialog(
                         label = { Text("6자리 초대 코드 입력") },
                         placeholder = { Text("예: 8F3K9A") },
                         singleLine = true,
+                        enabled = !isLoading,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Button(
                         onClick = {
+                            if (isLoading) return@Button
+                            isLoading = true
+                            statusMessage = ""
                             FamilySubscriptionManager.joinGroupWithCode(context, inviteCodeInput) { result ->
+                                isLoading = false
                                 when (result) {
                                     is GroupActionResult.Success -> {
                                         statusMessage = result.message
@@ -158,10 +164,20 @@ fun FamilySubscriptionDialog(
                                 }
                             }
                         },
-                        enabled = inviteCodeInput.length == 6,
+                        enabled = !isLoading && inviteCodeInput.length == 6,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("초대 코드로 멤버 합류하기")
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("검증 중...")
+                        } else {
+                            Text("초대 코드로 멤버 합류하기")
+                        }
                     }
                 }
 
@@ -178,7 +194,7 @@ fun FamilySubscriptionDialog(
         },
         confirmButton = {
             if (statusState.planType != PlanType.HOST) {
-                Button(onClick = onPurchaseClicked) {
+                Button(onClick = onPurchaseClicked, enabled = !isLoading) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
@@ -190,7 +206,7 @@ fun FamilySubscriptionDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, enabled = !isLoading) {
                 Text("닫기")
             }
         }

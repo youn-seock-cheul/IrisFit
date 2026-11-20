@@ -34,6 +34,10 @@ data class SubscriptionStatus(
     /** Pro 전용 기능 (원근 조절, 시선 추적, 헬스 연동, 색톤 4종) 접근 허용 여부 */
     val canAccessProFeatures: Boolean
         get() = isProUnlocked || isTrialActive || planType == PlanType.HOST || planType == PlanType.FAMILY_MEMBER
+
+    /** 그룹 정원 (4명) 초과 여부 */
+    val isFull: Boolean
+        get() = currentMembers >= maxMembers
 }
 
 /**
